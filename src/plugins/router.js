@@ -6,7 +6,7 @@ const router = {
   plugin: {
     name: 'router',
     register: (server, _options) => {
-      server.route([health,claim,application])
+      server.route([health, claim, application])
     }
   }
 }

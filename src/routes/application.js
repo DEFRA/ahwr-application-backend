@@ -9,7 +9,7 @@ const application = {
 }
 
 const getApplicationFromDatabaseByClaimReference = () => {
-  // TO DO get from backend service
+  // TO DO get from database
   return {
     reference: 'IAHW-AAAA-AAAA',
     data: {
