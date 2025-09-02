@@ -374,18 +374,18 @@ export const redactPII = async (applicationReference, logger) => {
 //   )
 // }
 
-const convertUpdatedPropertyToStandardType = (updatedProperty) => {
-  switch (updatedProperty) {
-    case 'vetsName':
-      return 'vetName'
-    case 'vetRCVSNumber':
-      return 'vetRcvs'
-    case 'dateOfVisit':
-      return 'visitDate'
-    default:
-      return updatedProperty
-  }
-}
+// const convertUpdatedPropertyToStandardType = (updatedProperty) => {
+//   switch (updatedProperty) {
+//     case 'vetsName':
+//       return 'vetName'
+//     case 'vetRCVSNumber':
+//       return 'vetRcvs'
+//     case 'dateOfVisit':
+//       return 'visitDate'
+//     default:
+//       return updatedProperty
+//   }
+// }
 
 export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
   // TODO 1182 impl

@@ -6,12 +6,12 @@ import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 //   setClaim
 // } from '../../../repositories/claim-repository.js'
 // import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
-import {
-  createHerd,
-  getHerdById,
-  updateIsCurrentHerd
-} from '../../../repositories/herd-repository.js'
-import { arraysAreEqual } from '../../../lib/array-utils.js'
+// import {
+//   createHerd,
+//   getHerdById,
+//   updateIsCurrentHerd
+// } from '../../../repositories/herd-repository.js'
+// import { arraysAreEqual } from '../../../lib/array-utils.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { sendMessage } from '../../../messaging/send-message.js'
 import { v4 as uuid } from 'uuid'
@@ -25,75 +25,75 @@ import { config } from '../../../config/index.js'
 
 const { messageGeneratorMsgType, messageGeneratorQueue } = config
 
-const hasHerdChanged = (existingHerd, updatedHerd) =>
-  existingHerd.cph !== updatedHerd.cph ||
-  !arraysAreEqual(
-    existingHerd.herdReasons.sort(),
-    updatedHerd.herdReasons.sort()
-  )
+// const hasHerdChanged = (existingHerd, updatedHerd) =>
+//   existingHerd.cph !== updatedHerd.cph ||
+//   !arraysAreEqual(
+//     existingHerd.herdReasons.sort(),
+//     updatedHerd.herdReasons.sort()
+//   )
 
-const isUpdate = (herd) => herd.herdVersion > 1
+// const isUpdate = (herd) => herd.herdVersion > 1
 
-const validateUpdate = (existingHerd, updatedHerd) => {
-  if (!existingHerd) {
-    throw Error('Herd not found')
-  }
-  if (!existingHerd.isCurrent) {
-    throw Error('Attempting to update an older version of a herd')
-  }
-  if (existingHerd.version === updatedHerd.herdVersion) {
-    throw Error('Attempting to update a herd with the same version')
-  }
-}
+// const validateUpdate = (existingHerd, updatedHerd) => {
+//   if (!existingHerd) {
+//     throw Error('Herd not found')
+//   }
+//   if (!existingHerd.isCurrent) {
+//     throw Error('Attempting to update an older version of a herd')
+//   }
+//   if (existingHerd.version === updatedHerd.herdVersion) {
+//     throw Error('Attempting to update a herd with the same version')
+//   }
+// }
 
-const createOrUpdateHerd = async (
-  herd,
-  applicationReference,
-  createdBy,
-  typeOfLivestock,
-  logger
-) => {
-  let herdModel, herdWasUpdated
+// const createOrUpdateHerd = async (
+//   herd,
+//   applicationReference,
+//   createdBy,
+//   typeOfLivestock,
+//   logger
+// ) => {
+//   let herdModel, herdWasUpdated
 
-  if (isUpdate(herd)) {
-    const existingHerdModel = await getHerdById(herd.herdId)
-    validateUpdate(existingHerdModel?.dataValues, herd)
+//   if (isUpdate(herd)) {
+//     const existingHerdModel = await getHerdById(herd.herdId)
+//     validateUpdate(existingHerdModel?.dataValues, herd)
 
-    if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
-      const { id, version, species, herdName } = existingHerdModel.dataValues
-      herdModel = await createHerd({
-        id,
-        version: version + 1,
-        applicationReference,
-        species,
-        herdName,
-        cph: herd.cph,
-        herdReasons: herd.herdReasons.sort(),
-        createdBy
-      })
-      await updateIsCurrentHerd(herd.herdId, false, version)
-      herdWasUpdated = true // To check, but actually does feel like we should be setting this
-    } else {
-      logger.info('Herd has not changed')
-      herdModel = existingHerdModel
-      herdWasUpdated = false
-    }
-  } else {
-    herdModel = await createHerd({
-      version: 1,
-      applicationReference,
-      species: typeOfLivestock,
-      herdName: herd.herdName,
-      cph: herd.cph,
-      herdReasons: herd.herdReasons.sort(),
-      createdBy
-    })
+//     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
+//       const { id, version, species, herdName } = existingHerdModel.dataValues
+//       herdModel = await createHerd({
+//         id,
+//         version: version + 1,
+//         applicationReference,
+//         species,
+//         herdName,
+//         cph: herd.cph,
+//         herdReasons: herd.herdReasons.sort(),
+//         createdBy
+//       })
+//       await updateIsCurrentHerd(herd.herdId, false, version)
+//       herdWasUpdated = true // To check, but actually does feel like we should be setting this
+//     } else {
+//       logger.info('Herd has not changed')
+//       herdModel = existingHerdModel
+//       herdWasUpdated = false
+//     }
+//   } else {
+//     herdModel = await createHerd({
+//       version: 1,
+//       applicationReference,
+//       species: typeOfLivestock,
+//       herdName: herd.herdName,
+//       cph: herd.cph,
+//       herdReasons: herd.herdReasons.sort(),
+//       createdBy
+//     })
 
-    herdWasUpdated = true
-  }
+//     herdWasUpdated = true
+//   }
 
-  return { herdModel, herdWasUpdated }
-}
+//   return { herdModel, herdWasUpdated }
+// }
 
 const addClaimAndHerdToDatabase = async (
   claimPayload,
