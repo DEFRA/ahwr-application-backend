@@ -1,13 +1,34 @@
 import { health } from '../routes/health.js'
-import { claim } from '../routes/claim.js'
-import { application } from '../routes/application.js'
-import { example } from '../routes/example.js'
+import { applicationHandlers } from '../routes/api/applications.js'
+import { latestApplicationsHandlers } from '../routes/api/latest-applications.js'
+import { latestContactDetailsHandlers } from '../routes/api/latest-contact-details.js'
+import { applicationHistoryHandlers } from '../routes/api/application-history.js'
+import { applicationEventsHandlers } from '../routes/api/application-events.js'
+import { claimHandlers } from '../routes/api/claim.js'
+import { claimsHandlers } from '../routes/api/claims.js'
+import { holidayHandlers } from '../routes/api/holidays.js'
+import { contactHistoryHandlers } from '../routes/api/contact-history.js'
+import { flagHandlers } from '../routes/api/flags.js'
+import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
 
 const router = {
   plugin: {
     name: 'router',
     register: (server, _options) => {
-      server.route([health, claim, application].concat(example))
+      server.route(
+        [health]
+          .concat(applicationHandlers)
+          .concat(latestApplicationsHandlers)
+          .concat(latestContactDetailsHandlers)
+          .concat(applicationHistoryHandlers)
+          .concat(applicationEventsHandlers)
+          .concat(claimHandlers)
+          .concat(claimsHandlers)
+          .concat(holidayHandlers)
+          .concat(contactHistoryHandlers)
+          .concat(flagHandlers)
+          .concat(redactPiiRequestHandlers)
+      )
     }
   }
 }

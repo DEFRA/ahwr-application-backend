@@ -35,33 +35,56 @@
     "@hapi/hapi": "21.4.0",
     "aws-embedded-metrics": "4.2.0",
     "aws4": "1.13.2",
+    "cls-hooked": "4.2.2",
     "convict": "6.2.4",
     "convict-format-with-validator": "6.2.0",
+    "fast-xml-parser": "5.2.5",
+    "ffc-ahwr-common-library": "2.4.0",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
     "hapi-pulse": "3.0.1",
+    "http-status-codes": "2.3.0",
     "https-proxy-agent": "7.0.6",
     "joi": "17.13.3",
     "mongo-locks": "3.0.2",
     "mongodb": "6.17.0",
+    "node-cron": "4.2.1",
     "node-fetch": "3.3.2",
+    "p-limit": "7.1.1",
     "pino": "9.7.0",
-    "pino-pretty": "13.0.0",
-    "undici": "7.10.0"
+    "undici": "7.10.0",
+    "uuid": "11.1.0",
+    "xml2js": "0.6.2"
+  },
+  "overrides": {
+    "standard": {
+      "json5": "2.2.2"
+    },
+    "semver": "7.5.2"
   },
   "devDependencies": {
     "@babel/core": "7.27.4",
+    "@babel/plugin-transform-modules-commonjs": "7.27.1",
     "@babel/preset-env": "7.27.2",
+    "@faker-js/faker": "10.0.0",
     "@vitest/coverage-v8": "3.2.4",
     "autoprefixer": "10.4.21",
+    "babel-jest": "30.1.2",
     "eslint": "9.29.0",
     "husky": "9.1.7",
     "neostandard": "0.12.1",
     "nodemon": "3.1.10",
     "npm-run-all": "4.1.5",
+    "pino-pretty": "13.1.1",
     "prettier": "3.5.3",
+    "standard": "17.1.2",
     "vitest": "3.2.4",
     "vitest-fetch-mock": "0.4.5",
     "vitest-mongodb": "1.0.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/test-output/**"
+    ]
   }
 }
