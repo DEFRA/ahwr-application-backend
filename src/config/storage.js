@@ -1,0 +1,38 @@
+import Joi from 'joi'
+
+export const buildConfig = () => {
+  const schema = Joi.object({
+    connectionString: Joi.string(), // TODO 1182 config change
+    usersContainer: Joi.string().required(),
+    usersFile: Joi.string().required(),
+    endemicsSettingsContainer: Joi.string().required(),
+    endemicsPricesFile: Joi.string().required(),
+    storageAccount: Joi.string(), // TODO 1182 config change
+    useConnectionString: Joi.bool().required()
+  })
+
+  const config = {
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    usersContainer: 'users',
+    usersFile: 'users.json',
+    endemicsSettingsContainer:
+      process.env.AZURE_STORAGE_ENDEMICS_SETTINGS_CONTAINER ??
+      'endemics-settings',
+    endemicsPricesFile: 'endemics-prices-config.json',
+    storageAccount: process.env.AZURE_STORAGE_ACCOUNT_NAME,
+    useConnectionString:
+      process.env.AZURE_STORAGE_USE_CONNECTION_STRING === 'true'
+  }
+
+  const { error } = schema.validate(config, {
+    abortEarly: false
+  })
+
+  if (error) {
+    throw new Error(`The blob storage config is invalid. ${error.message}`)
+  }
+
+  return config
+}
+
+export const storageConfig = buildConfig()

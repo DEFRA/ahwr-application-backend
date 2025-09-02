@@ -1,0 +1,455 @@
+// import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+// import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
+// import { startandEndDate } from '../lib/date-utils.js'
+// import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+
+export const getApplication = async (db, reference) => {
+  return await db
+    .collection('application')
+    .findOne({ reference }, { projection: { _id: 0 } })
+}
+
+export const getLatestApplicationsBySbi = async (sbi) => {
+  // TODO 1182 impl
+  return []
+  // return models.application.findAll({
+  //   where: { 'data.organisation.sbi': sbi },
+  //   include: [
+  //     {
+  //       model: models.flag,
+  //       as: 'flags',
+  //       attributes: ['appliesToMh'],
+  //       where: {
+  //         deletedBy: null
+  //       },
+  //       required: false
+  //     }
+  //   ],
+  //   order: [['createdAt', 'DESC']]
+  // })
+}
+
+export const getBySbi = async (sbi) => {
+  // TODO 1182 impl
+  return {}
+  // return models.application.findOne({
+  //   where: {
+  //     'data.organisation.sbi': sbi
+  //   },
+  //   order: [['createdAt', 'DESC']]
+  // })
+}
+
+export const getByEmail = async (email) => {
+  // TODO 1182 impl
+  return {}
+  // return models.application.findOne({
+  //   order: [['createdAt', 'DESC']],
+  //   where: { 'data.organisation.email': email.toLowerCase() }
+  // })
+}
+
+export const evalSortField = (sort) => {
+  // TODO 1182 impl
+  // if (sort?.field) {
+  //   switch (sort.field.toLowerCase()) {
+  //     case 'status':
+  //       return [
+  //         models.status,
+  //         sort.field.toLowerCase(),
+  //         sort.direction ?? 'ASC'
+  //       ]
+  //     case 'apply date':
+  //       return ['createdAt', sort.direction ?? 'ASC']
+  //     case 'reference':
+  //       return ['reference', sort.direction ?? 'ASC']
+  //     case 'sbi':
+  //       return ['data.organisation.sbi', sort.direction ?? 'ASC']
+  //     case 'organisation':
+  //       return ['data.organisation.name', sort.direction ?? 'ASC']
+  //     default:
+  //       return ['createdAt', sort.direction ?? 'ASC']
+  //   }
+  // }
+  return ['createdAt', sort?.direction ?? 'ASC']
+}
+
+// const buildSearchQuery = (searchText, searchType, filter) => {
+//   const query = {
+//     include: [
+//       {
+//         model: models.status,
+//         attributes: ['status']
+//       },
+//       {
+//         model: models.flag,
+//         as: 'flags',
+//         attributes: ['appliesToMh'],
+//         where: {
+//           deletedBy: null
+//         },
+//         required: false
+//       }
+//     ]
+//   }
+
+//   if (searchText) {
+//     switch (searchType) {
+//       case 'sbi':
+//         query.where = { 'data.organisation.sbi': searchText }
+//         break
+//       case 'organisation':
+//         query.where = {
+//           'data.organisation.name': { [Op.iLike]: `%${searchText}%` }
+//         }
+//         break
+//       case 'ref':
+//         query.where = { reference: searchText }
+//         break
+//       case 'date':
+//         query.where = {
+//           createdAt: {
+//             [Op.gte]: startandEndDate(searchText).startDate,
+//             [Op.lt]: startandEndDate(searchText).endDate
+//           }
+//         }
+//         break
+//       case 'status':
+//         query.include[0] = {
+//           model: models.status,
+//           attributes: ['status'],
+//           where: { status: { [Op.iLike]: `%${searchText}%` } }
+//         }
+//         break
+//       default:
+//         break
+//     }
+//   }
+
+//   if (filter && filter.length > 0) {
+//     query.include[0] = {
+//       model: models.status,
+//       attributes: ['status'],
+//       where: { status: filter }
+//     }
+//   }
+
+//   return query
+// }
+
+export const searchApplications = async (
+  searchText,
+  searchType,
+  filter,
+  offset = 0,
+  limit = 10,
+  sort = { field: 'createdAt', direction: 'DESC' }
+) => {
+  // TODO 1182 impl
+  return []
+  // let query = buildSearchQuery(searchText, searchType, filter)
+
+  // let total = 0
+  // let applications = []
+  // let applicationStatus = []
+
+  // total = await models.application.count(query)
+
+  // if (total > 0) {
+  //   applicationStatus = await models.application.findAll({
+  //     attributes: [
+  //       'status.status',
+  //       [sequelize.fn('COUNT', 'application.id'), 'total']
+  //     ],
+  //     ...query,
+  //     group: ['status.status', 'flags.id'],
+  //     raw: true
+  //   })
+  //   sort = evalSortField(sort)
+  //   query = {
+  //     ...query,
+  //     order: [sort],
+  //     limit,
+  //     offset
+  //   }
+  //   applications = await models.application.findAll(query)
+  // }
+
+  // return {
+  //   applications,
+  //   total,
+  //   applicationStatus
+  // }
+}
+
+export const getAllApplications = async () => {
+  // TODO 1182 impl
+  return []
+  // const query = {
+  //   order: [['createdAt', 'DESC']]
+  // }
+  // return models.application.findAll(query)
+}
+
+export const setApplication = async (data) => {
+  // TODO 1182 impl
+  return {}
+  // const result = await models.application.create(data)
+  // await raiseApplicationStatusEvent({
+  //   message: 'New application has been created',
+  //   application: result.dataValues,
+  //   raisedBy: result.dataValues.createdBy,
+  //   raisedOn: result.dataValues.createdAt
+  // })
+  // return result
+}
+
+export const updateApplicationByReference = async (
+  dataWithNote,
+  publishEvent = true
+) => {
+  // TODO 1182 impl
+  return {}
+  // const { note, ...data } = dataWithNote
+
+  // try {
+  //   const application = await models.application.findOne({
+  //     where: {
+  //       reference: data.reference
+  //     },
+  //     returning: true
+  //   })
+
+  //   if (application?.dataValues?.statusId === data?.statusId) {
+  //     return application
+  //   }
+
+  //   const result = await models.application.update(data, {
+  //     where: {
+  //       reference: data.reference
+  //     },
+  //     returning: true
+  //   })
+
+  //   const updatedRows = result[0] // Number of affected rows
+  //   const updatedRecords = result[1] // Assuming this is the array of updated records
+
+  //   if (publishEvent) {
+  //     for (let i = 0; i < updatedRows; i++) {
+  //       const updatedRecord = updatedRecords[i]
+  //       await raiseApplicationStatusEvent({
+  //         message: 'Application has been updated',
+  //         application: updatedRecord.dataValues,
+  //         raisedBy: updatedRecord.dataValues.updatedBy,
+  //         raisedOn: updatedRecord.dataValues.updatedAt,
+  //         note
+  //       })
+  //     }
+  //   }
+
+  //   return result
+  // } catch (error) {
+  //   console.error('Error updating application by reference:', error)
+  //   throw error
+  // }
+}
+
+export const findApplication = async (reference) => {
+  // TODO 1182 impl
+  return {}
+  // const application = await models.application.findOne({ where: { reference } })
+
+  // return application === null ? application : application.dataValues
+}
+
+export const updateApplicationData = async (
+  reference,
+  updatedProperty,
+  newValue,
+  oldValue,
+  note,
+  user
+) => {
+  // TODO 1182 impl
+  // const data = Sequelize.fn(
+  //   'jsonb_set',
+  //   Sequelize.col('data'),
+  //   Sequelize.literal(`'{${updatedProperty}}'`),
+  //   Sequelize.literal(`'${JSON.stringify(newValue)}'`)
+  // )
+  // // eslint-disable-next-line no-unused-vars
+  // const [_, updates] = await models.application.update(
+  //   { data },
+  //   {
+  //     where: { reference },
+  //     returning: true
+  //   }
+  // )
+  // const [updatedRecord] = updates
+  // const {
+  //   updatedAt,
+  //   data: {
+  //     organisation: { sbi }
+  //   }
+  // } = updatedRecord.dataValues
+  // const eventData = {
+  //   applicationReference: reference,
+  //   reference,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   note
+  // }
+  // const type = `application-${updatedProperty}`
+  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
+  // await models.claim_update_history.create({
+  //   applicationReference: reference,
+  //   reference,
+  //   note,
+  //   updatedProperty,
+  //   newValue,
+  //   oldValue,
+  //   eventType: type,
+  //   createdBy: user
+  // })
+}
+
+export const getApplicationsToRedactOlderThan = async (years) => {
+  // TODO 1182 impl
+  return []
+  // const now = new Date()
+  // const cutoffDate = new Date(
+  //   Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate())
+  // )
+
+  // return models.application.findAll({
+  //   where: {
+  //     reference: {
+  //       [Op.notIn]: Sequelize.literal(
+  //         '(SELECT reference FROM application_redact)'
+  //       )
+  //     },
+  //     createdAt: {
+  //       [Op.lt]: cutoffDate
+  //     },
+  //     eligiblePiiRedaction: {
+  //       [Op.eq]: true
+  //     }
+  //   },
+  //   attributes: [
+  //     'reference',
+  //     [literal("data->'organisation'->>'sbi'"), 'sbi'],
+  //     'statusId'
+  //   ],
+  //   order: [['createdAt', 'ASC']]
+  // })
+}
+
+export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
+  // TODO 1182 impl
+  return []
+  // const now = new Date()
+  // const cutoffDate = new Date(
+  //   Date.UTC(now.getUTCFullYear() - years, now.getUTCMonth(), now.getUTCDate())
+  // )
+
+  // return models.application.findAll({
+  //   where: {
+  //     reference: {
+  //       [Op.notIn]: Sequelize.literal(
+  //         '(SELECT reference FROM application_redact)'
+  //       )
+  //     },
+  //     updatedAt: {
+  //       [Op.lt]: cutoffDate
+  //     },
+  //     eligiblePiiRedaction: {
+  //       [Op.eq]: true
+  //     },
+  //     type: 'VV'
+  //   },
+  //   attributes: ['reference', [literal("data->'organisation'->>'sbi'"), 'sbi']],
+  //   order: [['updatedAt', 'ASC']]
+  // })
+}
+
+export const redactPII = async (agreementReference, logger) => {
+  // TODO 1182 impl
+  // const redactedValueByJSONPath = {
+  //   'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
+  //   'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
+  //   'organisation,orgEmail': REDACT_PII_VALUES.REDACTED_ORG_EMAIL,
+  //   'organisation,farmerName': REDACT_PII_VALUES.REDACTED_FARMER_NAME,
+  //   'organisation,address': REDACT_PII_VALUES.REDACTED_ADDRESS
+  // }
+  // let totalUpdates = 0
+  // for (const [jsonPath, redactedValue] of Object.entries(
+  //   redactedValueByJSONPath
+  // )) {
+  //   const jsonPathSql = jsonPath
+  //     .split(',')
+  //     .map((key) => `->'${key}'`)
+  //     .join('')
+  //   const [affectedCount] = await models.application.update(
+  //     {
+  //       data: Sequelize.fn(
+  //         'jsonb_set',
+  //         Sequelize.col('data'),
+  //         Sequelize.literal(`'{${jsonPath}}'`),
+  //         Sequelize.literal(`'"${redactedValue}"'`),
+  //         true
+  //       ),
+  //       updatedBy: 'admin',
+  //       updatedAt: Sequelize.fn('NOW')
+  //     },
+  //     {
+  //       where: {
+  //         reference: agreementReference,
+  //         [Op.and]: Sequelize.literal(`data${jsonPathSql} IS NOT NULL`)
+  //       }
+  //     }
+  //   )
+  //   totalUpdates += affectedCount
+  // }
+  // if (totalUpdates > 0) {
+  //   logger.info(
+  //     `Redacted ${totalUpdates} application records for agreementReference: ${agreementReference}`
+  //   )
+  // } else {
+  //   logger.info(
+  //     `No records updated for agreementReference: ${agreementReference}`
+  //   )
+  // }
+}
+
+export const updateEligiblePiiRedaction = async (
+  reference,
+  newValue,
+  user,
+  note
+) => {
+  // TODO 1182 impl
+  // const [affectedCount] = await models.application.update(
+  //   { eligiblePiiRedaction: newValue },
+  //   {
+  //     where: {
+  //       reference,
+  //       eligiblePiiRedaction: { [Op.ne]: newValue } // only update if value has changed
+  //     },
+  //     returning: true
+  //   }
+  // )
+  // if (affectedCount > 0) {
+  //   const updatedProperty = 'eligiblePiiRedaction'
+  //   const type = `application-${updatedProperty}`
+  //   await models.application_update_history.create({
+  //     applicationReference: reference,
+  //     note,
+  //     updatedProperty,
+  //     newValue,
+  //     oldValue: !newValue,
+  //     eventType: type,
+  //     createdBy: user
+  //   })
+  // }
+}
