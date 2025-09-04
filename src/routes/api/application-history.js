@@ -76,8 +76,9 @@ export const applicationHistoryHandlers = [
         })
       },
       handler: async (request, h) => {
+        const db = request.db
         const reference = request.params.ref
-        const history = await getApplicationHistory(reference)
+        const history = await getApplicationHistory(db, reference)
         const normalisedHistoryRecords = history.map((record) => {
           const { statusId, note } = JSON.parse(record.Payload)
 
@@ -93,22 +94,21 @@ export const applicationHistoryHandlers = [
 
         const dataUpdates = await findAllClaimUpdateHistory(reference)
 
-        const normalisedDataUpdates = dataUpdates.map(({ dataValues }) => ({
-          eventType: dataValues.eventType,
-          updatedProperty: dataValues.updatedProperty,
-          newValue: dataValues.newValue,
-          oldValue: dataValues.oldValue,
-          note: dataValues.note,
-          updatedBy: dataValues.createdBy,
-          updatedAt: dataValues.createdAt
+        const normalisedDataUpdates = dataUpdates.map((claimUpdate) => ({
+          eventType: claimUpdate.eventType,
+          updatedProperty: claimUpdate.updatedProperty,
+          newValue: claimUpdate.newValue,
+          oldValue: claimUpdate.oldValue,
+          note: claimUpdate.note,
+          updatedBy: claimUpdate.createdBy,
+          updatedAt: claimUpdate.createdAt
         }))
 
         const isOldWorldAgreementReference = reference.includes('AHWR')
 
         const applicationReference = isOldWorldAgreementReference
           ? reference
-          : (await getClaimByReference(reference)).dataValues
-              .applicationReference
+          : (await getClaimByReference(db, reference))?.applicationReference
 
         const flags =
           await getFlagsForApplicationIncludingDeleted(applicationReference)
