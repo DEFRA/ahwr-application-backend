@@ -1,25 +1,24 @@
 // import { queryEntitiesByPartitionKey } from './query-entities.js'
 // import { updateEntitiesByPartitionKey } from './update-entities.js'
 // import { config } from '../config/index.js'
-// import { getHistoryByReference } from '../repositories/status-history-repository.js'
+import { getHistoryByReference } from '../repositories/status-history-repository.js'
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 
-export const getApplicationHistory = async (reference) => {
+export const getApplicationHistory = async (db, reference) => {
   // TODO 1182 impl
-  return []
 
   // const { enabled: dbHistory } = config.storeHistoryInDb
   // if (dbHistory) {
   //   // If the database history is enabled, fetch the history from the database.
-  //   const history = await getHistoryByReference(reference)
-  //   return history.map((item) => ({
-  //     Payload: JSON.stringify({
-  //       ...item.dataValues
-  //     }),
-  //     ChangedBy: item.dataValues.createdBy,
-  //     ChangedOn: item.dataValues.createdAt,
-  //     EventType: 'status-updated'
-  //   }))
+  const history = await getHistoryByReference(db, reference)
+  return history.map((item) => ({
+    Payload: JSON.stringify({
+      ...item
+    }),
+    ChangedBy: item.createdBy,
+    ChangedOn: item.createdAt,
+    EventType: 'status-updated'
+  }))
   // }
 
   // return queryEntitiesByPartitionKey(

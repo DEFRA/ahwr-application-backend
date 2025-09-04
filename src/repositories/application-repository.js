@@ -4,9 +4,15 @@
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
 export const getApplication = async (db, reference) => {
-  return await db
+  // TODO 1061 join to status table
+  const application = await db
     .collection('application')
     .findOne({ reference }, { projection: { _id: 0 } })
+
+  return {
+    ...application,
+    status: { status: 'agreed' }
+  }
 }
 
 export const getLatestApplicationsBySbi = async (sbi) => {

@@ -5,11 +5,9 @@ export const createStatusHistory = async (data) => {
   // return models.status_history.create(data)
 }
 
-export const getHistoryByReference = async (reference) => {
-  // TODO 1182 impl
-  return []
-
-  // return models.status_history.findAll({
-  //   where: { reference }
-  // })
+export const getHistoryByReference = async (db, reference) => {
+  return await db
+    .collection('status_history')
+    .find({ reference }, { projection: { _id: 0 } })
+    .toArray()
 }
