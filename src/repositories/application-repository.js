@@ -144,6 +144,7 @@ export const evalSortField = (sort) => {
 // }
 
 export const searchApplications = async (
+  db,
   searchText,
   searchType,
   filter,
@@ -152,12 +153,19 @@ export const searchApplications = async (
   sort = { field: 'createdAt', direction: 'DESC' }
 ) => {
   // TODO 1182 impl
-  return []
+  const applicationsDB = await db
+    .collection('application')
+    .find({}, { projection: { _id: 0 } })
+    .toArray()
   // let query = buildSearchQuery(searchText, searchType, filter)
 
-  // let total = 0
-  // let applications = []
-  // let applicationStatus = []
+  const total = applicationsDB.length
+  const applications = applicationsDB.map((app) => {
+    return { ...app, status: { status: 'agreed' }, flags: [] }
+  })
+  const applicationStatus = applicationsDB.map((app) => {
+    return { status: 'agreed', total }
+  })
 
   // total = await models.application.count(query)
 
@@ -181,11 +189,11 @@ export const searchApplications = async (
   //   applications = await models.application.findAll(query)
   // }
 
-  // return {
-  //   applications,
-  //   total,
-  //   applicationStatus
-  // }
+  return {
+    applications,
+    total,
+    applicationStatus
+  }
 }
 
 export const getAllApplications = async () => {
