@@ -128,6 +128,14 @@ const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  application: {
+    queueUrl: {
+      doc: 'Application backend queue url',
+      format: String,
+      default: '',
+      env: 'APPLICATION_BACKEND_QUEUE_URL'
+    }
   }
 })
 

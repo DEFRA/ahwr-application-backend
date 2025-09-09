@@ -1,8 +1,25 @@
 import HttpStatus from 'http-status-codes'
-import { config } from '../../config/index.js'
-import { sendMessage } from '../../messaging/send-message.js'
+import { config } from '../../config.js'
+import { sendMessageToSQS } from '../../messaging/send-message.js'
 
-const { redactPiiRequestMsgType, applicationRequestQueue } = config
+const { redactPiiRequestMsgType } = {
+  redactPiiRequestMsgType: 'uk.gov.ahwr.redact.pii.request'
+}
+const applicationQueueUrl = config.get('application.queueUrl')
+
+const getMessageAttributes = () => {
+  return {
+    MessageType: { DataType: 'String', StringValue: redactPiiRequestMsgType }
+  }
+}
+
+const getMessageBody = () => {
+  const now = new Date()
+  const utcMidnight = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  )
+  return { requestedDate: utcMidnight }
+}
 
 export const redactPiiRequestHandlers = [
   {
@@ -11,14 +28,10 @@ export const redactPiiRequestHandlers = [
     handler: async (request, h) => {
       request.logger.info('Request for redact PII received')
 
-      const now = new Date()
-      const utcMidnight = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-      )
-      sendMessage(
-        { requestedDate: utcMidnight },
-        redactPiiRequestMsgType,
-        applicationRequestQueue
+      sendMessageToSQS(
+        applicationQueueUrl,
+        getMessageBody(),
+        getMessageAttributes()
       )
 
       return h.response().code(HttpStatus.ACCEPTED)

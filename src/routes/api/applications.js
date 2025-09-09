@@ -70,6 +70,7 @@ export const applicationHandlers = [
       handler: async (request, h) => {
         const { applications, total, applicationStatus } =
           await searchApplications(
+            request.db,
             request.payload.search?.text ?? '',
             request.payload.search?.type,
             request.payload.filter,

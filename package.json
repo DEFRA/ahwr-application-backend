@@ -27,6 +27,7 @@
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
   "dependencies": {
+    "@aws-sdk/client-sqs": "3.883.0",
     "@defra/cdp-auditing": "0.1.0",
     "@defra/hapi-secure-context": "0.1.3",
     "@defra/hapi-tracing": "1.22.0",
