@@ -28,7 +28,7 @@ export const redactPiiRequestHandlers = [
     handler: async (request, h) => {
       request.logger.info('Request for redact PII received')
 
-      sendMessageToSQS(
+      await sendMessageToSQS(
         applicationQueueUrl,
         getMessageBody(),
         getMessageAttributes()

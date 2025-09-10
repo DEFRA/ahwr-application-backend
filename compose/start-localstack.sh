@@ -5,7 +5,7 @@ export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 
 # S3 buckets
-# aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-bucket
 
 # SQS queues
-# aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name my-queue
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name ahwr_application_backend_queue
