@@ -18,7 +18,7 @@ const getMessageBody = () => {
   const utcMidnight = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
   )
-  return { requestedDate: utcMidnight }
+  return JSON.stringify({ requestedDate: utcMidnight })
 }
 
 export const redactPiiRequestHandlers = [
