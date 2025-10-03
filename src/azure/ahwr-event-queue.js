@@ -48,7 +48,9 @@ const proxyFetch = (url, options) => {
 export const sendMessage = async (server, logger, body) => {
   logger.info(`logging enabled ${isLoggingEnabled}`)
   if (isLoggingEnabled && logger && typeof logger.info === 'function') {
-    logger.info(`Message to be sent to AHWR Event queue: ${JSON.stringify(body)}`)
+    logger.info(
+      `Message to be sent to AHWR Event queue: ${JSON.stringify(body)}`
+    )
   }
 
   if (!eventQueueConfig.keyName || !eventQueueConfig.key) {
