@@ -136,6 +136,35 @@ const config = convict({
       default: '',
       env: 'APPLICATION_BACKEND_QUEUE_URL'
     }
+  },
+  azure: {
+    eventQueue: {
+      uri: {
+        doc: 'URI for AWHR event service bus queue',
+        format: String,
+        default: '',
+        env: 'FCP_AHWR_EVENT_QUEUE_URI'
+      },
+      ttl: {
+        doc: 'Time to live for AWHR event access token',
+        format: 'nat',
+        default: 86400,
+        env: 'FCP_AHWR_EVENT_QUEUE_TTL'
+      },
+      keyName: {
+        doc: 'Key name for AWHR event service bus',
+        format: String,
+        default: 'LogicAppsAccessKey',
+        env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY_NAME'
+      },
+      key: {
+        doc: 'Key for AWHR event service bus',
+        format: String,
+        default: 'my_key',
+        sensitive: true,
+        env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY'
+      }
+    }
   }
 })
 

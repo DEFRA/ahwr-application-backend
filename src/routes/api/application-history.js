@@ -6,6 +6,7 @@ import {
 } from '../../repositories/claim-repository.js'
 import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
 import { StatusCodes } from 'http-status-codes'
+import { sendMessage } from '../../azure/ahwr-event-queue.js'
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {
@@ -76,6 +77,17 @@ export const applicationHistoryHandlers = [
         })
       },
       handler: async (request, h) => {
+        // TODO 1178 TEMP - test comms with Azure
+        try {
+          const ahwrEventMessage = {
+            sourceSystem: 'AHWR',
+            message: 'Hello from CDP!'
+          }
+          await sendMessage(request.server, request.logger, ahwrEventMessage)
+        } catch (error) {
+          request.logger.error({ sfdCommunicationError: error })
+        }
+
         const db = request.db
         const reference = request.params.ref
         const history = await getApplicationHistory(db, reference)
