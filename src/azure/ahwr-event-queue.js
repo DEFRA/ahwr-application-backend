@@ -1,13 +1,13 @@
 import crypto from 'crypto-js'
 import { ProxyAgent } from 'undici'
 import { config } from '../config.js'
-import { initCache } from '../common/helpers/cache.js'
+// import { initCache } from '../common/helpers/cache.js'
 
 const isLoggingEnabled = config.get('log.isEnabled')
 const httpProxy = config.get('httpProxy')
 const eventQueueConfig = config.get('azure.eventQueue')
 
-let cache = null
+// let cache = null
 
 const getAzureServiceBusToken = () => {
   const encoded = encodeURIComponent(eventQueueConfig.uri)
@@ -19,14 +19,14 @@ const getAzureServiceBusToken = () => {
   return `SharedAccessSignature sr=${encoded}&sig=${encodeURIComponent(hash)}&se=${ttl}&skn=${eventQueueConfig.keyName}`
 }
 
-const getCachedToken = (server) => {
-  if (!cache) {
-    cache = initCache(server, 'token', getAzureServiceBusToken, {
-      expiresIn: eventQueueConfig.ttl
-    })
-  }
-  return cache
-}
+// const getCachedToken = (server) => {
+//   if (!cache) {
+//     cache = initCache(server, 'token', getAzureServiceBusToken, {
+//       expiresIn: eventQueueConfig.ttl
+//     })
+//   }
+//   return cache
+// }
 
 const proxyFetch = (url, options) => {
   const proxyUrlConfig = httpProxy // bound to HTTP_PROXY
