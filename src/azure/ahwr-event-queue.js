@@ -62,7 +62,8 @@ export const sendMessage = async (server, logger, body) => {
     throw new Error('AHWR Event keyname or key is not set')
   }
 
-  const accessToken = await getCachedToken(server).get('token')
+  logger.info('TEMP gets here: 1')
+  const accessToken = getAzureServiceBusToken() // await getCachedToken(server).get('token')
   logger.info('TEMP gets here: 2')
   const brokerProperties = {
     SessionId: '123'
@@ -78,6 +79,7 @@ export const sendMessage = async (server, logger, body) => {
     },
     body: JSON.stringify(body)
   })
+  logger.info('TEMP gets here: 3')
 
   if (!response.ok) {
     throw new Error(`AHWR Event request failed: ${response.statusText}`)
