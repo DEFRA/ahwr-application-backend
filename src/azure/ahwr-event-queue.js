@@ -53,11 +53,17 @@ export const sendMessage = async (server, logger, body) => {
     )
   }
 
+  logger.info(`TEMP queue config 1: ${eventQueueConfig?.uri}`)
+  logger.info(`TEMP queue config 2: ${eventQueueConfig?.keyName}`)
+  logger.info(`TEMP queue config 3: ${eventQueueConfig?.ttl}`)
+
   if (!eventQueueConfig.keyName || !eventQueueConfig.key) {
+    logger.info('TEMP fails here: 1')
     throw new Error('AHWR Event keyname or key is not set')
   }
 
   const accessToken = await getCachedToken(server).get('token')
+  logger.info('TEMP gets here: 2')
   const brokerProperties = {
     SessionId: '123'
   }
