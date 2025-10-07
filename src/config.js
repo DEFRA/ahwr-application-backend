@@ -163,6 +163,37 @@ const config = convict({
         default: 'my_key',
         sensitive: true,
         env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY'
+      },
+      address: {
+        doc: 'foo',
+        format: String,
+        default: 'ffc-ahwr-event-dev',
+        env: 'EVENT_QUEUE_ADDRESS'
+      },
+      host: {
+        doc: 'foo',
+        format: String,
+        default: '',
+        env: 'MESSAGE_QUEUE_HOST'
+      },
+      password: {
+        doc: 'foo',
+        format: String,
+        default: '',
+        env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY'
+      },
+      username: {
+        doc: 'foo',
+        format: String,
+        default: '',
+        env: 'MESSAGE_QUEUE_USER'
+      },
+      connection: {
+        doc: 'foo',
+        format: String,
+        default: 'my_connection_string',
+        sensitive: true,
+        env: 'QUEUE_CONNECTION_STRING'
       }
     }
   }

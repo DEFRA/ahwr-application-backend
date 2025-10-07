@@ -53,18 +53,11 @@ export const sendMessage = async (server, logger, body) => {
     )
   }
 
-  logger.info(`TEMP queue config 1: ${eventQueueConfig?.uri}`)
-  logger.info(`TEMP queue config 2: ${eventQueueConfig?.keyName}`)
-  logger.info(`TEMP queue config 3: ${eventQueueConfig?.ttl}`)
-
   if (!eventQueueConfig.keyName || !eventQueueConfig.key) {
-    logger.info('TEMP fails here: 1')
     throw new Error('AHWR Event keyname or key is not set')
   }
 
-  logger.info('TEMP gets here: 1')
   const accessToken = getAzureServiceBusToken() // await getCachedToken(server).get('token')
-  logger.info('TEMP gets here: 2')
   const brokerProperties = {
     SessionId: '123'
   }
@@ -79,7 +72,6 @@ export const sendMessage = async (server, logger, body) => {
     },
     body: JSON.stringify(body)
   })
-  logger.info('TEMP gets here: 3')
 
   if (!response.ok) {
     throw new Error(`AHWR Event request failed: ${response.statusText}`)
