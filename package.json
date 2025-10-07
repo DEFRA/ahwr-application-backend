@@ -42,6 +42,7 @@
     "crypto-js": "4.2.0",
     "fast-xml-parser": "5.2.5",
     "ffc-ahwr-common-library": "2.4.0",
+    "ffc-messaging": "2.10.3",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
     "hapi-pulse": "3.0.1",

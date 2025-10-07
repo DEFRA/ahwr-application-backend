@@ -6,7 +6,11 @@ import {
 } from '../../repositories/claim-repository.js'
 import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
 import { StatusCodes } from 'http-status-codes'
-import { sendMessage } from '../../azure/ahwr-event-queue.js'
+import { sendMessage as sendMessageViaFetch } from '../../azure/ahwr-event-queue.js'
+import { sendMessage as sendMessageViaLib } from '../../azure/send-message.js'
+import { config } from '../../config.js'
+
+const eventQueueConfig = config.get('azure.eventQueue')
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {
@@ -81,9 +85,31 @@ export const applicationHistoryHandlers = [
         try {
           const ahwrEventMessage = {
             sourceSystem: 'AHWR',
-            message: 'Hello from CDP!'
+            message: 'Hello from CDP via fetch!'
           }
-          await sendMessage(request.server, request.logger, ahwrEventMessage)
+          await sendMessageViaFetch(
+            request.server,
+            request.logger,
+            ahwrEventMessage
+          )
+          await sendMessageViaLib(
+            {
+              message: 'Hello from CDP via lib!'
+            },
+            'uk.gov.ffc.ahwr.event',
+            {
+              address: eventQueueConfig.address,
+              type: 'queue',
+              appInsights: undefined,
+              host: eventQueueConfig.host,
+              password: eventQueueConfig.password,
+              username: eventQueueConfig.username,
+              useCredentialChain: false,
+              managedIdentityClientId: undefined,
+              connectionString: eventQueueConfig.connection
+            },
+            { sessionId: '456' }
+          )
         } catch (error) {
           request.logger.error({ sfdCommunicationError: error })
         }
