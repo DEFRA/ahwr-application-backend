@@ -2,13 +2,12 @@ import { applicationStatus } from '../../../constants/index.js'
 import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as repo from './application-repository.js'
-import { Status } from './application-model.js'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
     application &&
     ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(
-      application.statusId
+      application.status
     )
   )
 }
@@ -43,8 +42,8 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     createdAt: new Date(),
     status:
       applicationRequest.offerStatus === 'rejected'
-        ? Status.NOT_AGREED
-        : Status.AGREED
+        ? applicationStatus.notAgreed
+        : applicationStatus.agreed
   }
   await repo.createApplication(db, application)
 

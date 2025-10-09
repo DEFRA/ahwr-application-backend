@@ -9,16 +9,16 @@ export const MULTIPLE_HERDS_RELEASE_DATE = new Date(
 )
 
 export const applicationStatus = {
-  agreed: 1,
-  inCheck: 5,
-  notAgreed: 7,
-  readyToPay: 9,
-  rejected: 10,
-  withdrawn: 2,
-  onHold: 11,
-  paid: 8,
-  recommendToPay: 12,
-  recommendToReject: 13
+  agreed: 'AGREED',
+  inCheck: 'IN_CHECK',
+  notAgreed: 'NOT_AGREED',
+  readyToPay: 'READY_TO_PAY',
+  rejected: 'REJECTED',
+  withdrawn: 'WITHDRAWN',
+  onHold: 'ON_HOLD',
+  paid: 'PAID',
+  recommendToPay: 'RECOMMEND_TO_PAY',
+  recommendToReject: 'RECOMMEND_TO_REJECT'
 }
 
 export const livestockTypes = {
