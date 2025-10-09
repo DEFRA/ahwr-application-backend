@@ -1,47 +1,52 @@
-import { getLatestApplicationsBySbi } from '../../../repositories/application-repository'
 import { applicationStatus } from '../../../constants/index.js'
 import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
-import appInsights from 'applicationinsights'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as repo from './application-repository.js'
 import { Status } from './application-model.js'
 
-const isPreviousApplicationRelevant = (existingApplication) => {
+const isPreviousApplicationRelevant = (application) => {
   return (
-    existingApplication?.type === 'EE' &&
+    application &&
     ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(
-      existingApplication?.statusId
+      application.statusId
     )
   )
 }
 
 export const createApplication = async ({ applicationRequest, logger, db }) => {
-  logger.setBindings({ sbi: applicationRequest.sbi })
+  logger.setBindings({ sbi: applicationRequest.organisation.sbi })
 
-  const existingApplication = await repo.getLatestApplicationBySbi(
+  const latestApplication = await repo.getLatestApplicationBySbi(
     db,
     applicationRequest.organisation.sbi
   )
-  if (isPreviousApplicationRelevant(existingApplication)) {
+  if (isPreviousApplicationRelevant(latestApplication)) {
     throw new Error(
       `Recent application already exists: ${JSON.stringify({
-        reference: existingApplication.dataValues.reference,
-        createdAt: existingApplication.dataValues.createdAt
+        reference: latestApplication.reference,
+        createdAt: latestApplication.createdAt
       })}`
     )
   }
 
   const application = {
-    ...applicationRequest,
     reference: createApplicationReference(applicationRequest.reference),
+    data: {
+      reference: applicationRequest.reference,
+      declaration: applicationRequest.declaration,
+      offerStatus: applicationRequest.offerStatus,
+      confirmCheckDetails: applicationRequest.confirmCheckDetails
+    },
+    organisation: applicationRequest.organisation,
+    contactHistory: applicationRequest.contactHistory,
     createdBy: 'admin',
     createdAt: new Date(),
-    statusId:
+    status:
       applicationRequest.offerStatus === 'rejected'
         ? Status.NOT_AGREED
         : Status.AGREED
   }
-  await repo.createApplication(application)
+  await repo.createApplication(db, application)
 
   if (application.data.offerStatus === 'accepted') {
     try {
@@ -66,21 +71,33 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     }
   }
 
-  appInsights.defaultClient.trackEvent({
-    name: 'process-application-api',
-    properties: {
-      status: application.data.offerStatus,
-      reference: application.data.applicationReference,
-      sbi: application.organisation.sbi
-    }
-  })
+  // TODO
+  // appInsights.defaultClient.trackEvent({
+  //     name: 'process-application-api',
+  //     properties: {
+  //         status: application.data.offerStatus,
+  //         reference: application.data.applicationReference,
+  //         sbi: application.organisation.sbi
+  //     }
+  // })
 
   return {
-    applicationReference: application.applicationReference
+    applicationReference: application.reference
   }
 }
 
 export const getApplications = async ({ sbi, logger, db }) => {
   logger.setBindings({ sbi })
-  return getLatestApplicationsBySbi(db, sbi)
+
+  const result = await repo.getApplicationsBySbi(db, sbi)
+
+  return result.map((app) => ({
+    type: 'EE',
+    reference: app.reference,
+    data: app.data,
+    status: app.status,
+    createdAt: app.createdAt,
+    organisation: app.organisation,
+    redacted: app.redacted
+  }))
 }

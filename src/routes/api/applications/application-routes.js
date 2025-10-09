@@ -32,7 +32,8 @@ export const applicationRoutes = [
       handler: getApplicationsHandler,
       validate: {
         query: getApplicationsQuerySchema,
-        failAction(_request, _h, err) {
+        failAction(request, _h, err) {
+          request.logger.error(err, 'Get application validation error')
           throw Boom.badRequest(err.message)
         }
       }

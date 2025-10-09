@@ -1,20 +1,9 @@
 export const getApplicationsBySbi = async (db, sbi) => {
   return db
-    .collection('applications')
+    .collection('application')
     .aggregate([
       {
-        $match: { 'organisation.sbi': sbi }
-      },
-      {
-        $addFields: {
-          flags: {
-            $filter: {
-              input: '$flags',
-              as: 'flag',
-              cond: { $eq: ['$$flag.deletedBy', null] }
-            }
-          }
-        }
+        $match: { 'organisation.sbi': sbi.toString() }
       },
       {
         $project: {
@@ -26,7 +15,28 @@ export const getApplicationsBySbi = async (db, sbi) => {
           data: 1,
           organisation: 1,
           status: 1,
-          'flags.appliesToMh': 1
+          flags: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$flags',
+                  as: 'flag',
+                  cond: { $eq: ['$$flag.deletedBy', null] }
+                }
+              },
+              as: 'flag',
+              in: { appliesToMh: '$$flag.appliesToMh' }
+            }
+          },
+          redacted: {
+            $anyElementTrue: {
+              $map: {
+                input: { $ifNull: ['$applicationRedacts', []] },
+                as: 'r',
+                in: { $eq: ['$$r.success', 'Y'] }
+              }
+            }
+          }
         }
       },
       {
@@ -38,7 +48,7 @@ export const getApplicationsBySbi = async (db, sbi) => {
 
 export const getLatestApplicationBySbi = async (db, sbi) => {
   return db
-    .collection('applications')
+    .collection('application')
     .find({ 'organisation.sbi': sbi })
     .sort({ createdAt: -1 })
     .limit(1)
@@ -46,5 +56,5 @@ export const getLatestApplicationBySbi = async (db, sbi) => {
 }
 
 export const createApplication = async (db, application) => {
-  return db.collection('applications').insertOne(application)
+  return db.collection('application').insertOne(application)
 }

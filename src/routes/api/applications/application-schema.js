@@ -8,12 +8,6 @@ const ERROR_MESSAGE = {
     'The single business identifier (SBI) number is not recognised'
 }
 
-const commonValidations = () => ({
-  reference: Joi.string().allow(null).required(),
-  declaration: Joi.boolean().required(),
-  offerStatus: Joi.string().required()
-})
-
 const organisationValidations = () => ({
   farmerName: Joi.string().required(),
   name: Joi.string().required(),
@@ -27,20 +21,18 @@ const organisationValidations = () => ({
     .allow(null)
     .optional()
     .lowercase()
-    .email({ tlds: false }),
-  isTest: Joi.boolean().optional()
+    .email({ tlds: false })
 })
 
 export const applicationSchema = Joi.object({
   confirmCheckDetails: Joi.string().required(),
-  whichReview: Joi.string().optional(),
-  eligibleSpecies: Joi.string().optional(),
-  ...commonValidations(),
+  reference: Joi.string().allow(null).required(),
+  declaration: Joi.boolean().required(),
+  offerStatus: Joi.string().required(),
   organisation: Joi.object({
     ...organisationValidations(),
     userType: Joi.string().valid('newUser', 'existingUser').required()
   }),
-  type: Joi.string().valid('VV', 'EE').required(),
   contactHistory: Joi.array().items(
     Joi.object({
       createdBy: Joi.string(),
