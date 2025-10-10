@@ -1,5 +1,4 @@
 import { health } from '../routes/health.js'
-import { applicationHandlers } from '../routes/api/applications.js'
 import { latestApplicationsHandlers } from '../routes/api/latest-applications.js'
 import { latestContactDetailsHandlers } from '../routes/api/latest-contact-details.js'
 import { applicationHistoryHandlers } from '../routes/api/application-history.js'
@@ -10,6 +9,7 @@ import { holidayHandlers } from '../routes/api/holidays.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { flagHandlers } from '../routes/api/flags.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
+import { applicationRoutes } from '../routes/api/applications/application-routes.js'
 
 const router = {
   plugin: {
@@ -17,7 +17,7 @@ const router = {
     register: (server, _options) => {
       server.route(
         [health]
-          .concat(applicationHandlers)
+          .concat(applicationRoutes)
           .concat(latestApplicationsHandlers)
           .concat(latestContactDetailsHandlers)
           .concat(applicationHistoryHandlers)

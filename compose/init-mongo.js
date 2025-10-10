@@ -7,17 +7,20 @@ db = db.getSiblingDB('ahwr-application-backend')
 db.createCollection('application')
 db.getCollection('application').insertMany([
   {
-    reference: 'IAHW-AAAA-AAAA',
-    statusId: '1',
+    status: 'AGREED',
     data: {
-      organisation: {
-        name: 'Fake org name',
-        farmerName: 'Fake farmer name',
-        email: 'fake.farmer.email@example.com.test',
-        sbi: '0000000000',
-        address: '1 fake street,fake town,United Kingdom',
-        orgEmail: 'fake.org.email@example.com.test'
-      }
+      reference: 'IAHW-AAAA-AAAA',
+      declaration: true,
+      offerStatus: 'accepted',
+      confirmCheckDetails: 'yes'
+    },
+    organisation: {
+      name: 'Fake org name',
+      farmerName: 'Fake farmer name',
+      email: 'fake.farmer.email@example.com.test',
+      sbi: '123456789',
+      address: '1 fake street,fake town,United Kingdom',
+      orgEmail: 'fake.org.email@example.com.test'
     },
     createdAt: new Date()
   }
