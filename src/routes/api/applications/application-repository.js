@@ -1,6 +1,8 @@
+import { APPLICATION_COLLECTION } from '../../../constants/index.js'
+
 export const getApplicationsBySbi = async (db, sbi) => {
   return db
-    .collection('application')
+    .collection(APPLICATION_COLLECTION)
     .aggregate([
       {
         $match: { 'organisation.sbi': sbi.toString() }
@@ -47,8 +49,9 @@ export const getApplicationsBySbi = async (db, sbi) => {
 }
 
 export const getLatestApplicationBySbi = async (db, sbi) => {
+  // TODO: What about retrieving old world application from other collection?
   return db
-    .collection('application')
+    .collection(APPLICATION_COLLECTION)
     .find({ 'organisation.sbi': sbi })
     .sort({ createdAt: -1 })
     .limit(1)
@@ -56,5 +59,5 @@ export const getLatestApplicationBySbi = async (db, sbi) => {
 }
 
 export const createApplication = async (db, application) => {
-  return db.collection('application').insertOne(application)
+  return db.collection(APPLICATION_COLLECTION).insertOne(application)
 }

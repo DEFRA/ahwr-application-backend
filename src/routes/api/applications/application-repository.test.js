@@ -60,7 +60,7 @@ describe('application-repository', () => {
 
       const result = await getApplicationsBySbi(dbMock, sbi)
 
-      expect(dbMock.collection).toHaveBeenCalledWith('application')
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
       expect(collectionMock.aggregate).toHaveBeenCalledWith(expect.any(Array))
       expect(result).toEqual(mockResult)
     })
@@ -74,7 +74,7 @@ describe('application-repository', () => {
 
       const result = await getLatestApplicationBySbi(dbMock, sbi)
 
-      expect(dbMock.collection).toHaveBeenCalledWith('application')
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
       expect(collectionMock.find).toHaveBeenCalledWith({
         'organisation.sbi': sbi
       })
@@ -92,7 +92,7 @@ describe('application-repository', () => {
 
       const result = await createApplication(dbMock, application)
 
-      expect(dbMock.collection).toHaveBeenCalledWith('application')
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
       expect(collectionMock.insertOne).toHaveBeenCalledWith(application)
       expect(result).toEqual(mockInsertResult)
     })

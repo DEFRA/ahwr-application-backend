@@ -84,12 +84,10 @@ export const minimumNumberOfAnimalsTested = {
   }
 }
 
-export const stageExecutionActions = {
-  recommendToPay: 'Recommend to pay',
-  recommendToReject: 'Recommend to reject',
-  authorisePayment: 'Paid',
-  authoriseRejection: 'Rejected'
-}
+export const APPLICATION_COLLECTION = 'applications'
+export const OW_APPLICATION_COLLECTION = 'owapplications'
+export const CLAIMS_COLLECTION = 'claims'
+export const HERDS_COLLECTION = 'herds'
 
 export const messagingStates = {
   alreadyClaimed: 'already_claimed',
