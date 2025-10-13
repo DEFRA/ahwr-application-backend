@@ -15,26 +15,6 @@ export const getApplication = async (db, reference) => {
   }
 }
 
-export const getLatestApplicationsBySbi = async (sbi) => {
-  // TODO 1182 impl
-  return []
-  // return models.application.findAll({
-  //   where: { 'data.organisation.sbi': sbi },
-  //   include: [
-  //     {
-  //       model: models.flag,
-  //       as: 'flags',
-  //       attributes: ['appliesToMh'],
-  //       where: {
-  //         deletedBy: null
-  //       },
-  //       required: false
-  //     }
-  //   ],
-  //   order: [['createdAt', 'DESC']]
-  // })
-}
-
 export const getBySbi = async (sbi) => {
   // TODO 1182 impl
   return {}
@@ -203,19 +183,6 @@ export const getAllApplications = async () => {
   //   order: [['createdAt', 'DESC']]
   // }
   // return models.application.findAll(query)
-}
-
-export const setApplication = async (data) => {
-  // TODO 1182 impl
-  return {}
-  // const result = await models.application.create(data)
-  // await raiseApplicationStatusEvent({
-  //   message: 'New application has been created',
-  //   application: result.dataValues,
-  //   raisedBy: result.dataValues.createdBy,
-  //   raisedOn: result.dataValues.createdAt
-  // })
-  // return result
 }
 
 export const updateApplicationByReference = async (

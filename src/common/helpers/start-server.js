@@ -2,7 +2,7 @@ import { config } from '../../config.js'
 
 import { createServer } from '../../server.js'
 
-async function startServer() {
+export async function startServer() {
   const server = await createServer()
   await server.start()
 
@@ -15,5 +15,3 @@ async function startServer() {
 
   return server
 }
-
-export { startServer }

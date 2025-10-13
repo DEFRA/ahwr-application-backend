@@ -3,7 +3,7 @@ import {
   getApplicationsHandler
 } from './application-controller.js'
 import {
-  applicationSchema,
+  newApplicationSchema,
   getApplicationsQuerySchema
 } from './application-schema.js'
 import Boom from '@hapi/boom'
@@ -15,7 +15,7 @@ export const applicationRoutes = [
     options: {
       handler: createApplicationHandler,
       validate: {
-        payload: applicationSchema,
+        payload: newApplicationSchema,
         failAction: async (request, _h, err) => {
           request.logger.error(err, 'Create application validation error')
           // TODO

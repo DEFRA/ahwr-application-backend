@@ -24,7 +24,7 @@ const organisationValidations = () => ({
     .email({ tlds: false })
 })
 
-export const applicationSchema = Joi.object({
+export const newApplicationSchema = Joi.object({
   confirmCheckDetails: Joi.string().required(),
   reference: Joi.string().allow(null).required(),
   declaration: Joi.boolean().required(),
@@ -32,18 +32,7 @@ export const applicationSchema = Joi.object({
   organisation: Joi.object({
     ...organisationValidations(),
     userType: Joi.string().valid('newUser', 'existingUser').required()
-  }),
-  contactHistory: Joi.array().items(
-    Joi.object({
-      createdBy: Joi.string(),
-      createdOn: Joi.string(),
-      field: Joi.string(),
-      oldValue: Joi.string(),
-      newValue: Joi.string()
-    })
-      .allow(null)
-      .optional()
-  )
+  })
 })
 
 export const getApplicationsQuerySchema = Joi.object({
