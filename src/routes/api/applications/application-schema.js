@@ -50,7 +50,7 @@ export const getApplicationsQuerySchema = Joi.object({
     'number.max': ERROR_MESSAGE.sbiNumberOutOfRange
   })
 
-export const getAgreementClaimsQuerySchema = Joi.object({
+export const getApplicationClaimsQuerySchema = Joi.object({
   typeOfLivestock: Joi.string()
     .optional()
     .valid(...Object.values(livestockTypes))

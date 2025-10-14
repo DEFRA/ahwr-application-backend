@@ -6,7 +6,7 @@ import {
 import {
   newApplicationSchema,
   getApplicationsQuerySchema,
-  getAgreementClaimsQuerySchema
+  getApplicationClaimsQuerySchema
 } from './application-schema.js'
 import Boom from '@hapi/boom'
 import Joi from 'joi'
@@ -49,7 +49,7 @@ export const applicationRoutes = [
       handler: getApplicationClaimsHandler,
       validate: {
         params: Joi.object({ applicationReference: Joi.string() }),
-        query: getAgreementClaimsQuerySchema,
+        query: getApplicationClaimsQuerySchema,
         failAction(request, _h, err) {
           request.logger.error(err, 'Get claims validation error')
           throw Boom.badRequest(err.message)
