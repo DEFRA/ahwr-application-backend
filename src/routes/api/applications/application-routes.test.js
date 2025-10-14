@@ -45,4 +45,28 @@ describe('applicationRoutes', () => {
       })
     })
   })
+
+  describe('GET /api/applications/{applicationReference}/claims', () => {
+    const getRoute = applicationRoutes.find(
+      (r) =>
+        r.method === 'GET' &&
+        r.path === '/api/applications/{applicationReference}/claims'
+    )
+
+    describe('failAction', () => {
+      it('should return 400 and log the error when validation fails', () => {
+        const mockError = new Error('Invalid query')
+        const mockLogger = { error: vi.fn() }
+        const mockRequest = { logger: mockLogger }
+
+        expect(() =>
+          getRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).toThrow(Boom.badRequest(mockError.message))
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          mockError,
+          'Get claims validation error'
+        )
+      })
+    })
+  })
 })

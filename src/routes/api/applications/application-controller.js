@@ -1,6 +1,10 @@
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
-import { createApplication, getApplications } from './application-service.js'
+import {
+  createApplication,
+  getApplications,
+  getClaims
+} from './application-service.js'
 
 export const createApplicationHandler = async (request, h) => {
   try {
@@ -28,6 +32,27 @@ export const getApplicationsHandler = async (request, h) => {
     return h.response(applications).code(StatusCodes.OK)
   } catch (error) {
     request.logger.error({ error }, 'Failed to get applications')
+    // TODO
+    // appInsights.defaultClient.trackException({ exception: error })
+    throw Boom.internal(error)
+  }
+}
+
+export const getApplicationClaimsHandler = async (request, h) => {
+  try {
+    const { typeOfLivestock } = request.query
+    const { applicationReference } = request.params
+
+    const claims = await getClaims({
+      db: request.db,
+      logger: request.logger,
+      applicationReference,
+      typeOfLivestock
+    })
+
+    return h.response(claims).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get claims')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
     throw Boom.internal(error)
