@@ -1,8 +1,5 @@
 import Joi from 'joi'
-import {
-  updateApplicationByReference,
-  getLatestApplicationsBySbi
-} from '../../repositories/application-repository.js'
+import { updateApplicationByReference } from '../../repositories/application-repository.js'
 import {
   getAllByApplicationReference,
   set
@@ -49,7 +46,9 @@ export const contactHistoryHandlers = [
         const { sbi } = request.payload
         request.logger.setBindings({ sbi })
 
-        const applications = await getLatestApplicationsBySbi(sbi)
+        //TODO
+        // const applications = await getLatestApplicationsBySbi(sbi)
+        const applications = []
         if (!applications.length) {
           return h
             .response('No applications found to update')

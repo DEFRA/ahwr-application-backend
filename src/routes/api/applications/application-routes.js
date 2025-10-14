@@ -1,12 +1,15 @@
 import {
   createApplicationHandler,
-  getApplicationsHandler
+  getApplicationsHandler,
+  getApplicationClaimsHandler
 } from './application-controller.js'
 import {
   newApplicationSchema,
-  getApplicationsQuerySchema
+  getApplicationsQuerySchema,
+  getApplicationClaimsQuerySchema
 } from './application-schema.js'
 import Boom from '@hapi/boom'
+import Joi from 'joi'
 
 export const applicationRoutes = [
   {
@@ -34,6 +37,21 @@ export const applicationRoutes = [
         query: getApplicationsQuerySchema,
         failAction(request, _h, err) {
           request.logger.error(err, 'Get application validation error')
+          throw Boom.badRequest(err.message)
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/applications/{applicationReference}/claims',
+    options: {
+      handler: getApplicationClaimsHandler,
+      validate: {
+        params: Joi.object({ applicationReference: Joi.string() }),
+        query: getApplicationClaimsQuerySchema,
+        failAction(request, _h, err) {
+          request.logger.error(err, 'Get claims validation error')
           throw Boom.badRequest(err.message)
         }
       }

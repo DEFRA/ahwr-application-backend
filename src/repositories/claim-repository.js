@@ -7,6 +7,7 @@
 // import { findApplication } from './application-repository.js'
 
 // const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
+import { CLAIMS_COLLECTION } from '../constants/index.js'
 
 export const getClaimByReference = async (db, reference) => {
   return await db
@@ -14,42 +15,26 @@ export const getClaimByReference = async (db, reference) => {
     .findOne({ reference }, { projection: { _id: 0 } })
 }
 
-export const getByApplicationReference = async (
+export const getByApplicationReference = async ({
+  db,
   applicationReference,
   typeOfLivestock
-) => {
-  // TODO 1182 impl
-  return []
+}) => {
+  const filter = {
+    applicationReference
+  }
 
-  // const replacements = {
-  //   applicationReference: applicationReference.toUpperCase()
-  // }
+  if (typeOfLivestock) {
+    filter['data.typeOfLivestock'] = typeOfLivestock
+  }
 
-  // let typeFilter = ''
+  const claims = await db
+    .collection(CLAIMS_COLLECTION)
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .toArray()
 
-  // if (typeOfLivestock) {
-  //   typeFilter = "AND claim.data->>'typeOfLivestock' = :typeOfLivestock"
-  //   replacements.typeOfLivestock = typeOfLivestock
-  // }
-
-  // const results = await sequelize.query(
-  //   `
-  //   SELECT claim.*, to_jsonb(herd) AS herd
-  //   FROM claim
-  //   LEFT JOIN herd
-  //     ON claim.data->>'herdId' = herd.id::text
-  //     AND herd."isCurrent" = true
-  //   WHERE claim."applicationReference" = :applicationReference
-  //   ${typeFilter}
-  //   ORDER BY claim."createdAt" DESC
-  //   `,
-  //   {
-  //     replacements,
-  //     type: QueryTypes.SELECT
-  //   }
-  // )
-
-  // return results
+  return claims
 }
 
 export const setClaim = async (data) => {

@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { sbiSchema } from '../schema/sbi.schema.js'
+import { livestockTypes } from '../../../constants/index.js'
 
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
@@ -48,3 +49,9 @@ export const getApplicationsQuerySchema = Joi.object({
     'number.min': ERROR_MESSAGE.sbiNumberOutOfRange,
     'number.max': ERROR_MESSAGE.sbiNumberOutOfRange
   })
+
+export const getApplicationClaimsQuerySchema = Joi.object({
+  typeOfLivestock: Joi.string()
+    .optional()
+    .valid(...Object.values(livestockTypes))
+})

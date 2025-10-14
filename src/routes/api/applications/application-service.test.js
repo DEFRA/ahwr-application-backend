@@ -1,5 +1,8 @@
 import * as repo from './application-repository.js'
-import { getApplications } from './application-service.js'
+import { getApplications, getClaims } from './application-service.js'
+import { getByApplicationReference } from '../../../repositories/claim-repository.js'
+
+vi.mock('../../../repositories/claim-repository.js')
 
 describe('application-service', () => {
   const mockLogger = {
@@ -86,6 +89,122 @@ describe('application-service', () => {
 
       expect(mockLogger.setBindings).toHaveBeenCalledWith({ sbi: '123456789' })
       expect(repo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getClaims', () => {
+    it('should return claims when claims exist for applicationReference and typeOfLivestock in repo', async () => {
+      const mockResult = [
+        {
+          _id: '68ed456edc3075fcf51330d4',
+          reference: 'FUBC-JTTU-SDQ7',
+          applicationReference: 'IAHW-8ZPZ-8CLI',
+          createdAt: '2025-08-15 09:00:53.422000 +00:00',
+          updatedAt: '2025-08-15 09:00:53.422000 +00:00',
+          createdBy: 'admin',
+          updatedBy: null,
+          type: 'FOLLOW-UP',
+          data: {
+            amount: 837,
+            piHunt: 'yes',
+            vetsName: 'frrrr',
+            claimType: 'E',
+            biosecurity: 'yes',
+            dateOfVisit: '2025-08-15T00:00:00.000Z',
+            testResults: 'negative',
+            dateOfTesting: '2025-08-15T00:00:00.000Z',
+            laboratoryURN: 'URN34567ddd',
+            vetRCVSNumber: '1234567',
+            speciesNumbers: 'yes',
+            typeOfLivestock: 'beef',
+            piHuntAllAnimals: 'yes',
+            piHuntRecommended: 'yes',
+            reviewTestResults: 'negative'
+          },
+          status: 'IN CHECK',
+          statusHistory: [],
+          herd: {
+            id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+            cph: '12/345/6789',
+            name: 'EventTester',
+            reasons: ['uniqueHealthNeeds'],
+            version: 2,
+            associatedAt: '2025-08-15T09:00:53.420Z'
+          },
+          updateHistory: []
+        }
+      ]
+      getByApplicationReference.mockResolvedValue(mockResult)
+
+      const result = await getClaims({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
+      expect(getByApplicationReference).toHaveBeenCalledWith({
+        db: {},
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
+      expect(result).toEqual([
+        {
+          reference: 'FUBC-JTTU-SDQ7',
+          applicationReference: 'IAHW-8ZPZ-8CLI',
+          createdAt: '2025-08-15 09:00:53.422000 +00:00',
+          type: 'FOLLOW-UP',
+          data: {
+            amount: 837,
+            piHunt: 'yes',
+            vetsName: 'frrrr',
+            claimType: 'E',
+            biosecurity: 'yes',
+            dateOfVisit: '2025-08-15T00:00:00.000Z',
+            testResults: 'negative',
+            dateOfTesting: '2025-08-15T00:00:00.000Z',
+            laboratoryURN: 'URN34567ddd',
+            vetRCVSNumber: '1234567',
+            speciesNumbers: 'yes',
+            typeOfLivestock: 'beef',
+            piHuntAllAnimals: 'yes',
+            piHuntRecommended: 'yes',
+            reviewTestResults: 'negative'
+          },
+          status: 'IN CHECK',
+          herd: {
+            cph: '12/345/6789',
+            name: 'EventTester',
+            reasons: ['uniqueHealthNeeds']
+          }
+        }
+      ])
+    })
+
+    it('should return empty array when no claims exist for applicationReference in repo', async () => {
+      getByApplicationReference.mockResolvedValue([])
+
+      const result = await getClaims({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
+      expect(getByApplicationReference).toHaveBeenCalledWith({
+        db: {},
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        typeOfLivestock: 'beef'
+      })
       expect(result).toEqual([])
     })
   })

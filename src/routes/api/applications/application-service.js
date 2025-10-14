@@ -2,6 +2,7 @@ import { applicationStatus } from '../../../constants/index.js'
 import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as repo from './application-repository.js'
+import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -98,5 +99,34 @@ export const getApplications = async ({ sbi, logger, db }) => {
     createdAt: app.createdAt,
     organisation: app.organisation,
     redacted: app.redacted
+  }))
+}
+
+export const getClaims = async ({
+  db,
+  logger,
+  applicationReference,
+  typeOfLivestock
+}) => {
+  logger.setBindings({ applicationReference, typeOfLivestock })
+
+  const result = await getByApplicationReference({
+    db,
+    applicationReference,
+    typeOfLivestock
+  })
+
+  return result.map((claim) => ({
+    reference: claim.reference,
+    applicationReference: claim.applicationReference,
+    createdAt: claim.createdAt,
+    type: claim.type,
+    data: claim.data,
+    status: claim.status,
+    herd: {
+      cph: claim.herd.cph,
+      name: claim.herd.name,
+      reasons: claim.herd.reasons
+    }
   }))
 }

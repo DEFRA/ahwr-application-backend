@@ -1,7 +1,12 @@
-import { createApplication, getApplications } from './application-service.js'
+import {
+  createApplication,
+  getApplications,
+  getClaims
+} from './application-service.js'
 import {
   createApplicationHandler,
-  getApplicationsHandler
+  getApplicationsHandler,
+  getApplicationClaimsHandler
 } from './application-controller.js'
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
@@ -117,6 +122,50 @@ describe('application-controller', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
         'Failed to get applications'
+      )
+    })
+  })
+
+  describe('getApplicationClaimsHandler', () => {
+    const mockRequest = {
+      query: {
+        typeOfLivestock: 'beef'
+      },
+      params: {
+        applicationReference: 'IAHW-AAA-001'
+      },
+      logger: mockLogger,
+      db: mockDb
+    }
+
+    it('should return 200 and list of claims when successful', async () => {
+      const mockApplications = [{ reference: 'IAHW-AAA-001' }]
+      getClaims.mockResolvedValue(mockApplications)
+
+      const result = await getApplicationClaimsHandler(mockRequest, mockH)
+
+      expect(getClaims).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'IAHW-AAA-001',
+        typeOfLivestock: 'beef'
+      })
+      expect(mockH.response).toHaveBeenCalledWith(mockApplications)
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 500 and log error when error occurs', async () => {
+      const mockError = new Error('Failed to fetch claims')
+      getClaims.mockRejectedValue(mockError)
+
+      await expect(
+        getApplicationClaimsHandler(mockRequest, mockH)
+      ).rejects.toThrowError(Boom.internal(mockError))
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: mockError },
+        'Failed to get claims'
       )
     })
   })

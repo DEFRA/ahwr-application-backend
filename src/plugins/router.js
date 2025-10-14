@@ -1,5 +1,4 @@
 import { health } from '../routes/health.js'
-import { latestApplicationsHandlers } from '../routes/api/latest-applications.js'
 import { latestContactDetailsHandlers } from '../routes/api/latest-contact-details.js'
 import { applicationHistoryHandlers } from '../routes/api/application-history.js'
 import { applicationEventsHandlers } from '../routes/api/application-events.js'
@@ -18,7 +17,6 @@ const router = {
       server.route(
         [health]
           .concat(applicationRoutes)
-          .concat(latestApplicationsHandlers)
           .concat(latestContactDetailsHandlers)
           .concat(applicationHistoryHandlers)
           .concat(applicationEventsHandlers)
