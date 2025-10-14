@@ -20,12 +20,12 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - cdp-tenant
+      - ahwr-local
 
   mongodb:
     image: mongo:6.0.13
     networks:
-      - cdp-tenant
+      - ahwr-local
     ports:
       - '27017:27017'
     volumes:
@@ -55,7 +55,7 @@ services:
       LOCALSTACK_ENDPOINT: http://localstack:4566
       MONGO_URI: mongodb://mongodb:27017/
     networks:
-      - cdp-tenant
+      - ahwr-local
     volumes:
       - ./src:/home/node/src
       - ./package.json:/home/node/package.json
@@ -63,7 +63,8 @@ services:
 volumes:
   mongodb-data:
 
+# Make sure you run 'docker network create ahwr-local' so you have this network locally
 networks:
-  cdp-tenant:
-    driver: bridge
-    name: cdp-tenant
+  ahwr-local:
+    external: true
+    name: ahwr-local

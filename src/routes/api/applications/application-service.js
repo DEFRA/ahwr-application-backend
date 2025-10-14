@@ -1,5 +1,5 @@
 import { applicationStatus } from '../../../constants/index.js'
-import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
+// import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as repo from './application-repository.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
@@ -48,28 +48,29 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   }
   await repo.createApplication(db, application)
 
-  if (application.data.offerStatus === 'accepted') {
-    try {
-      await requestApplicationDocumentGenerateAndEmail({
-        reference: application.reference,
-        sbi: application.organisation.sbi,
-        startDate: application.createdAt,
-        userType: application.organisation.userType,
-        email: application.organisation.email,
-        farmerName: application.organisation.farmerName,
-        orgData: {
-          orgName: application.organisation.name,
-          orgEmail: application.organisation.orgEmail,
-          crn: application.organisation.crn
-        }
-      })
-    } catch (error) {
-      logger.error(
-        error,
-        'Failed to request application document generation and email'
-      )
-    }
-  }
+  // TODO
+  // if (application.data.offerStatus === 'accepted') {
+  //   try {
+  //     await requestApplicationDocumentGenerateAndEmail({
+  //       reference: application.reference,
+  //       sbi: application.organisation.sbi,
+  //       startDate: application.createdAt,
+  //       userType: application.organisation.userType,
+  //       email: application.organisation.email,
+  //       farmerName: application.organisation.farmerName,
+  //       orgData: {
+  //         orgName: application.organisation.name,
+  //         orgEmail: application.organisation.orgEmail,
+  //         crn: application.organisation.crn
+  //       }
+  //     })
+  //   } catch (error) {
+  //     logger.error(
+  //       error,
+  //       'Failed to request application document generation and email'
+  //     )
+  //   }
+  // }
 
   // TODO
   // appInsights.defaultClient.trackEvent({
