@@ -1,47 +1,75 @@
-import { Db, MongoClient } from 'mongodb'
-import { LockManager } from 'mongo-locks'
+import { mongoDb } from './mongodb'
+import { MongoClient } from 'mongodb'
 
-describe('#mongoDb', () => {
+jest.mock('mongodb', () => {
+  const mockDb = {
+    collection: jest.fn(() => ({
+      createIndex: jest.fn()
+    }))
+  }
+  const mockClient = {
+    db: jest.fn(() => mockDb),
+    close: jest.fn()
+  }
+  return {
+    MongoClient: { connect: jest.fn(() => mockClient) }
+  }
+})
+
+describe('mongodb', () => {
   let server
+  let options
 
-  describe('Set up', () => {
-    beforeAll(async () => {
-      // Dynamic import needed due to config being updated by vitest-mongodb
-      const { createServer } = await import('../../server.js')
-
-      server = await createServer()
-      await server.initialize()
-    })
-
-    test('Server should have expected MongoDb decorators', () => {
-      expect(server.db).toBeInstanceOf(Db)
-      expect(server.mongoClient).toBeInstanceOf(MongoClient)
-      expect(server.locker).toBeInstanceOf(LockManager)
-    })
-
-    test('MongoDb should have expected database name', () => {
-      expect(server.db.databaseName).toBe('ahwr-application-backend')
-    })
-
-    test('MongoDb should have expected namespace', () => {
-      expect(server.db.namespace).toBe('ahwr-application-backend')
-    })
+  beforeEach(() => {
+    server = {
+      logger: {
+        info: jest.fn(),
+        error: jest.fn()
+      },
+      decorate: jest.fn(),
+      events: { on: jest.fn() }
+    }
+    options = {
+      mongoUrl: 'mongodb://localhost:27017',
+      mongoOptions: {},
+      databaseName: 'ahwr-application-backend'
+    }
   })
 
-  describe('Shut down', () => {
-    beforeAll(async () => {
-      // Dynamic import needed due to config being updated by vitest-mongodb
-      const { createServer } = await import('../../server.js')
+  it('should connect to mongo db and decorate server', async () => {
+    await mongoDb.plugin.register(server, options)
 
-      server = await createServer()
-      await server.initialize()
-    })
+    expect(MongoClient.connect).toHaveBeenCalledWith(
+      options.mongoUrl,
+      options.mongoOptions
+    )
+    expect(server.logger.info).toHaveBeenCalledWith('Setting up MongoDb')
+    expect(server.decorate).toHaveBeenCalledWith(
+      'server',
+      'mongoClient',
+      expect.any(Object)
+    )
+    expect(server.decorate).toHaveBeenCalledWith(
+      'server',
+      'db',
+      expect.any(Object)
+    )
+    expect(server.decorate).toHaveBeenCalledWith(
+      'server',
+      'locker',
+      expect.any(Object)
+    )
+  })
 
-    test('Should close Mongo client on server stop', async () => {
-      const closeSpy = jest.spyOn(server.mongoClient, 'close')
-      await server.stop({ timeout: 1000 })
+  it('should register stop event to close mongo db client', async () => {
+    await mongoDb.plugin.register(server, options)
+    const stopCallback = server.events.on.mock.calls.find(
+      (call) => call[0] === 'stop'
+    )[1]
 
-      expect(closeSpy).toHaveBeenCalledWith(true)
-    })
+    await stopCallback()
+
+    const client = MongoClient.connect.mock.results[0].value
+    expect(client.close).toHaveBeenCalledWith(true)
   })
 })
