@@ -1,47 +1,50 @@
-import hapi from '@hapi/hapi'
+import { startServer } from './start-server.js'
+import { createServer } from '../../server.js'
+import { config } from '../../config.js'
 
-describe('#startServer', () => {
-  let createServerSpy
-  let hapiServerSpy
-  let startServerImport
-  let createServerImport
+const mockLogger = { info: jest.fn(), error: jest.fn() }
+const mockServer = { start: jest.fn(), logger: mockLogger }
 
-  beforeAll(async () => {
-    vi.stubEnv('PORT', '3098')
+jest.mock('../../server.js', () => ({
+  createServer: jest.fn().mockImplementation(() => mockServer)
+}))
+jest.mock('../../config.js', () => ({
+  config: {
+    get: jest.fn()
+  }
+}))
 
-    createServerImport = await import('../../server.js')
-    startServerImport = await import('./start-server.js')
-
-    createServerSpy = vi.spyOn(createServerImport, 'createServer')
-    hapiServerSpy = vi.spyOn(hapi, 'server')
+describe('startServer', () => {
+  beforeEach(() => {
+    config.get.mockReturnValue(3000)
   })
 
-  afterAll(() => {
-    vi.unstubAllEnvs()
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 
-  describe('When server starts', () => {
-    let server
+  it('should create and start the server', async () => {
+    const server = await startServer()
 
-    afterAll(async () => {
-      await server.stop({ timeout: 0 })
-    })
-
-    test('Should start up server as expected', async () => {
-      server = await startServerImport.startServer()
-
-      expect(createServerSpy).toHaveBeenCalled()
-      expect(hapiServerSpy).toHaveBeenCalled()
-    })
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(mockServer.start).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith('Server started successfully')
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'Access your backend on http://localhost:3000'
+    )
+    expect(server).toBe(mockServer)
   })
 
-  describe('When server start fails', () => {
-    test('Should log failed startup message', async () => {
-      createServerSpy.mockRejectedValue(new Error('Server failed to start'))
+  it('should throw an error if start fails', async () => {
+    const testError = new Error('Failed to start server')
+    mockServer.start.mockRejectedValueOnce(testError)
 
-      await expect(startServerImport.startServer()).rejects.toThrow(
-        'Server failed to start'
-      )
-    })
+    await expect(startServer()).rejects.toThrow('Failed to start server')
+
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(mockServer.start).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).not.toHaveBeenCalledWith(
+      'Server started successfully'
+    )
   })
 })

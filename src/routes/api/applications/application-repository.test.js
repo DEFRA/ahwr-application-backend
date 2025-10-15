@@ -10,17 +10,17 @@ describe('application-repository', () => {
 
   beforeEach(() => {
     collectionMock = {
-      aggregate: vi.fn().mockReturnThis(),
-      toArray: vi.fn(),
-      find: vi.fn().mockReturnThis(),
-      sort: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      next: vi.fn(),
-      insertOne: vi.fn()
+      aggregate: jest.fn().mockReturnThis(),
+      toArray: jest.fn(),
+      find: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      next: jest.fn(),
+      insertOne: jest.fn()
     }
 
     dbMock = {
-      collection: vi.fn(() => collectionMock)
+      collection: jest.fn(() => collectionMock)
     }
   })
 

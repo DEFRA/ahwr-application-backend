@@ -1,13 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
 import { getByApplicationReference } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 
 describe('claim-repository', () => {
   describe('getByApplicationReference', () => {
-    const mockToArray = vi.fn()
-    const mockSort = vi.fn(() => ({ toArray: mockToArray }))
-    const mockFind = vi.fn(() => ({ sort: mockSort }))
-    const mockCollection = vi.fn(() => ({ find: mockFind }))
+    const mockToArray = jest.fn()
+    const mockSort = jest.fn(() => ({ toArray: mockToArray }))
+    const mockFind = jest.fn(() => ({ sort: mockSort }))
+    const mockCollection = jest.fn(() => ({ find: mockFind }))
     const mockDb = { collection: mockCollection }
 
     it('should query with only applicationReference', async () => {
