@@ -38,7 +38,7 @@ describe('#mongoDb', () => {
     })
 
     test('Should close Mongo client on server stop', async () => {
-      const closeSpy = vi.spyOn(server.mongoClient, 'close')
+      const closeSpy = jest.spyOn(server.mongoClient, 'close')
       await server.stop({ timeout: 1000 })
 
       expect(closeSpy).toHaveBeenCalledWith(true)

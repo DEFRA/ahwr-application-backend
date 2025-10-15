@@ -2,15 +2,15 @@ import * as repo from './application-repository.js'
 import { getApplications, getClaims } from './application-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 
-vi.mock('../../../repositories/claim-repository.js')
+jest.mock('../../../repositories/claim-repository.js')
 
 describe('application-service', () => {
   const mockLogger = {
-    setBindings: vi.fn()
+    setBindings: jest.fn()
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   describe('getApplications', () => {
@@ -40,7 +40,7 @@ describe('application-service', () => {
           redacted: false
         }
       ]
-      vi.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+      jest.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
 
       const result = await getApplications({
         sbi: '123456789',
@@ -79,7 +79,7 @@ describe('application-service', () => {
     })
 
     it('should return empty array when no applications exist for sbi in repo', async () => {
-      vi.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue([])
+      jest.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue([])
 
       const result = await getApplications({
         sbi: '123456789',

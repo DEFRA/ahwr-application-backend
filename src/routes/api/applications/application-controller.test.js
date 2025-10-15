@@ -11,20 +11,20 @@ import {
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
 
-vi.mock('./application-service.js')
+jest.mock('./application-service.js')
 
 describe('application-controller', () => {
   const mockLogger = {
-    error: vi.fn()
+    error: jest.fn()
   }
   const mockDb = {}
   const mockH = {
-    response: vi.fn().mockReturnThis(),
-    code: vi.fn().mockReturnThis()
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
   }
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   describe('createApplicationHandler', () => {
@@ -77,7 +77,7 @@ describe('application-controller', () => {
 
       await expect(
         createApplicationHandler(mockRequest, mockH)
-      ).rejects.toThrowError(Boom.internal(mockError))
+      ).rejects.toThrow(Boom.internal(mockError))
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { err: mockError },
@@ -115,9 +115,9 @@ describe('application-controller', () => {
       const mockError = new Error('Failed to fetch apps')
       getApplications.mockRejectedValue(mockError)
 
-      await expect(
-        getApplicationsHandler(mockRequest, mockH)
-      ).rejects.toThrowError(Boom.internal(mockError))
+      await expect(getApplicationsHandler(mockRequest, mockH)).rejects.toThrow(
+        Boom.internal(mockError)
+      )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
@@ -161,7 +161,7 @@ describe('application-controller', () => {
 
       await expect(
         getApplicationClaimsHandler(mockRequest, mockH)
-      ).rejects.toThrowError(Boom.internal(mockError))
+      ).rejects.toThrow(Boom.internal(mockError))
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },

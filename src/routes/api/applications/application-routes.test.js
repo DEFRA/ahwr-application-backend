@@ -10,7 +10,7 @@ describe('applicationRoutes', () => {
     describe('failAction', () => {
       it('should return 400 and log the error when validation fails', () => {
         const mockError = new Error('Validation failed')
-        const mockLogger = { error: vi.fn() }
+        const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
         expect(
@@ -32,7 +32,7 @@ describe('applicationRoutes', () => {
     describe('failAction', () => {
       it('should return 400 and log the error when validation fails', () => {
         const mockError = new Error('Invalid query')
-        const mockLogger = { error: vi.fn() }
+        const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
         expect(() =>
@@ -56,7 +56,7 @@ describe('applicationRoutes', () => {
     describe('failAction', () => {
       it('should return 400 and log the error when validation fails', () => {
         const mockError = new Error('Invalid query')
-        const mockLogger = { error: vi.fn() }
+        const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
         expect(() =>
