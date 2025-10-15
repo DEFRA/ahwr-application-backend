@@ -105,8 +105,7 @@ export const applicationHistoryHandlers = [
               password: eventQueueConfig.password,
               username: eventQueueConfig.username,
               useCredentialChain: false,
-              managedIdentityClientId: undefined,
-              connectionString: eventQueueConfig.connection
+              managedIdentityClientId: undefined
             },
             { sessionId: '456' }
           )
