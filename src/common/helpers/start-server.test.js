@@ -23,7 +23,7 @@ describe('startServer', () => {
     jest.clearAllMocks()
   })
 
-  it('should create and start the server, then log messages', async () => {
+  it('should create and start the server', async () => {
     const server = await startServer()
 
     expect(createServer).toHaveBeenCalledTimes(1)
@@ -35,7 +35,7 @@ describe('startServer', () => {
     expect(server).toBe(mockServer)
   })
 
-  it('should throw an error if server.start() fails', async () => {
+  it('should throw an error if start fails', async () => {
     const testError = new Error('Failed to start server')
     mockServer.start.mockRejectedValueOnce(testError)
 
