@@ -1,6 +1,6 @@
 import hapi from '@hapi/hapi'
 
-describe.skip('#startServer', () => {
+describe('#startServer', () => {
   let createServerSpy
   let hapiServerSpy
   let startServerImport
