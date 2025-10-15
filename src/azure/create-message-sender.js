@@ -3,7 +3,6 @@ import { MessageSender } from 'ffc-messaging'
 export const cachedSenders = {}
 
 export const createMessageSender = (config) => {
-  console.log('BH TEST: starting message sender')
   if (cachedSenders[config.address]) {
     return cachedSenders[config.address]
   }
