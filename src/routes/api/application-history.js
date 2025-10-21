@@ -6,7 +6,7 @@ import {
 } from '../../repositories/claim-repository.js'
 import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
 import { StatusCodes } from 'http-status-codes'
-// import { sendMessage as sendMessageViaFetch } from '../../azure/ahwr-event-queue.js'
+import { sendMessage as sendMessageViaFetch } from '../../azure/ahwr-event-queue.js'
 import { sendMessage as sendMessageViaLib } from '../../azure/send-message.js'
 import { config } from '../../config.js'
 
@@ -83,15 +83,15 @@ export const applicationHistoryHandlers = [
       handler: async (request, h) => {
         // TODO 1178 TEMP - test comms with Azure
         try {
-          // const ahwrEventMessage = {
-          //   sourceSystem: 'AHWR',
-          //   message: 'Hello from CDP via fetch!'
-          // }
-          // await sendMessageViaFetch(
-          //   request.server,
-          //   request.logger,
-          //   ahwrEventMessage
-          // )
+          const ahwrEventMessage = {
+            sourceSystem: 'AHWR',
+            message: 'Hello from CDP via fetch!'
+          }
+          await sendMessageViaFetch(
+            request.server,
+            request.logger,
+            ahwrEventMessage
+          )
           await sendMessageViaLib(
             {
               message: 'Hello from CDP via lib!'
@@ -105,7 +105,8 @@ export const applicationHistoryHandlers = [
               password: eventQueueConfig.password,
               username: eventQueueConfig.username,
               useCredentialChain: false,
-              managedIdentityClientId: undefined
+              managedIdentityClientId: undefined,
+              connectionString: eventQueueConfig.connection
             },
             { sessionId: '456' }
           )
