@@ -10,5 +10,6 @@ export const sendMessage = async (body, type, config, options) => {
   console.log(
     `BH TEST 4: ${config.connectionString.includes('1.servicebus.windows.net')}`
   )
-  await sender.sendMessage(message)
+  const message2 = await sender.sendMessage(message)
+  console.log(`BH TEST 5: ${message2}`)
 }

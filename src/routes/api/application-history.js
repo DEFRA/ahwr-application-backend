@@ -113,6 +113,8 @@ export const applicationHistoryHandlers = [
             { sessionId: '456' }
           )
         } catch (error) {
+          console.log(`BH TEST 6: ${error}`)
+          console.log(`BH TEST 7: ${JSON.stringify(error)}`)
           request.logger.error({ sfdCommunicationError: error })
         }
 
