@@ -7,6 +7,8 @@ export const sendMessage = async (body, type, config, options) => {
   console.log(`BH TEST 1: ${sender}`)
   console.log(`BH TEST 2: ${config.useCredentialChain}`)
   console.log(`BH TEST 3: ${config.address}`)
-  console.log(`BH TEST 4: ${config.connectionString.includes('1.servicebus.windows.net')}`)
+  console.log(
+    `BH TEST 4: ${config.connectionString.includes('1.servicebus.windows.net')}`
+  )
   await sender.sendMessage(message)
 }
