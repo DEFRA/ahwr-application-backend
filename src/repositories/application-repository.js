@@ -491,6 +491,15 @@ export const getLatestApplicationBySbi = async (db, sbi) => {
     .next()
 }
 
+export const getApplicationRefencesBySbi = async (db, sbi) => {
+  const result = await db
+    .collection(APPLICATION_COLLECTION)
+    .find({ 'organisation.sbi': sbi }, { projection: { reference: 1, _id: 0 } })
+    .toArray()
+
+  return result.map((a) => a.reference)
+}
+
 export const createApplication = async (db, application) => {
   return db.collection(APPLICATION_COLLECTION).insertOne(application)
 }

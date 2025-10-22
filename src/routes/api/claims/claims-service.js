@@ -1,5 +1,9 @@
-import { isURNNumberUnique } from '../../../repositories/claim-repository.js'
-import { getApplication } from '../../../repositories/application-repository.js'
+import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
+import {
+  getApplication,
+  getApplicationRefencesBySbi
+} from '../../../repositories/application-repository.js'
+import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
@@ -83,4 +87,25 @@ export const processClaim = async ({ payload, logger, db }) => {
   // )
 
   return claim
+}
+
+export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
+  const applicationReferences = await getApplicationRefencesBySbi(db, sbi)
+
+  const results = await Promise.all([
+    isNWURNUnique({
+      db,
+      applicationReferences,
+      laboratoryURN
+    }),
+    isOWURNUnique({
+      db,
+      sbi,
+      laboratoryURN
+    })
+  ])
+
+  return {
+    isURNUnique: results.every(Boolean)
+  }
 }

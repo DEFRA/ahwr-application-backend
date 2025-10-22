@@ -1,11 +1,9 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import { createClaimHandler } from './claims-controller.js'
-import { processClaim } from './claims-service.js'
+import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'
+import { processClaim, isURNNumberUnique } from './claims-service.js'
 
-jest.mock('./claims-service.js', () => ({
-  processClaim: jest.fn()
-}))
+jest.mock('./claims-service.js')
 
 describe('createClaimHandler', () => {
   const mockRequest = {
@@ -111,6 +109,69 @@ describe('createClaimHandler', () => {
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: genericError },
       'Failed to create claim'
+    )
+  })
+})
+
+describe('isURNUniqueHandler', () => {
+  const mockRequest = {
+    payload: {
+      sbi: '123456789',
+      laboratoryURN: 'URN34567ddd'
+    },
+    logger: { error: jest.fn(), info: jest.fn() },
+    db: {}
+  }
+  const mockResult = {
+    isURNUnique: true
+  }
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return 200 and the result', async () => {
+    isURNNumberUnique.mockResolvedValue(mockResult)
+
+    const result = await isURNUniqueHandler(mockRequest, mockH)
+
+    expect(isURNNumberUnique).toHaveBeenCalledWith({
+      laboratoryURN: 'URN34567ddd',
+      sbi: '123456789',
+      db: mockRequest.db
+    })
+    expect(mockH.response).toHaveBeenCalledWith(mockResult)
+    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockH)
+  })
+
+  it('should rethrow Boom errors', async () => {
+    const boomError = Boom.badRequest('Invalid input')
+    isURNNumberUnique.mockRejectedValue(boomError)
+
+    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(
+      boomError
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: boomError },
+      'Failed to check if URN is unique'
+    )
+  })
+
+  it('should wrap non-Boom errors in Boom.internal', async () => {
+    const genericError = new Error('Database failure')
+    isURNNumberUnique.mockRejectedValue(genericError)
+
+    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: genericError },
+      'Failed to check if URN is unique'
     )
   })
 })

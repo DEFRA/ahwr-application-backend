@@ -13,8 +13,7 @@ import {
 import {
   getClaimByReference,
   updateClaimByReference,
-  getByApplicationReference,
-  isURNNumberUnique
+  getByApplicationReference
 } from '../../../repositories/claim-repository.js'
 import { getApplication } from '../../../repositories/application-repository.js'
 import { getAmount } from '../../../lib/getAmount.js'
@@ -27,7 +26,7 @@ import {
   UNNAMED_HERD
 } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { createClaimHandler } from './claims-controller.js'
+import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'
 
 const {
   submitPaymentRequestMsgType,
@@ -133,17 +132,7 @@ export const claimHandlers = [
           laboratoryURN: joi.string().required()
         })
       },
-      handler: async (request, h) => {
-        const { sbi, laboratoryURN } = request.payload
-
-        const result = await isURNNumberUnique({
-          db: request.db,
-          sbi,
-          laboratoryURN
-        })
-
-        return h.response(result).code(StatusCodes.OK)
-      }
+      handler: isURNUniqueHandler
     }
   },
   {

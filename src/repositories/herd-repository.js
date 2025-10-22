@@ -10,7 +10,8 @@ export const createHerd = async (db, data) => {
 
 export const getHerdById = async (db, id) => {
   return db.collection(HERDS_COLLECTION).findOne({
-    id
+    id,
+    isCurrent: true
   })
 }
 

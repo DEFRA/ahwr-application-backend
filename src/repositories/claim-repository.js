@@ -7,10 +7,7 @@
 // import { findApplication } from './application-repository.js'
 
 // const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
-import {
-  APPLICATION_COLLECTION,
-  CLAIMS_COLLECTION
-} from '../constants/index.js'
+import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'crypto'
 
 export const getClaimByReference = async (db, reference) => {
@@ -42,11 +39,9 @@ export const getByApplicationReference = async ({
 }
 
 export const createClaim = async (db, data) => {
-  const now = new Date()
   const result = await db.collection(CLAIMS_COLLECTION).insertOne({
     ...data,
-    createdAt: now,
-    updatedAt: now
+    createdAt: new Date()
   })
   // TODO
   // await raiseClaimEvents(
@@ -109,21 +104,16 @@ export const getAllClaimedClaims = async (claimStatusIds) => {
   // })
 }
 
-export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
-  //TODO move to application repo
-  const applications = await db
-    .collection(APPLICATION_COLLECTION)
-    .find({ 'organisation.sbi': sbi }, { projection: { reference: 1 } })
-    .toArray()
-
-  const applicationReferences = applications.map((app) => app.reference)
-
-  const matchingClaim = await db.collection(CLAIMS_COLLECTION).findOne({
+export const isURNUnique = async ({
+  db,
+  applicationReferences,
+  laboratoryURN
+}) => {
+  const result = await db.collection(CLAIMS_COLLECTION).findOne({
     applicationReference: { $in: applicationReferences },
     'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
   })
-
-  return { isURNUnique: !matchingClaim }
+  return !result
 }
 
 export const findClaim = async (reference) => {

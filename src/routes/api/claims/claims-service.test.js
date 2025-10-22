@@ -1,6 +1,10 @@
-import { processClaim } from './claims-service.js'
-import { getApplication } from '../../../repositories/application-repository.js'
-import { isURNNumberUnique } from '../../../repositories/claim-repository.js'
+import { processClaim, isURNNumberUnique } from './claims-service.js'
+import {
+  getApplication,
+  getApplicationRefencesBySbi
+} from '../../../repositories/application-repository.js'
+import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
+import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
@@ -8,6 +12,7 @@ import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
+jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../lib/create-reference.js')
 jest.mock('../../../processing/claim/validation.js')
 jest.mock('../../../processing/claim/ahwr/processor.js')
@@ -32,6 +37,12 @@ describe('processClaim', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
+
+  const mockIsURNNumberUnique = (unique) => {
+    getApplicationRefencesBySbi.mockResolvedValue(['IAHW-7NF8-3KB9'])
+    isNWURNUnique.mockResolvedValue(unique)
+    isOWURNUnique.mockResolvedValue(true)
+  }
 
   test('creates and returns claim when valid request', async () => {
     const saveClaimResult = {
@@ -69,7 +80,7 @@ describe('processClaim', () => {
     })
     validateClaim.mockReturnValue({})
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
-    isURNNumberUnique.mockResolvedValue({ isURNUnique: true })
+    mockIsURNNumberUnique(true)
     saveClaimAndRelatedData.mockResolvedValue(saveClaimResult)
 
     const result = await processClaim({
@@ -125,13 +136,18 @@ describe('processClaim', () => {
     })
     validateClaim.mockReturnValue({})
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
-    isURNNumberUnique.mockResolvedValue({ isURNUnique: false })
+    mockIsURNNumberUnique(false)
 
     await expect(
       processClaim({ payload, logger: mockLogger, db: mockDb })
     ).rejects.toThrow('BadRequest')
 
-    expect(isURNNumberUnique).toHaveBeenCalledWith({
+    expect(isNWURNUnique).toHaveBeenCalledWith({
+      db: mockDb,
+      laboratoryURN: 'AK-2024-38',
+      applicationReferences: ['IAHW-7NF8-3KB9']
+    })
+    expect(isOWURNUnique).toHaveBeenCalledWith({
       db: mockDb,
       sbi: '123456789',
       laboratoryURN: 'AK-2024-38'
@@ -145,11 +161,58 @@ describe('processClaim', () => {
     })
     validateClaim.mockReturnValue({})
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
-    isURNNumberUnique.mockResolvedValue({ isURNUnique: true })
+    mockIsURNNumberUnique(true)
     saveClaimAndRelatedData.mockResolvedValue({ claim: null })
 
     await expect(
       processClaim({ payload, logger: mockLogger, db: mockDb })
     ).rejects.toThrow('Claim was not created')
+  })
+})
+
+describe('isURNNumberUnique', () => {
+  const db = {}
+  const sbi = '123456789'
+  const laboratoryURN = '3552981'
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns true when URN does not exist in NW and OW claims', async () => {
+    getApplicationRefencesBySbi.mockResolvedValue([
+      'IAHW-7NF8-3KB9',
+      'IAHW-G7B4-UTZ5'
+    ])
+    isNWURNUnique.mockResolvedValue(true)
+    isOWURNUnique.mockResolvedValue(true)
+
+    const result = await isURNNumberUnique({ db, sbi, laboratoryURN })
+
+    expect(getApplicationRefencesBySbi).toHaveBeenCalledWith(db, sbi)
+    expect(isNWURNUnique).toHaveBeenCalledWith({
+      db,
+      applicationReferences: ['IAHW-7NF8-3KB9', 'IAHW-G7B4-UTZ5'],
+      laboratoryURN
+    })
+    expect(isOWURNUnique).toHaveBeenCalledWith({
+      db,
+      sbi,
+      laboratoryURN
+    })
+    expect(result).toEqual({ isURNUnique: true })
+  })
+
+  it('returns false when URN exists in either NW and OW claims ', async () => {
+    getApplicationRefencesBySbi.mockResolvedValue([
+      'IAHW-7NF8-3KB9',
+      'IAHW-G7B4-UTZ5'
+    ])
+    isNWURNUnique.mockResolvedValue(false)
+    isOWURNUnique.mockResolvedValue(true)
+
+    const result = await isURNNumberUnique({ db, sbi, laboratoryURN })
+
+    expect(result).toEqual({ isURNUnique: false })
   })
 })
