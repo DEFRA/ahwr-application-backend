@@ -1,7 +1,7 @@
 import { applicationStatus } from '../../../constants/index.js'
 // import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
-import * as repo from './application-repository.js'
+import * as repo from '../../../repositories/application-repository.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 
 const isPreviousApplicationRelevant = (application) => {

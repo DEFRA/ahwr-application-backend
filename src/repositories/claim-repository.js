@@ -7,11 +7,15 @@
 // import { findApplication } from './application-repository.js'
 
 // const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
-import { CLAIMS_COLLECTION } from '../constants/index.js'
+import {
+  APPLICATION_COLLECTION,
+  CLAIMS_COLLECTION
+} from '../constants/index.js'
+import crypto from 'crypto'
 
 export const getClaimByReference = async (db, reference) => {
-  return await db
-    .collection('claim')
+  return db
+    .collection(CLAIMS_COLLECTION)
     .findOne({ reference }, { projection: { _id: 0 } })
 }
 
@@ -37,12 +41,14 @@ export const getByApplicationReference = async ({
   return claims
 }
 
-export const setClaim = async (data) => {
-  // TODO 1182 impl
-  return {}
-
-  // const sbi = data.sbi
-  // const result = await models.claim.create(data)
+export const createClaim = async (db, data) => {
+  const now = new Date()
+  const result = await db.collection(CLAIMS_COLLECTION).insertOne({
+    ...data,
+    createdAt: now,
+    updatedAt: now
+  })
+  // TODO
   // await raiseClaimEvents(
   //   {
   //     message: 'New claim has been created',
@@ -52,7 +58,7 @@ export const setClaim = async (data) => {
   //   },
   //   sbi
   // )
-  // return result
+  return result
 }
 
 export const updateClaimByReference = async (data, note, logger) => {
@@ -103,38 +109,21 @@ export const getAllClaimedClaims = async (claimStatusIds) => {
   // })
 }
 
-export const isURNNumberUnique = async (sbi, laboratoryURN) => {
-  // TODO 1182 impl
-  return {}
+export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
+  //TODO move to application repo
+  const applications = await db
+    .collection(APPLICATION_COLLECTION)
+    .find({ 'organisation.sbi': sbi }, { projection: { reference: 1 } })
+    .toArray()
 
-  // const applications = await models.application.findAll({
-  //   where: { 'data.organisation.sbi': sbi }
-  // })
+  const applicationReferences = applications.map((app) => app.reference)
 
-  // if (
-  //   applications.find(
-  //     (application) =>
-  //       application.dataValues.data.urnResult?.toLowerCase() ===
-  //       laboratoryURN.toLowerCase()
-  //   )
-  // ) {
-  //   return { isURNUnique: false }
-  // }
+  const matchingClaim = await db.collection(CLAIMS_COLLECTION).findOne({
+    applicationReference: { $in: applicationReferences },
+    'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
+  })
 
-  // const applicationReferences = applications.map(
-  //   (application) => application.dataValues.reference
-  // )
-  // const claims = await models.claim.findAll({
-  //   where: { applicationReference: applicationReferences }
-  // })
-
-  // const isUnique = !claims.find(
-  //   (claim) =>
-  //     claim.dataValues.data.laboratoryURN?.toLowerCase() ===
-  //     laboratoryURN.toLowerCase()
-  // )
-
-  // return { isURNUnique: isUnique }
+  return { isURNUnique: !matchingClaim }
 }
 
 export const findClaim = async (reference) => {
@@ -199,50 +188,39 @@ export const updateClaimData = async (
 
 export const addHerdToClaimData = async ({
   claimRef,
-  herdClaimData,
+  claimHerdData,
   createdBy,
   applicationReference,
-  sbi
+  sbi,
+  db
 }) => {
-  // TODO 1182 impl
-  // const { herdId, herdVersion, herdAssociatedAt, herdName } = herdClaimData
-  // const data = Sequelize.fn(
-  //   'jsonb_set',
-  //   Sequelize.fn(
-  //     'jsonb_set',
-  //     Sequelize.fn(
-  //       'jsonb_set',
-  //       Sequelize.col('data'),
-  //       Sequelize.literal("'{herdId}'"),
-  //       Sequelize.literal(`'${JSON.stringify(herdId)}'`)
-  //     ),
-  //     Sequelize.literal("'{herdVersion}'"),
-  //     Sequelize.literal(`'${JSON.stringify(herdVersion)}'`)
-  //   ),
-  //   Sequelize.literal("'{herdAssociatedAt}'"),
-  //   Sequelize.literal(`'${JSON.stringify(herdAssociatedAt)}'`)
-  // )
-  // // eslint-disable-next-line no-unused-vars
-  // const [_, _updates] = await models.claim.update(
-  //   {
-  //     data,
-  //     updatedBy: createdBy
-  //   },
-  //   {
-  //     where: { reference: claimRef },
-  //     returning: true
-  //   }
-  // )
-  // await models.claim_update_history.create({
-  //   applicationReference,
-  //   reference: claimRef,
-  //   note: 'Herd details were retroactively applied to this pre-multiple herds claim',
-  //   updatedProperty: 'herdName',
-  //   newValue: herdName,
-  //   oldValue: 'Unnamed herd',
-  //   eventType: 'claim-herdAssociated',
-  //   createdBy
-  // })
+  const { id, version, associatedAt, name } = claimHerdData
+
+  await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference: claimRef },
+    {
+      $set: {
+        'herd.id': id,
+        'herd.version': version,
+        'herd.associatedAt': associatedAt,
+        updatedBy: createdBy,
+        updatedAt: new Date()
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note: 'Herd details were retroactively applied to this pre-multiple herds claim',
+          updatedProperty: 'herdName',
+          newValue: name,
+          oldValue: 'Unnamed herd',
+          eventType: 'claim-herdAssociated',
+          createdBy,
+          createdAt: new Date()
+        }
+      }
+    }
+  )
+  // TODO
   // await raiseHerdEvent({
   //   sbi,
   //   message: 'Herd associated with claim',
