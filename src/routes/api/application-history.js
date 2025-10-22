@@ -117,6 +117,7 @@ export const applicationHistoryHandlers = [
           console.log(`BH TEST 7: ${JSON.stringify(error)}`)
           request.logger.error({ sfdCommunicationError: error })
         }
+        console.log('BH TEST 8')
 
         const db = request.db
         const reference = request.params.ref
@@ -134,6 +135,8 @@ export const applicationHistoryHandlers = [
           }
         })
 
+        console.log('BH TEST 9')
+
         const dataUpdates = await findAllClaimUpdateHistory(reference)
 
         const normalisedDataUpdates = dataUpdates.map((claimUpdate) => ({
@@ -148,6 +151,8 @@ export const applicationHistoryHandlers = [
 
         const isOldWorldAgreementReference = reference.includes('AHWR')
 
+        console.log('BH TEST 10')
+
         const applicationReference = isOldWorldAgreementReference
           ? reference
           : (await getClaimByReference(db, reference))?.applicationReference
@@ -156,6 +161,8 @@ export const applicationHistoryHandlers = [
           await getFlagsForApplicationIncludingDeleted(applicationReference)
 
         const applicationFlagHistory = buildFlagEvents(flags)
+
+        console.log('BH TEST 11')
 
         const historyRecords = [
           ...normalisedHistoryRecords,
