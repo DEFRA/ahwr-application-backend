@@ -6,7 +6,7 @@ import {
 import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
-import { AHWR_SCHEME, claimType  } from 'ffc-ahwr-common-library'
+import { AHWR_SCHEME, claimType } from 'ffc-ahwr-common-library'
 import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
 import Boom from '@hapi/boom'
 
