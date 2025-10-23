@@ -46,7 +46,7 @@ describe('saveClaimAndRelatedData', () => {
         }
       },
       createdBy: 'admin',
-      type: 'R'
+      type: 'REVIEW'
     }
     getAmount.mockResolvedValue(200)
     isMultipleHerdsUserJourney.mockReturnValue(true)
@@ -98,7 +98,7 @@ describe('saveClaimAndRelatedData', () => {
         createdBy: 'admin',
         data: {
           amount: 200,
-          claimType: 'R',
+          claimType: 'REVIEW',
           dateOfVisit: '2025-01-01T00:00:00Z',
           typeOfLivestock: 'sheep'
         },
@@ -139,7 +139,7 @@ describe('saveClaimAndRelatedData', () => {
         dateOfVisit: '2025-01-01T00:00:00Z'
       },
       createdBy: 'admin',
-      type: 'R'
+      type: 'REVIEW'
     }
 
     getAmount.mockResolvedValue(300)

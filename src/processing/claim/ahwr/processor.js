@@ -72,7 +72,6 @@ const addClaimAndHerdToDatabase = async ({
 
       claim = {
         ...claimPayload,
-        type: claimPayload.type === 'R' ? 'REVIEW' : 'FOLLOW_UP', //TODO common-library
         reference: claimReference,
         data: {
           ...payloadData,

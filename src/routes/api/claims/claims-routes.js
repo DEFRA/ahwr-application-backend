@@ -7,7 +7,6 @@ import {
   piHuntAllAnimals,
   testResults as testResultsConstant,
   livestockTypes,
-  claimType,
   applicationStatus
 } from '../../../constants/index.js'
 import {
@@ -23,7 +22,8 @@ import { StatusCodes } from 'http-status-codes'
 import {
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
-  UNNAMED_HERD
+  UNNAMED_HERD,
+  claimType
 } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'

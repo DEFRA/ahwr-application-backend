@@ -1,9 +1,6 @@
 import joi from 'joi'
-import {
-  claimType,
-  livestockTypes,
-  speciesNumbers
-} from '../../../constants/index.js'
+import { claimType, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
+import { speciesNumbers } from '../../../constants/index.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 import { herdSchema } from '../../../routes/api/schema/herd.schema.js'
 import { getBeefValidation } from './beef-validation.js'
@@ -17,10 +14,10 @@ const getDataModel = (multiHerds, specificValidationsForClaimType) =>
     typeOfLivestock: joi
       .string()
       .valid(
-        livestockTypes.beef,
-        livestockTypes.dairy,
-        livestockTypes.pigs,
-        livestockTypes.sheep
+        TYPE_OF_LIVESTOCK.BEEF,
+        TYPE_OF_LIVESTOCK.DAIRY,
+        TYPE_OF_LIVESTOCK.PIGS,
+        TYPE_OF_LIVESTOCK.SHEEP
       )
       .required(),
     dateOfVisit: joi.date().required(),
@@ -60,8 +57,8 @@ export const validateAhwrClaim = (claimData, applicationFlags) => {
 }
 
 const speciesSpecificValidations = new Map([
-  [livestockTypes.beef, getBeefValidation],
-  [livestockTypes.dairy, getDairyValidation],
-  [livestockTypes.pigs, getPigsValidation],
-  [livestockTypes.sheep, getSheepValidation]
+  [TYPE_OF_LIVESTOCK.BEEF, getBeefValidation],
+  [TYPE_OF_LIVESTOCK.DAIRY, getDairyValidation],
+  [TYPE_OF_LIVESTOCK.PIGS, getPigsValidation],
+  [TYPE_OF_LIVESTOCK.SHEEP, getSheepValidation]
 ])

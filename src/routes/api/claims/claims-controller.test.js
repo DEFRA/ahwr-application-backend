@@ -28,7 +28,7 @@ describe('createClaimHandler', () => {
           same: 'yes'
         }
       },
-      type: 'R',
+      type: 'REVIEW',
       createdBy: 'admin'
     },
     logger: { error: jest.fn(), info: jest.fn() },
@@ -57,7 +57,7 @@ describe('createClaimHandler', () => {
         numberAnimalsTested: 30,
         speciesNumbers: 'yes',
         amount: 4,
-        claimType: 'R'
+        claimType: 'REVIEW'
       },
       type: 'REVIEW',
       createdBy: 'admin',

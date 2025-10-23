@@ -1,8 +1,6 @@
 import { getBeefValidation } from './beef-validation.js'
-import {
-  claimType,
-  testResults as testResultsConstant
-} from '../../../constants/index.js'
+import { testResults as testResultsConstant } from '../../../constants/index.js'
+import { claimType } from 'ffc-ahwr-common-library'
 import joi from 'joi'
 
 const dateOfTesting = { dateOfTesting: joi.date().required() }

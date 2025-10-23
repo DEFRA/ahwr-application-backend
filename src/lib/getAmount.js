@@ -1,10 +1,10 @@
 import {
   livestockTypes,
-  claimType as claimTypeConstant,
   testResults,
   piHunt as piHuntMap,
   piHuntAllAnimals as piHuntAllAnimalsMap
 } from '../constants/index.js'
+import { claimType as claimTypeConstant } from 'ffc-ahwr-common-library'
 import { isVisitDateAfterPIHuntAndDairyGoLive } from './context-helper.js'
 
 const getPiHuntValue = (

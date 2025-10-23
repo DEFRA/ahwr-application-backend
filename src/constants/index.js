@@ -1,4 +1,5 @@
 import { config } from '../config/index.js'
+import { claimType } from 'ffc-ahwr-common-library'
 
 export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date(
   '2025-01-21T00:00:00'
@@ -26,11 +27,6 @@ export const livestockTypes = {
   dairy: 'dairy',
   pigs: 'pigs',
   sheep: 'sheep'
-}
-
-export const claimType = {
-  review: 'R',
-  endemics: 'E'
 }
 
 export const testResults = {

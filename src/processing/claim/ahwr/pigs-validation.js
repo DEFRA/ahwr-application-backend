@@ -1,13 +1,15 @@
 import {
   biosecurity,
-  claimType,
   livestockTypes,
   minimumNumberOfAnimalsTested,
   minimumNumberOfOralFluidSamples,
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
-import { PIG_GENETIC_SEQUENCING_VALUES } from 'ffc-ahwr-common-library'
+import {
+  PIG_GENETIC_SEQUENCING_VALUES,
+  claimType
+} from 'ffc-ahwr-common-library'
 import { config } from '../../../config/index.js'
 
 const POSITIVE_SAMPLE_REQ = 6

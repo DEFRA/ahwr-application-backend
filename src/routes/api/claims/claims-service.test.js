@@ -26,7 +26,7 @@ describe('processClaim', () => {
   const mockDb = {}
   const payload = {
     applicationReference: 'IAHW-AAAA-AAAA',
-    type: 'R',
+    type: 'REVIEW',
     reference: 'TEMP-O9UD-0025',
     data: {
       typeOfLivestock: 'beef',
@@ -59,7 +59,7 @@ describe('processClaim', () => {
           numberAnimalsTested: 30,
           speciesNumbers: 'yes',
           amount: 4,
-          claimType: 'R'
+          claimType: 'REVIEW'
         },
         type: 'REVIEW',
         createdBy: 'admin',
@@ -92,7 +92,7 @@ describe('processClaim', () => {
     expect(result).toEqual(saveClaimResult.claim)
     expect(createClaimReference).toHaveBeenCalledWith(
       'TEMP-O9UD-0025',
-      'R',
+      'REVIEW',
       'beef'
     )
     expect(saveClaimAndRelatedData).toHaveBeenCalledWith({

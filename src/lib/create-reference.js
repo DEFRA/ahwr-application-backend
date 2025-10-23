@@ -1,7 +1,9 @@
+import { claimType } from 'ffc-ahwr-common-library'
+
 const getPrefix = (typeOfClaim, typeOfLivestock) => {
   const claimTypeMap = {
-    R: 'RE',
-    E: 'FU'
+    [claimType.review]: 'RE',
+    [claimType.endemics]: 'FU'
   }
 
   const firstTwoCharacters = claimTypeMap[typeOfClaim]
