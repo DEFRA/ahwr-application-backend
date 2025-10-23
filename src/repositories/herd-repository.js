@@ -1,26 +1,24 @@
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { HERDS_COLLECTION } from '../constants/index.js'
 
-export const createHerd = async (data) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.herd.create(data)
+export const createHerd = async (db, data) => {
+  return db.collection(HERDS_COLLECTION).insertOne({
+    ...data,
+    createdAt: new Date()
+  })
 }
 
-export const getHerdById = async (id) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.herd.findOne({
-  //   where: { id } // should this use isCurrent: true
-  // })
+export const getHerdById = async (db, id) => {
+  return db.collection(HERDS_COLLECTION).findOne({
+    id,
+    isCurrent: true
+  })
 }
 
-export const updateIsCurrentHerd = async (id, isCurrent, version) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.herd.update({ isCurrent }, { where: { id, version } })
+export const updateIsCurrentHerd = async (db, id, isCurrent, version) => {
+  return db
+    .collection(HERDS_COLLECTION)
+    .updateOne({ id, version }, { $set: { isCurrent } })
 }
 
 export const getHerdsByAppRefAndSpecies = async (

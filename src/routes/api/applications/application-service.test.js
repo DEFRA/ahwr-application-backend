@@ -1,4 +1,4 @@
-import * as repo from './application-repository.js'
+import * as repo from '../../../repositories/application-repository.js'
 import { getApplications, getClaims } from './application-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 

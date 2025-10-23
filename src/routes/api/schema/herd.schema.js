@@ -1,19 +1,19 @@
 import Joi from 'joi'
 
 export const newHerd = Joi.object({
-  herdId: Joi.string().required(),
-  herdVersion: Joi.number().required(),
-  herdName: Joi.string().required(),
+  id: Joi.string().required(),
+  version: Joi.number().required(),
+  name: Joi.string().required(),
   cph: Joi.string().required(),
-  herdReasons: Joi.array().required(),
-  herdSame: Joi.string().valid('yes', 'no')
+  reasons: Joi.array().required(),
+  same: Joi.string().valid('yes', 'no')
 })
 
 export const updateHerd = Joi.object({
-  herdId: Joi.string().required(),
-  herdVersion: Joi.number().required(),
+  id: Joi.string().required(),
+  version: Joi.number().required(),
   cph: Joi.string().required(),
-  herdReasons: Joi.array().required()
+  reasons: Joi.array().required()
 })
 
 export const herdSchema = {

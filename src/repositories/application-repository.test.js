@@ -1,28 +1,21 @@
 import {
   getApplicationsBySbi,
-  getLatestApplicationBySbi,
   createApplication
 } from './application-repository'
 
 describe('application-repository', () => {
-  let dbMock
-  let collectionMock
-
-  beforeEach(() => {
-    collectionMock = {
-      aggregate: jest.fn().mockReturnThis(),
-      toArray: jest.fn(),
-      find: jest.fn().mockReturnThis(),
-      sort: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      next: jest.fn(),
-      insertOne: jest.fn()
-    }
-
-    dbMock = {
-      collection: jest.fn(() => collectionMock)
-    }
-  })
+  const dbMock = {
+    collection: jest.fn(() => collectionMock)
+  }
+  const collectionMock = {
+    aggregate: jest.fn().mockReturnThis(),
+    toArray: jest.fn(),
+    find: jest.fn().mockReturnThis(),
+    sort: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
+    next: jest.fn(),
+    insertOne: jest.fn()
+  }
 
   describe('getApplicationsBySbi', () => {
     it('should return applications that matches sbi in descending order', async () => {
@@ -66,27 +59,9 @@ describe('application-repository', () => {
     })
   })
 
-  describe('getLatestApplicationBySbi', () => {
-    it('should return latest application that matches sbi from db', async () => {
-      const mockApplication = { reference: 'IAHW-8ZPZ-8CLI' }
-      collectionMock.next.mockResolvedValue(mockApplication)
-      const sbi = '123456789'
-
-      const result = await getLatestApplicationBySbi(dbMock, sbi)
-
-      expect(dbMock.collection).toHaveBeenCalledWith('applications')
-      expect(collectionMock.find).toHaveBeenCalledWith({
-        'organisation.sbi': sbi
-      })
-      expect(collectionMock.sort).toHaveBeenCalledWith({ createdAt: -1 })
-      expect(collectionMock.limit).toHaveBeenCalledWith(1)
-      expect(result).toEqual(mockApplication)
-    })
-  })
-
   describe('createApplication', () => {
     it('should create application in db', async () => {
-      const application = { reference: 'newApp' }
+      const application = { reference: 'IAHW-8ZPZ-8CLI' }
       const mockInsertResult = { acknowledged: true, insertedId: '1' }
       collectionMock.insertOne.mockResolvedValue(mockInsertResult)
 

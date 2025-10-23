@@ -1,17 +1,10 @@
 import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
-// import {
-//   addHerdToClaimData,
-//   getByApplicationReference,
-//   setClaim
-// } from '../../../repositories/claim-repository.js'
-// import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
-// import {
-//   createHerd,
-//   getHerdById,
-//   updateIsCurrentHerd
-// } from '../../../repositories/herd-repository.js'
-// import { arraysAreEqual } from '../../../lib/array-utils.js'
+import {
+  getByApplicationReference,
+  createClaim
+} from '../../../repositories/claim-repository.js'
+import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { sendMessage } from '../../../messaging/send-message.js'
 import { v4 as uuid } from 'uuid'
@@ -22,158 +15,78 @@ import {
   UNNAMED_HERD
 } from 'ffc-ahwr-common-library'
 import { config } from '../../../config/index.js'
+import { processHerd } from './herd-processor.js'
 
 const { messageGeneratorMsgType, messageGeneratorQueue } = config
 
-// const hasHerdChanged = (existingHerd, updatedHerd) =>
-//   existingHerd.cph !== updatedHerd.cph ||
-//   !arraysAreEqual(
-//     existingHerd.herdReasons.sort(),
-//     updatedHerd.herdReasons.sort()
-//   )
-
-// const isUpdate = (herd) => herd.herdVersion > 1
-
-// const validateUpdate = (existingHerd, updatedHerd) => {
-//   if (!existingHerd) {
-//     throw Error('Herd not found')
-//   }
-//   if (!existingHerd.isCurrent) {
-//     throw Error('Attempting to update an older version of a herd')
-//   }
-//   if (existingHerd.version === updatedHerd.herdVersion) {
-//     throw Error('Attempting to update a herd with the same version')
-//   }
-// }
-
-// const createOrUpdateHerd = async (
-//   herd,
-//   applicationReference,
-//   createdBy,
-//   typeOfLivestock,
-//   logger
-// ) => {
-//   let herdModel, herdWasUpdated
-
-//   if (isUpdate(herd)) {
-//     const existingHerdModel = await getHerdById(herd.herdId)
-//     validateUpdate(existingHerdModel?.dataValues, herd)
-
-//     if (hasHerdChanged(existingHerdModel.dataValues, herd)) {
-//       const { id, version, species, herdName } = existingHerdModel.dataValues
-//       herdModel = await createHerd({
-//         id,
-//         version: version + 1,
-//         applicationReference,
-//         species,
-//         herdName,
-//         cph: herd.cph,
-//         herdReasons: herd.herdReasons.sort(),
-//         createdBy
-//       })
-//       await updateIsCurrentHerd(herd.herdId, false, version)
-//       herdWasUpdated = true // To check, but actually does feel like we should be setting this
-//     } else {
-//       logger.info('Herd has not changed')
-//       herdModel = existingHerdModel
-//       herdWasUpdated = false
-//     }
-//   } else {
-//     herdModel = await createHerd({
-//       version: 1,
-//       applicationReference,
-//       species: typeOfLivestock,
-//       herdName: herd.herdName,
-//       cph: herd.cph,
-//       herdReasons: herd.herdReasons.sort(),
-//       createdBy
-//     })
-
-//     herdWasUpdated = true
-//   }
-
-//   return { herdModel, herdWasUpdated }
-// }
-
-const addClaimAndHerdToDatabase = async (
+const addClaimAndHerdToDatabase = async ({
+  sbi,
+  applicationReference,
+  claimReference,
+  typeOfLivestock,
+  amount,
+  dateOfVisit,
   claimPayload,
   logger,
   isMultiHerdsClaim,
-  {
-    sbi,
-    applicationReference,
-    claimReference,
-    typeOfLivestock,
-    amount,
-    dateOfVisit
-  }
-) => {
+  db
+}) => {
   let herdGotUpdated
   let herdData = {}
+  const { herd, ...payloadData } = claimPayload.data
 
-  // const { herd, ...payloadData } = claimPayload.data
+  const session = db.client.startSession()
 
-  // TODO 1182 impl
-  herdData = {}
-  const claim = {}
-  // const claim = await sequelize.transaction(async () => {
-  //   let claimHerdData = {}
+  let claim
+  try {
+    await session.withTransaction(async () => {
+      let claimHerdData = {}
 
-  //   if (isMultiHerdsClaim) {
-  //     const { herdModel, herdWasUpdated } = await createOrUpdateHerd(
-  //       herd,
-  //       applicationReference,
-  //       claimPayload.createdBy,
-  //       typeOfLivestock,
-  //       logger
-  //     )
+      if (isMultiHerdsClaim) {
+        const herdResult = await processHerd({
+          herd,
+          applicationReference,
+          createdBy: claimPayload.createdBy,
+          typeOfLivestock,
+          sbi,
+          logger,
+          db
+        })
+        claimHerdData = herdResult.claimHerdData
+        herdData = herdResult.herdData
+        herdGotUpdated = herdResult.updated
+      }
 
-  //     herdGotUpdated = herdWasUpdated
-  //     herdData = herdModel.dataValues
+      const previousClaimsForSpeciesAfterUpdates =
+        await getByApplicationReference({
+          db,
+          applicationReference,
+          typeOfLivestock
+        })
+      const status = await generateClaimStatus(
+        dateOfVisit,
+        claimHerdData.id,
+        previousClaimsForSpeciesAfterUpdates,
+        logger
+      )
 
-  //     claimHerdData = {
-  //       herdId: herdData.id,
-  //       herdVersion: herdData.version,
-  //       herdAssociatedAt: new Date().toISOString()
-  //     }
-  //     if (herd.herdSame === 'yes') {
-  //       const previousClaimsForSpecies = await getByApplicationReference(
-  //         applicationReference,
-  //         typeOfLivestock
-  //       )
-  //       await addHerdToPreviousClaims(
-  //         { ...claimHerdData, herdName: herdData.herdName },
-  //         applicationReference,
-  //         sbi,
-  //         claimPayload.createdBy,
-  //         previousClaimsForSpecies,
-  //         logger
-  //       )
-  //     }
-  //   }
-
-  //   const previousClaimsForSpeciesAfterUpdates =
-  //     await getByApplicationReference(applicationReference, typeOfLivestock)
-  //   const statusId = await generateClaimStatus(
-  //     dateOfVisit,
-  //     claimHerdData.herdId,
-  //     previousClaimsForSpeciesAfterUpdates,
-  //     logger
-  //   )
-  //   const data = {
-  //     ...payloadData,
-  //     amount,
-  //     claimType: claimPayload.type,
-  //     ...claimHerdData
-  //   }
-  //   return setClaim({
-  //     ...claimPayload,
-  //     reference: claimReference,
-  //     data,
-  //     statusId,
-  //     sbi
-  //   })
-  // })
+      claim = {
+        ...claimPayload,
+        type: claimPayload.type === 'R' ? 'REVIEW' : 'FOLLOW_UP', //TODO common-library
+        reference: claimReference,
+        data: {
+          ...payloadData,
+          amount,
+          claimType: claimPayload.type
+        },
+        status,
+        herd: claimHerdData
+      }
+      await createClaim(db, claim)
+    })
+  } finally {
+    await session.endSession()
+  }
 
   return { claim, herdGotUpdated, herdData }
 }
@@ -181,28 +94,32 @@ const addClaimAndHerdToDatabase = async (
 const getUnnamedHerdValue = (typeOfLivestock) =>
   typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
 
-export async function saveClaimAndRelatedData(sbi, claimData, flags, logger) {
-  const { incoming: claimDataPayload, claimReference } = claimData
-  const { typeOfLivestock, dateOfVisit } = claimDataPayload.data
-  const { applicationReference } = claimDataPayload
+export async function saveClaimAndRelatedData({
+  db,
+  sbi,
+  payload,
+  claimReference,
+  flags,
+  logger
+}) {
+  const { typeOfLivestock, dateOfVisit } = payload.data
+  const { applicationReference } = payload
 
-  const amount = await getAmount(claimDataPayload)
-
+  const amount = await getAmount(payload)
   const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, flags)
 
-  const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase(
-    claimDataPayload,
+  const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase({
+    sbi,
+    applicationReference,
+    claimReference,
+    typeOfLivestock,
+    amount,
+    dateOfVisit,
+    claimPayload: payload,
     logger,
     isMultiHerdsClaim,
-    {
-      sbi,
-      applicationReference,
-      claimReference,
-      typeOfLivestock,
-      amount,
-      dateOfVisit
-    }
-  )
+    db
+  })
 
   return { claim, herdGotUpdated, herdData, isMultiHerdsClaim }
 }
@@ -256,7 +173,7 @@ export async function generateEventsAndComms(
       piHuntAllAnimals,
       claimAmount: amount,
       dateTime: new Date(),
-      herdName: herdData.herdName ?? getUnnamedHerdValue(typeOfLivestock)
+      herdName: herdData.name ?? getUnnamedHerdValue(typeOfLivestock)
     },
     messageGeneratorMsgType,
     messageGeneratorQueue,

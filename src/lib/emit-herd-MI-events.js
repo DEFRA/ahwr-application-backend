@@ -11,10 +11,10 @@ export const emitHerdMIEvents = async ({
   const {
     id: herdId,
     version: herdVersion,
-    herdName,
+    name: herdName,
     species: herdSpecies,
     cph: herdCph,
-    herdReasons
+    reasons
   } = herdData
 
   if (herdVersion === 1 && herdIdSelected !== herdId) {
@@ -37,15 +37,13 @@ export const emitHerdMIEvents = async ({
         herdName,
         herdSpecies,
         herdCph,
-        herdReasonManagementNeeds: herdReasons.includes(
-          'separateManagementNeeds'
-        ),
-        herdReasonUniqueHealth: herdReasons.includes('uniqueHealthNeeds'),
-        herdReasonDifferentBreed: herdReasons.includes('differentBreed'),
-        herdReasonOtherPurpose: herdReasons.includes('differentPurpose'),
-        herdReasonKeptSeparate: herdReasons.includes('keptSeparate'),
-        herdReasonOnlyHerd: herdReasons.includes('onlyHerd'),
-        herdReasonOther: herdReasons.includes('other')
+        herdReasonManagementNeeds: reasons.includes('separateManagementNeeds'),
+        herdReasonUniqueHealth: reasons.includes('uniqueHealthNeeds'),
+        herdReasonDifferentBreed: reasons.includes('differentBreed'),
+        herdReasonOtherPurpose: reasons.includes('differentPurpose'),
+        herdReasonKeptSeparate: reasons.includes('keptSeparate'),
+        herdReasonOnlyHerd: reasons.includes('onlyHerd'),
+        herdReasonOther: reasons.includes('other')
       }
     })
   }

@@ -3,27 +3,14 @@
 // import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
+import { APPLICATION_COLLECTION } from '../constants/index.js'
+
 export const getApplication = async (db, reference) => {
-  // TODO 1061 join to status table
   const application = await db
-    .collection('application')
+    .collection(APPLICATION_COLLECTION)
     .findOne({ reference }, { projection: { _id: 0 } })
 
-  return {
-    ...application,
-    status: { status: 'agreed' }
-  }
-}
-
-export const getBySbi = async (sbi) => {
-  // TODO 1182 impl
-  return {}
-  // return models.application.findOne({
-  //   where: {
-  //     'data.organisation.sbi': sbi
-  //   },
-  //   order: [['createdAt', 'DESC']]
-  // })
+  return application
 }
 
 export const getByEmail = async (email) => {
@@ -134,7 +121,7 @@ export const searchApplications = async (
 ) => {
   // TODO 1182 impl
   const applicationsDB = await db
-    .collection('application')
+    .collection(APPLICATION_COLLECTION)
     .find({}, { projection: { _id: 0 } })
     .toArray()
   // let query = buildSearchQuery(searchText, searchType, filter)
@@ -433,4 +420,56 @@ export const updateEligiblePiiRedaction = async (
   //     createdBy: user
   //   })
   // }
+}
+
+export const getApplicationsBySbi = async (db, sbi) => {
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate([
+      {
+        $match: { 'organisation.sbi': sbi.toString() }
+      },
+      {
+        $project: {
+          reference: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          createdBy: 1,
+          updatedBy: 1,
+          data: 1,
+          organisation: 1,
+          status: 1,
+          flags: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$flags',
+                  as: 'flag',
+                  cond: { $eq: ['$$flag.deletedBy', null] }
+                }
+              },
+              as: 'flag',
+              in: { appliesToMh: '$$flag.appliesToMh' }
+            }
+          },
+          redacted: {
+            $anyElementTrue: {
+              $map: {
+                input: { $ifNull: ['$applicationRedacts', []] },
+                as: 'r',
+                in: { $eq: ['$$r.success', 'Y'] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ])
+    .toArray()
+}
+
+export const createApplication = async (db, application) => {
+  return db.collection(APPLICATION_COLLECTION).insertOne(application)
 }

@@ -1,8 +1,7 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
-import appInsights from 'applicationinsights'
-import { sendMessage } from '../../messaging/send-message.js'
-import { config } from '../../config/index.js'
+import { sendMessage } from '../../../messaging/send-message.js'
+import { config } from '../../../config/index.js'
 import {
   piHunt,
   piHuntAllAnimals,
@@ -10,31 +9,24 @@ import {
   livestockTypes,
   claimType,
   applicationStatus
-} from '../../constants/index.js'
+} from '../../../constants/index.js'
 import {
   getClaimByReference,
   updateClaimByReference,
-  getByApplicationReference,
-  isURNNumberUnique
-} from '../../repositories/claim-repository.js'
-import { getApplication } from '../../repositories/application-repository.js'
-import { getAmount } from '../../lib/getAmount.js'
-import { searchPayloadSchema } from './schema/search-payload.schema.js'
-import { createClaimReference } from '../../lib/create-reference.js'
-import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../lib/context-helper.js'
-import { validateClaim } from '../../processing/claim/validation.js'
+  getByApplicationReference
+} from '../../../repositories/claim-repository.js'
+import { getApplication } from '../../../repositories/application-repository.js'
+import { getAmount } from '../../../lib/getAmount.js'
+import { searchPayloadSchema } from '../schema/search-payload.schema.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import { StatusCodes } from 'http-status-codes'
 import {
-  AHWR_SCHEME,
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
   UNNAMED_HERD
 } from 'ffc-ahwr-common-library'
-import {
-  generateEventsAndComms,
-  saveClaimAndRelatedData
-} from '../../processing/claim/ahwr/processor.js'
-import { searchClaims } from '../../repositories/claim/claim-search-repository.js'
+import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
+import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'
 
 const {
   submitPaymentRequestMsgType,
@@ -42,8 +34,6 @@ const {
   messageGeneratorMsgType,
   messageGeneratorQueue
 } = config
-
-const isFollowUp = (payload) => payload.type === claimType.endemics
 
 const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
   typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
@@ -134,7 +124,7 @@ export const claimHandlers = [
   },
   {
     method: 'POST',
-    path: '/api/claim/is-urn-unique',
+    path: '/api/claims/is-urn-unique',
     options: {
       validate: {
         payload: joi.object({
@@ -142,92 +132,14 @@ export const claimHandlers = [
           laboratoryURN: joi.string().required()
         })
       },
-      handler: async (request, h) => {
-        const { sbi, laboratoryURN } = request.payload
-        const result = await isURNNumberUnique(sbi, laboratoryURN)
-
-        return h.response(result).code(StatusCodes.OK)
-      }
+      handler: isURNUniqueHandler
     }
   },
   {
     method: 'POST',
-    path: '/api/claim',
+    path: '/api/claims',
     options: {
-      handler: async (request, h) => {
-        const { payload, logger } = request
-        const applicationReference = payload?.applicationReference
-        const application = await getApplication(applicationReference)
-
-        if (!application?.dataValues) {
-          return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
-        }
-
-        const { flags } = application.dataValues
-
-        const { error } = validateClaim(AHWR_SCHEME, request.payload, flags)
-        if (error) {
-          logger.setBindings({ error })
-          appInsights.defaultClient.trackException({ exception: error })
-          return h.response({ error }).code(StatusCodes.BAD_REQUEST).takeover()
-        }
-
-        const tempClaimReference = payload.reference
-        const { type } = payload
-        const { typeOfLivestock, laboratoryURN, herd } = payload.data
-        const claimReference = createClaimReference(
-          tempClaimReference,
-          type,
-          typeOfLivestock
-        )
-
-        logger.setBindings({
-          isFollowUp: isFollowUp(payload),
-          applicationReference,
-          claimReference,
-          laboratoryURN
-        })
-
-        const { sbi } = application.dataValues.data.organisation
-
-        request.logger.setBindings({ sbi })
-
-        if (laboratoryURN) {
-          const { isURNUnique } = await isURNNumberUnique(sbi, laboratoryURN)
-          if (!isURNUnique) {
-            return h
-              .response({ error: 'URN number is not unique' })
-              .code(StatusCodes.BAD_REQUEST)
-              .takeover()
-          }
-        }
-
-        // create the claim and herd in DB
-        const { claim, herdGotUpdated, herdData, isMultiHerdsClaim } =
-          await saveClaimAndRelatedData(
-            sbi,
-            { incoming: payload, claimReference },
-            flags,
-            logger
-          )
-
-        if (!claim) {
-          throw new Error('Claim was not created')
-        }
-
-        // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
-        // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
-        generateEventsAndComms(
-          isMultiHerdsClaim,
-          claim,
-          application,
-          herdData,
-          herdGotUpdated,
-          herd?.herdId
-        )
-
-        return h.response(claim).code(StatusCodes.OK)
-      }
+      handler: createClaimHandler
     }
   },
   {
