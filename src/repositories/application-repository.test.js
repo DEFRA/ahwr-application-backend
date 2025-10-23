@@ -1,6 +1,5 @@
 import {
   getApplicationsBySbi,
-  getLatestApplicationBySbi,
   createApplication
 } from './application-repository'
 
@@ -57,24 +56,6 @@ describe('application-repository', () => {
       expect(dbMock.collection).toHaveBeenCalledWith('applications')
       expect(collectionMock.aggregate).toHaveBeenCalledWith(expect.any(Array))
       expect(result).toEqual(mockResult)
-    })
-  })
-
-  describe('getLatestApplicationBySbi', () => {
-    it('should return latest application that matches sbi from db', async () => {
-      const mockApplication = { reference: 'IAHW-8ZPZ-8CLI' }
-      collectionMock.next.mockResolvedValue(mockApplication)
-      const sbi = '123456789'
-
-      const result = await getLatestApplicationBySbi(dbMock, sbi)
-
-      expect(dbMock.collection).toHaveBeenCalledWith('applications')
-      expect(collectionMock.find).toHaveBeenCalledWith({
-        'organisation.sbi': sbi
-      })
-      expect(collectionMock.sort).toHaveBeenCalledWith({ createdAt: -1 })
-      expect(collectionMock.limit).toHaveBeenCalledWith(1)
-      expect(result).toEqual(mockApplication)
     })
   })
 

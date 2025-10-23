@@ -16,10 +16,11 @@ const isPreviousApplicationRelevant = (application) => {
 export const createApplication = async ({ applicationRequest, logger, db }) => {
   logger.setBindings({ sbi: applicationRequest.organisation.sbi })
 
-  const latestApplication = await repo.getLatestApplicationBySbi(
+  const applications = await repo.getApplicationsBySbi(
     db,
     applicationRequest.organisation.sbi
   )
+  const latestApplication = applications?.[0]
   if (isPreviousApplicationRelevant(latestApplication)) {
     throw new Error(
       `Recent application already exists: ${JSON.stringify({

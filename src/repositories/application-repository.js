@@ -13,17 +13,6 @@ export const getApplication = async (db, reference) => {
   return application
 }
 
-export const getBySbi = async (sbi) => {
-  // TODO 1182 impl
-  return {}
-  // return models.application.findOne({
-  //   where: {
-  //     'data.organisation.sbi': sbi
-  //   },
-  //   order: [['createdAt', 'DESC']]
-  // })
-}
-
 export const getByEmail = async (email) => {
   // TODO 1182 impl
   return {}
@@ -479,25 +468,6 @@ export const getApplicationsBySbi = async (db, sbi) => {
       }
     ])
     .toArray()
-}
-
-export const getLatestApplicationBySbi = async (db, sbi) => {
-  // TODO: What about retrieving old world application from other collection?
-  return db
-    .collection(APPLICATION_COLLECTION)
-    .find({ 'organisation.sbi': sbi })
-    .sort({ createdAt: -1 })
-    .limit(1)
-    .next()
-}
-
-export const getApplicationRefencesBySbi = async (db, sbi) => {
-  const result = await db
-    .collection(APPLICATION_COLLECTION)
-    .find({ 'organisation.sbi': sbi }, { projection: { reference: 1, _id: 0 } })
-    .toArray()
-
-  return result.map((a) => a.reference)
 }
 
 export const createApplication = async (db, application) => {

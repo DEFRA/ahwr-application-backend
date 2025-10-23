@@ -19,7 +19,6 @@ export const updateIsCurrentHerd = async (db, id, isCurrent, version) => {
   return db
     .collection(HERDS_COLLECTION)
     .updateOne({ id, version }, { $set: { isCurrent } })
-  // return models.herd.update({ isCurrent }, { where: { id, version } })
 }
 
 export const getHerdsByAppRefAndSpecies = async (

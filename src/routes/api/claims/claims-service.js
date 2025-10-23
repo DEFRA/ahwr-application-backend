@@ -1,7 +1,7 @@
 import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
 import {
   getApplication,
-  getApplicationRefencesBySbi
+  getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
 import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
@@ -90,7 +90,8 @@ export const processClaim = async ({ payload, logger, db }) => {
 }
 
 export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
-  const applicationReferences = await getApplicationRefencesBySbi(db, sbi)
+  const applications = await getApplicationsBySbi(db, sbi)
+  const applicationReferences = applications.map((a) => a.reference)
 
   const results = await Promise.all([
     isNWURNUnique({

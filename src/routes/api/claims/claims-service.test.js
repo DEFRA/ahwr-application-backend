@@ -1,7 +1,7 @@
 import { processClaim, isURNNumberUnique } from './claims-service.js'
 import {
   getApplication,
-  getApplicationRefencesBySbi
+  getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
 import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
@@ -39,7 +39,7 @@ describe('processClaim', () => {
   })
 
   const mockIsURNNumberUnique = (unique) => {
-    getApplicationRefencesBySbi.mockResolvedValue(['IAHW-7NF8-3KB9'])
+    getApplicationsBySbi.mockResolvedValue([{ reference: 'IAHW-7NF8-3KB9' }])
     isNWURNUnique.mockResolvedValue(unique)
     isOWURNUnique.mockResolvedValue(true)
   }
@@ -180,16 +180,16 @@ describe('isURNNumberUnique', () => {
   })
 
   it('returns true when URN does not exist in NW and OW claims', async () => {
-    getApplicationRefencesBySbi.mockResolvedValue([
-      'IAHW-7NF8-3KB9',
-      'IAHW-G7B4-UTZ5'
+    getApplicationsBySbi.mockResolvedValue([
+      { reference: 'IAHW-7NF8-3KB9' },
+      { reference: 'IAHW-G7B4-UTZ5' }
     ])
     isNWURNUnique.mockResolvedValue(true)
     isOWURNUnique.mockResolvedValue(true)
 
     const result = await isURNNumberUnique({ db, sbi, laboratoryURN })
 
-    expect(getApplicationRefencesBySbi).toHaveBeenCalledWith(db, sbi)
+    expect(getApplicationsBySbi).toHaveBeenCalledWith(db, sbi)
     expect(isNWURNUnique).toHaveBeenCalledWith({
       db,
       applicationReferences: ['IAHW-7NF8-3KB9', 'IAHW-G7B4-UTZ5'],
@@ -204,9 +204,9 @@ describe('isURNNumberUnique', () => {
   })
 
   it('returns false when URN exists in either NW and OW claims ', async () => {
-    getApplicationRefencesBySbi.mockResolvedValue([
-      'IAHW-7NF8-3KB9',
-      'IAHW-G7B4-UTZ5'
+    getApplicationsBySbi.mockResolvedValue([
+      { reference: 'IAHW-7NF8-3KB9' },
+      { reference: 'IAHW-G7B4-UTZ5' }
     ])
     isNWURNUnique.mockResolvedValue(false)
     isOWURNUnique.mockResolvedValue(true)
