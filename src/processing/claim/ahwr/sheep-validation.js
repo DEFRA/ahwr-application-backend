@@ -1,9 +1,9 @@
 import {
-  claimType,
   livestockTypes,
   minimumNumberOfAnimalsTested
 } from '../../../constants/index.js'
 import joi from 'joi'
+import { claimType } from 'ffc-ahwr-common-library'
 
 const minimumAnimalsTestedForReview =
   minimumNumberOfAnimalsTested[livestockTypes.sheep][claimType.review]
