@@ -96,15 +96,15 @@ const getUnnamedHerdValue = (typeOfLivestock) =>
 export async function saveClaimAndRelatedData({
   db,
   sbi,
-  payload,
+  claimPayload,
   claimReference,
   flags,
   logger
 }) {
-  const { typeOfLivestock, dateOfVisit } = payload.data
-  const { applicationReference } = payload
+  const { typeOfLivestock, dateOfVisit } = claimPayload.data
+  const { applicationReference } = claimPayload
 
-  const amount = await getAmount(payload)
+  const amount = await getAmount(claimPayload)
   const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, flags)
 
   const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase({
@@ -114,7 +114,7 @@ export async function saveClaimAndRelatedData({
     typeOfLivestock,
     amount,
     dateOfVisit,
-    claimPayload: payload,
+    claimPayload,
     logger,
     isMultiHerdsClaim,
     db

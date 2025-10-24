@@ -32,7 +32,7 @@ describe('saveClaimAndRelatedData', () => {
   })
 
   it('should save claim and herd', async () => {
-    const payload = {
+    const claimPayload = {
       applicationReference: 'IAHW-8ZPZ-8CLI',
       data: {
         typeOfLivestock: 'sheep',
@@ -79,15 +79,15 @@ describe('saveClaimAndRelatedData', () => {
     const result = await saveClaimAndRelatedData({
       db: mockDb,
       sbi: '123456789',
-      payload,
+      claimPayload,
       claimReference: 'RESH-O9UD-0025',
       flags: [],
       logger
     })
 
-    expect(getAmount).toHaveBeenCalledWith(payload)
+    expect(getAmount).toHaveBeenCalledWith(claimPayload)
     expect(isMultipleHerdsUserJourney).toHaveBeenCalledWith(
-      payload.data.dateOfVisit,
+      claimPayload.data.dateOfVisit,
       []
     )
     expect(processHerd).toHaveBeenCalled()
@@ -132,7 +132,7 @@ describe('saveClaimAndRelatedData', () => {
   })
 
   it('should save claim without herd', async () => {
-    const payload = {
+    const claimPayload = {
       applicationReference: 'IAHW-8ZPZ-8CLI',
       data: {
         typeOfLivestock: 'beef',
@@ -151,7 +151,7 @@ describe('saveClaimAndRelatedData', () => {
     const result = await saveClaimAndRelatedData({
       db: mockDb,
       sbi: '123456789',
-      payload,
+      claimPayload,
       claimReference: 'RESH-O9UD-0025',
       flags: [],
       logger

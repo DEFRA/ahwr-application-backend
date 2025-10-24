@@ -78,7 +78,7 @@ describe('processClaim', () => {
       flags: [],
       organisation: { sbi: '123456789' }
     })
-    validateClaim.mockReturnValue({})
+    validateClaim.mockReturnValue({ value: payload })
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
     mockIsURNNumberUnique(true)
     saveClaimAndRelatedData.mockResolvedValue(saveClaimResult)
@@ -98,7 +98,7 @@ describe('processClaim', () => {
     expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
       db: mockDb,
       sbi: '123456789',
-      payload,
+      claimPayload: payload,
       claimReference: 'RESH-O9UD-0025',
       flags: [],
       logger: mockLogger
@@ -134,7 +134,7 @@ describe('processClaim', () => {
       flags: [],
       organisation: { sbi: '123456789' }
     })
-    validateClaim.mockReturnValue({})
+    validateClaim.mockReturnValue({ value: payload })
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
     mockIsURNNumberUnique(false)
 
@@ -159,7 +159,7 @@ describe('processClaim', () => {
       flags: [],
       organisation: { sbi: '123456789' }
     })
-    validateClaim.mockReturnValue({})
+    validateClaim.mockReturnValue({ value: payload })
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
     mockIsURNNumberUnique(true)
     saveClaimAndRelatedData.mockResolvedValue({ claim: null })

@@ -204,7 +204,7 @@ describe('processHerd', () => {
           sbi,
           db,
           claimHerdData: {
-            associatedAt: expect.any(String),
+            associatedAt: expect.any(Date),
             cph: '81/445/6789',
             id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
             name: 'Herd B',

@@ -6,11 +6,54 @@
 import { APPLICATION_COLLECTION } from '../constants/index.js'
 
 export const getApplication = async (db, reference) => {
-  const application = await db
+  return db
     .collection(APPLICATION_COLLECTION)
-    .findOne({ reference }, { projection: { _id: 0 } })
-
-  return application
+    .aggregate([
+      {
+        $match: {
+          reference: reference.toUpperCase()
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          reference: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          createdBy: 1,
+          updatedBy: 1,
+          data: 1,
+          organisation: 1,
+          status: 1,
+          flags: {
+            $map: {
+              input: {
+                $filter: {
+                  input: '$flags',
+                  as: 'flag',
+                  cond: { $eq: ['$$flag.deletedBy', null] }
+                }
+              },
+              as: 'flag',
+              in: { appliesToMh: '$$flag.appliesToMh' }
+            }
+          },
+          redacted: {
+            $anyElementTrue: {
+              $map: {
+                input: { $ifNull: ['$redactionHistory', []] },
+                as: 'r',
+                in: { $eq: ['$$r.success', 'Y'] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ])
+    .next()
 }
 
 export const getByEmail = async (email) => {
@@ -455,7 +498,7 @@ export const getApplicationsBySbi = async (db, sbi) => {
           redacted: {
             $anyElementTrue: {
               $map: {
-                input: { $ifNull: ['$applicationRedacts', []] },
+                input: { $ifNull: ['$redactionHistory', []] },
                 as: 'r',
                 in: { $eq: ['$$r.success', 'Y'] }
               }
