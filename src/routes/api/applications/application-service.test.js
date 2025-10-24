@@ -122,7 +122,7 @@ describe('application-service', () => {
             piHuntRecommended: 'yes',
             reviewTestResults: 'negative'
           },
-          status: 'IN CHECK',
+          status: 'IN_CHECK',
           statusHistory: [],
           herd: {
             id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
@@ -176,7 +176,7 @@ describe('application-service', () => {
             piHuntRecommended: 'yes',
             reviewTestResults: 'negative'
           },
-          status: 'IN CHECK',
+          status: 'IN_CHECK',
           herd: {
             cph: '12/345/6789',
             name: 'EventTester',

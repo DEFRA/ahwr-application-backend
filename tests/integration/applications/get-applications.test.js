@@ -8,6 +8,11 @@ describe('Get applications', () => {
     server = await setupTestEnvironment()
   })
 
+  beforeEach(async () => {
+    await server.db.collection('applications').deleteMany({})
+    await server.db.collection('applications').insertOne(application)
+  })
+
   afterAll(async () => {
     await teardownTestEnvironment()
   })
@@ -18,8 +23,6 @@ describe('Get applications', () => {
   }
 
   test('successfully retrieves applications for a given sbi', async () => {
-    await server.db.collection('applications').insertOne(application)
-
     const res = await server.inject({
       ...options,
       url: `${options.url}?sbi=123456789`
@@ -49,5 +52,15 @@ describe('Get applications', () => {
         redacted: false
       }
     ])
+  })
+
+  test('returns no applications when sbi does not match', async () => {
+    const res = await server.inject({
+      ...options,
+      url: `${options.url}?sbi=111111111`
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(JSON.parse(res.payload)).toEqual([])
   })
 })

@@ -20,7 +20,7 @@ export const application = {
     {
       status: 'AGREED',
       createdBy: 'admin',
-      createdAt: '2025-04-02T08:46:19.637Z'
+      createdAt: new Date('2025-04-02T08:46:19.637Z')
     }
   ],
   updateHistory: [],
@@ -30,9 +30,9 @@ export const application = {
       id: '0b401d15-b594-4bce-851a-0f676f1ce5a6',
       note: "User did not agree with multi herds T&C's",
       deleted: true,
-      createdAt: '2025-04-30T10:42:04.707Z',
+      createdAt: new Date('2025-04-30T10:42:04.707Z'),
       createdBy: 'Rob Catton (EqualExperts)',
-      deletedAt: '2025-04-30T10:50:55.169Z',
+      deletedAt: new Date('2025-04-30T10:50:55.169Z'),
       deletedBy: 'Rob Catton (EqualExperts)',
       appliesToMh: true,
       deletedNote: "User has changed their mind and accepted the T&C's"
@@ -41,9 +41,9 @@ export const application = {
       id: '98b575f0-82cf-46ca-9034-1002b2bf6bec',
       note: 'This user lies a lot on their claims.',
       deleted: true,
-      createdAt: '2025-04-30T10:43:01.066Z',
+      createdAt: new Date('2025-04-30T10:43:01.066Z'),
       createdBy: 'Rob Catton (EqualExperts)',
-      deletedAt: '2025-06-23T07:42:12.104Z',
+      deletedAt: new Date('2025-06-23T07:42:12.104Z'),
       deletedBy: 'Carroll, Aaron',
       appliesToMh: false,
       deletedNote: 'no they do not'
