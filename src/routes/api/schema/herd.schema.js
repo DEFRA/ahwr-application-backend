@@ -17,5 +17,5 @@ export const updateHerd = Joi.object({
 })
 
 export const herdSchema = {
-  herd: Joi.alternatives().try(updateHerd, newHerd).required()
+  herd: Joi.alternatives().try(newHerd, updateHerd).required()
 }

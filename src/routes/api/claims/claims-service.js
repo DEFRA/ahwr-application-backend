@@ -31,7 +31,11 @@ export const processClaim = async ({ payload, logger, db }) => {
     organisation: { sbi }
   } = application
 
-  const { error } = validateClaim(AHWR_SCHEME, payload, flags)
+  const { value: validatedPayload, error } = validateClaim(
+    AHWR_SCHEME,
+    payload,
+    flags
+  )
   if (error) {
     logger.setBindings({ error })
     // TODO
@@ -46,7 +50,7 @@ export const processClaim = async ({ payload, logger, db }) => {
   )
 
   logger.setBindings({
-    isFollowUp: isFollowUp(payload),
+    isFollowUp: isFollowUp(validatedPayload),
     applicationReference,
     claimReference,
     laboratoryURN,
@@ -63,7 +67,7 @@ export const processClaim = async ({ payload, logger, db }) => {
   const { claim } = await saveClaimAndRelatedData({
     db,
     sbi,
-    payload,
+    claimPayload: validatedPayload,
     claimReference,
     flags,
     logger
