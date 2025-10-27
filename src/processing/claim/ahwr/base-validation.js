@@ -54,8 +54,7 @@ export const validateAhwrClaim = (claimData, applicationFlags) => {
     claimData,
     {
       abortEarly: false,
-      convert: true,
-      stripUnknown: true
+      convert: true
     }
   )
 }

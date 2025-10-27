@@ -31,7 +31,7 @@ export const getApplication = async (db, reference) => {
                 $filter: {
                   input: '$flags',
                   as: 'flag',
-                  cond: { $eq: ['$$flag.deletedBy', null] }
+                  cond: { $eq: ['$$flag.deleted', false] }
                 }
               },
               as: 'flag',
@@ -488,7 +488,7 @@ export const getApplicationsBySbi = async (db, sbi) => {
                 $filter: {
                   input: '$flags',
                   as: 'flag',
-                  cond: { $eq: ['$$flag.deletedBy', null] }
+                  cond: { $eq: ['$$flag.deleted', false] }
                 }
               },
               as: 'flag',
