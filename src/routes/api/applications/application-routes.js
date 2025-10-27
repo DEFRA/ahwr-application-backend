@@ -1,12 +1,14 @@
 import {
   createApplicationHandler,
   getApplicationsHandler,
-  getApplicationClaimsHandler
+  getApplicationClaimsHandler,
+  getApplicationHerdsHandler
 } from './application-controller.js'
 import {
   newApplicationSchema,
   getApplicationsQuerySchema,
-  getApplicationClaimsQuerySchema
+  getApplicationClaimsQuerySchema,
+  getApplicationHerdsQuerySchema
 } from './application-schema.js'
 import Boom from '@hapi/boom'
 import Joi from 'joi'
@@ -51,7 +53,22 @@ export const applicationRoutes = [
         params: Joi.object({ applicationReference: Joi.string() }),
         query: getApplicationClaimsQuerySchema,
         failAction(request, _h, err) {
-          request.logger.error(err, 'Get claims validation error')
+          request.logger.error(err, 'Get application claims validation error')
+          throw Boom.badRequest(err.message)
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/applications/{applicationReference}/herds',
+    options: {
+      handler: getApplicationHerdsHandler,
+      validate: {
+        params: Joi.object({ applicationReference: Joi.string() }),
+        query: getApplicationHerdsQuerySchema,
+        failAction(request, _h, err) {
+          request.logger.error(err, 'Get application herds validation error')
           throw Boom.badRequest(err.message)
         }
       }

@@ -3,7 +3,8 @@ import { StatusCodes } from 'http-status-codes'
 import {
   createApplication,
   getApplications,
-  getClaims
+  getClaims,
+  getHerds
 } from './application-service.js'
 
 export const createApplicationHandler = async (request, h) => {
@@ -52,7 +53,28 @@ export const getApplicationClaimsHandler = async (request, h) => {
 
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to get claims')
+    request.logger.error({ error }, 'Failed to get application claims')
+    // TODO
+    // appInsights.defaultClient.trackException({ exception: error })
+    throw Boom.internal(error)
+  }
+}
+
+export const getApplicationHerdsHandler = async (request, h) => {
+  try {
+    const { applicationReference } = request.params
+    const { species } = request.query
+
+    const claims = await getHerds({
+      db: request.db,
+      logger: request.logger,
+      applicationReference,
+      species
+    })
+
+    return h.response(claims).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get application herds')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
     throw Boom.internal(error)

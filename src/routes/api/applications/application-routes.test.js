@@ -64,7 +64,31 @@ describe('applicationRoutes', () => {
         ).toThrow(Boom.badRequest(mockError.message))
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
-          'Get claims validation error'
+          'Get application claims validation error'
+        )
+      })
+    })
+  })
+
+  describe('GET /api/applications/{applicationReference}/herds', () => {
+    const getRoute = applicationRoutes.find(
+      (r) =>
+        r.method === 'GET' &&
+        r.path === '/api/applications/{applicationReference}/herds'
+    )
+
+    describe('failAction', () => {
+      it('should return 400 and log the error when validation fails', () => {
+        const mockError = new Error('Invalid query')
+        const mockLogger = { error: jest.fn() }
+        const mockRequest = { logger: mockLogger }
+
+        expect(() =>
+          getRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).toThrow(Boom.badRequest(mockError.message))
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          mockError,
+          'Get application herds validation error'
         )
       })
     })

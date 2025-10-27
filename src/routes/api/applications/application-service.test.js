@@ -1,8 +1,10 @@
 import * as repo from '../../../repositories/application-repository.js'
-import { getApplications, getClaims } from './application-service.js'
+import { getApplications, getClaims, getHerds } from './application-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
+import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 
 jest.mock('../../../repositories/claim-repository.js')
+jest.mock('../../../repositories/herd-repository.js')
 
 describe('application-service', () => {
   const mockLogger = {
@@ -206,6 +208,79 @@ describe('application-service', () => {
         typeOfLivestock: 'beef'
       })
       expect(result).toEqual([])
+    })
+  })
+
+  describe('getHerds', () => {
+    it('should return herds when herds exist for applicationReference and species in repo', async () => {
+      const mockResult = [
+        {
+          id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+          cph: '12/345/6789',
+          name: 'EventTester',
+          reasons: ['uniqueHealthNeeds'],
+          species: 'beef',
+          version: 2,
+          createdAt: new Date('2025-08-15T09:00:53.414883+00:00'),
+          createdBy: 'admin',
+          isCurrent: true,
+          applicationReference: 'IAHW-G7B4-UTZ5'
+        }
+      ]
+      getHerdsByAppRefAndSpecies.mockResolvedValue(mockResult)
+
+      const result = await getHerds({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+      expect(getHerdsByAppRefAndSpecies).toHaveBeenCalledWith({
+        db: {},
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+      expect(result).toEqual({
+        herds: [
+          {
+            id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+            version: 2,
+            name: 'EventTester',
+            cph: '12/345/6789',
+            reasons: ['uniqueHealthNeeds'],
+            species: 'beef'
+          }
+        ]
+      })
+    })
+
+    it('should return empty array when no herds exist for applicationReference and species in repo', async () => {
+      getHerdsByAppRefAndSpecies.mockResolvedValue([])
+
+      const result = await getHerds({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+      expect(getHerdsByAppRefAndSpecies).toHaveBeenCalledWith({
+        db: {},
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+      expect(result).toEqual({
+        herds: []
+      })
     })
   })
 })

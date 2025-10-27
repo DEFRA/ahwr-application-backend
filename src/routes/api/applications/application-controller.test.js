@@ -1,12 +1,14 @@
 import {
   createApplication,
   getApplications,
-  getClaims
+  getClaims,
+  getHerds
 } from './application-service.js'
 import {
   createApplicationHandler,
   getApplicationsHandler,
-  getApplicationClaimsHandler
+  getApplicationClaimsHandler,
+  getApplicationHerdsHandler
 } from './application-controller.js'
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
@@ -165,7 +167,68 @@ describe('application-controller', () => {
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
-        'Failed to get claims'
+        'Failed to get application claims'
+      )
+    })
+  })
+
+  describe('getApplicationHerdsHandler', () => {
+    const mockRequest = {
+      query: {
+        species: 'beef'
+      },
+      params: {
+        applicationReference: 'IAHW-AAA-001'
+      },
+      logger: mockLogger,
+      db: mockDb
+    }
+
+    it('should return 200 and list of herds when successful', async () => {
+      const mockHerds = [
+        {
+          id: '85eb8e4a-c00f-4094-967b-87e77858f54f',
+          version: 1,
+          name: 'Sheep herd 1',
+          cph: 'someCph',
+          reasons: ['reasonOne', 'reasonTwo'],
+          species: 'sheep'
+        },
+        {
+          id: 'e5215e0c-cc52-4f34-9348-88203c5acb75',
+          version: 1,
+          name: 'Sheep herd 2',
+          cph: 'someCph',
+          reasons: ['reasonOne', 'reasonTwo'],
+          species: 'sheep'
+        }
+      ]
+      getHerds.mockResolvedValue(mockHerds)
+
+      const result = await getApplicationHerdsHandler(mockRequest, mockH)
+
+      expect(getHerds).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'IAHW-AAA-001',
+        species: 'beef'
+      })
+      expect(mockH.response).toHaveBeenCalledWith(mockHerds)
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 500 and log error when error occurs', async () => {
+      const mockError = new Error('Failed to fetch herds')
+      getHerds.mockRejectedValue(mockError)
+
+      await expect(
+        getApplicationHerdsHandler(mockRequest, mockH)
+      ).rejects.toThrow(Boom.internal(mockError))
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: mockError },
+        'Failed to get application herds'
       )
     })
   })
