@@ -21,20 +21,19 @@ export const updateIsCurrentHerd = async (db, id, isCurrent, version) => {
     .updateOne({ id, version }, { $set: { isCurrent } })
 }
 
-export const getHerdsByAppRefAndSpecies = async (
+export const getHerdsByAppRefAndSpecies = async ({
+  db,
   applicationReference,
   species
-) => {
-  // TODO 1182 impl
-  return []
-
-  // return models.herd.findAll({
-  //   where: {
-  //     applicationReference,
-  //     ...(species ? { species } : {}),
-  //     isCurrent: true
-  //   }
-  // })
+}) => {
+  return db
+    .collection(HERDS_COLLECTION)
+    .find({
+      applicationReference,
+      isCurrent: true,
+      ...(species ? { species } : {})
+    })
+    .toArray()
 }
 
 export const redactPII = async (applicationReference) => {

@@ -3,6 +3,7 @@ import { applicationStatus } from '../../../constants/index.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as repo from '../../../repositories/application-repository.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
+import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -131,4 +132,32 @@ export const getClaims = async ({
       reasons: claim.herd.reasons
     }
   }))
+}
+
+export const getHerds = async ({
+  db,
+  logger,
+  applicationReference,
+  species
+}) => {
+  logger.setBindings({ applicationReference, species })
+
+  const result = await getHerdsByAppRefAndSpecies({
+    db,
+    applicationReference,
+    species
+  })
+
+  const herds = result.map((herd) => ({
+    id: herd.id,
+    version: herd.version,
+    name: herd.name,
+    cph: herd.cph,
+    reasons: herd.reasons,
+    species: herd.species
+  }))
+
+  return {
+    herds
+  }
 }
