@@ -52,7 +52,10 @@ export const validateAhwrClaim = (claimData, applicationFlags) => {
 
   return getClaimModel(multiHerds, specificValidationsForClaimType).validate(
     claimData,
-    { abortEarly: false }
+    {
+      abortEarly: false,
+      convert: true
+    }
   )
 }
 

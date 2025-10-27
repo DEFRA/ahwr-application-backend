@@ -158,7 +158,7 @@ export const processHerd = async ({
     cph: herd.cph,
     name: herd.name,
     reasons: herd.reasons.sort(),
-    associatedAt: new Date().toISOString()
+    associatedAt: new Date()
   }
   if (herd.same === 'yes') {
     const previousClaimsForSpecies = await getByApplicationReference({
