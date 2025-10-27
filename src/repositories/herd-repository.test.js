@@ -10,7 +10,7 @@ describe('herd-repository', () => {
   }
 
   describe('getHerdsByAppRefAndSpecies', () => {
-    it('should return herds that matches species and applicationReference ', async () => {
+    it('should return herds that matches species and applicationReference', async () => {
       const mockResult = [
         {
           id: '40ba22b3-cfdc-4d8c-b491-13873ec97439',
