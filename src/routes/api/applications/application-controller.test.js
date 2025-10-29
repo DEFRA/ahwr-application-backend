@@ -2,13 +2,15 @@ import {
   createApplication,
   getApplications,
   getClaims,
-  getHerds
+  getHerds,
+  getApplication
 } from './application-service.js'
 import {
   createApplicationHandler,
   getApplicationsHandler,
   getApplicationClaimsHandler,
-  getApplicationHerdsHandler
+  getApplicationHerdsHandler,
+  getApplicationHandler
 } from './application-controller.js'
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
@@ -229,6 +231,68 @@ describe('application-controller', () => {
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
         'Failed to get application herds'
+      )
+    })
+  })
+
+  describe('getApplicationHandler', () => {
+    const mockRequest = {
+      params: {
+        applicationReference: 'IAHW-AAA-001'
+      },
+      logger: mockLogger,
+      db: mockDb
+    }
+
+    it('should return 200 and application when successful', async () => {
+      const mockApplication = {
+        reference: 'IAHW-8ZPZ-8CLI',
+        data: {
+          reference: 'IAHW-8ZPZ-8CLI',
+          declaration: true,
+          offerStatus: 'accepted',
+          confirmCheckDetails: 'yes'
+        },
+        status: 'AGREED',
+        createdAt: '2025-01-01T00:00:00Z',
+        organisation: {
+          crn: '1101489790',
+          sbi: '118409263',
+          name: 'High Oustley Farm',
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          address:
+            'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          userType: 'newUser',
+          farmerName: 'J Parkinson'
+        },
+        redacted: false
+      }
+      getApplication.mockResolvedValue(mockApplication)
+
+      const result = await getApplicationHandler(mockRequest, mockH)
+
+      expect(getApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'IAHW-AAA-001'
+      })
+      expect(mockH.response).toHaveBeenCalledWith(mockApplication)
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 500 and log error when error occurs', async () => {
+      const mockError = new Error('Failed to fetch application')
+      getApplication.mockRejectedValue(mockError)
+
+      await expect(getApplicationHandler(mockRequest, mockH)).rejects.toThrow(
+        Boom.internal(mockError)
+      )
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        { error: mockError },
+        'Failed to get application'
       )
     })
   })

@@ -1,9 +1,11 @@
 import { applicationStatus } from '../../../constants/index.js'
 // import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
-import * as repo from '../../../repositories/application-repository.js'
+import * as appRepo from '../../../repositories/application-repository.js'
+import * as owAppRepo from '../../../repositories/ow-application-repository.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
+import Boom from '@hapi/boom'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -17,7 +19,7 @@ const isPreviousApplicationRelevant = (application) => {
 export const createApplication = async ({ applicationRequest, logger, db }) => {
   logger.setBindings({ sbi: applicationRequest.organisation.sbi })
 
-  const applications = await repo.getApplicationsBySbi(
+  const applications = await appRepo.getApplicationsBySbi(
     db,
     applicationRequest.organisation.sbi
   )
@@ -48,7 +50,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
         ? applicationStatus.notAgreed
         : applicationStatus.agreed
   }
-  await repo.createApplication(db, application)
+  await appRepo.createApplication(db, application)
 
   // TODO
   // if (application.data.offerStatus === 'accepted') {
@@ -92,7 +94,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 export const getApplications = async ({ sbi, logger, db }) => {
   logger.setBindings({ sbi })
 
-  const result = await repo.getApplicationsBySbi(db, sbi)
+  const result = await appRepo.getApplicationsBySbi(db, sbi)
 
   return result.map((app) => ({
     type: 'EE',
@@ -159,5 +161,54 @@ export const getHerds = async ({
 
   return {
     herds
+  }
+}
+
+const isOWAppRef = (applicationReference) =>
+  applicationReference.startsWith('AHWR')
+
+export const getApplication = async ({ db, logger, applicationReference }) => {
+  logger.setBindings({ applicationReference })
+
+  if (isOWAppRef(applicationReference)) {
+    const result = await owAppRepo.getApplication(db, applicationReference)
+    if (!result) {
+      throw Boom.notFound('Application not found')
+    }
+
+    return {
+      type: 'VV',
+      reference: result.reference,
+      data: result.data,
+      status: result.status,
+      createdAt: result.createdAt,
+      organisation: result.organisation,
+      redacted: result.redacted,
+      updateHistory: result.updateHistory,
+      statusHistory: result.statusHistory,
+      contactHistory: result.contactHistory,
+      flags: result.flags,
+      eligiblePiiRedaction: result.eligiblePiiRedaction
+    }
+  }
+
+  const result = await appRepo.getApplication(db, applicationReference)
+  if (!result) {
+    throw Boom.notFound('Application not found')
+  }
+
+  return {
+    type: 'EE',
+    reference: result.reference,
+    data: result.data,
+    status: result.status,
+    createdAt: result.createdAt,
+    organisation: result.organisation,
+    redacted: result.redacted,
+    updateHistory: result.updateHistory,
+    statusHistory: result.statusHistory,
+    contactHistory: result.contactHistory,
+    flags: result.flags,
+    eligiblePiiRedaction: result.eligiblePiiRedaction
   }
 }

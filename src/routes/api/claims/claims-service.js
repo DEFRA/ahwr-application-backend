@@ -1,4 +1,7 @@
-import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
+import {
+  isURNUnique as isNWURNUnique,
+  getClaimByReference
+} from '../../../repositories/claim-repository.js'
 import {
   getApplication,
   getApplicationsBySbi
@@ -111,5 +114,24 @@ export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
 
   return {
     isURNUnique: results.every(Boolean)
+  }
+}
+
+export const getClaim = async ({ db, reference }) => {
+  const claim = await getClaimByReference(db, reference)
+  if (!claim) {
+    throw Boom.notFound('Claim not found')
+  }
+
+  return {
+    reference: claim.reference,
+    applicationReference: claim.applicationReference,
+    createdAt: claim.createdAt,
+    type: claim.type,
+    data: claim.data,
+    status: claim.status,
+    statusHistory: claim.statusHistory,
+    herd: claim.herd,
+    updateHistory: claim.updateHistory
   }
 }

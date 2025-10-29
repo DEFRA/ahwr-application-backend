@@ -1,7 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'
-import { processClaim, isURNNumberUnique } from './claims-service.js'
+import {
+  createClaimHandler,
+  isURNUniqueHandler,
+  getClaimHandler
+} from './claims-controller.js'
+import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 
 jest.mock('./claims-service.js')
 
@@ -172,6 +176,99 @@ describe('isURNUniqueHandler', () => {
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: genericError },
       'Failed to check if URN is unique'
+    )
+  })
+})
+
+describe('getClaimHandler', () => {
+  const mockRequest = {
+    logger: { error: jest.fn(), info: jest.fn() },
+    db: {},
+    params: {
+      reference: 'REBC-VA4R-TRL7'
+    }
+  }
+  const mockResult = {
+    applicationReference: 'IAHW-G3CL-V59P',
+    createdAt: '2025-04-24T08:24:24.092Z',
+    data: {
+      amount: 522,
+      claimType: 'R',
+      dateOfTesting: '2025-04-24T00:00:00.000Z',
+      dateOfVisit: '2025-04-25T00:00:00.000Z',
+      laboratoryURN: 'w5436346ret',
+      numberAnimalsTested: '10',
+      speciesNumbers: 'yes',
+      testResults: 'negative',
+      typeOfLivestock: 'beef',
+      vetRCVSNumber: '1111111',
+      vetsName: 'Mr C test'
+    },
+    herd: {},
+    reference: 'REBC-VA4R-TRL7',
+    status: 'IN_CHECK',
+    statusHistory: [],
+    type: 'REVIEW',
+    updateHistory: [
+      {
+        createdAt: '2025-04-25T13:05:39.937Z',
+        createdBy: 'Carroll, Aaron',
+        eventType: 'claim-vetsName',
+        id: 'e3d320b7-b2cf-469a-903f-ead7587d98e9',
+        newValue: 'Mr C test',
+        note: 'Updated to check event',
+        oldValue: 'Mr B Test',
+        updatedProperty: 'vetsName'
+      }
+    ]
+  }
+
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return 200 and the result', async () => {
+    getClaim.mockResolvedValue(mockResult)
+
+    const result = await getClaimHandler(mockRequest, mockH)
+
+    expect(getClaim).toHaveBeenCalledWith({
+      db: mockRequest.db,
+      logger: mockRequest.logger,
+      reference: 'REBC-VA4R-TRL7'
+    })
+    expect(mockH.response).toHaveBeenCalledWith(mockResult)
+    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockH)
+  })
+
+  it('should rethrow Boom errors', async () => {
+    const boomError = Boom.badRequest('Invalid input')
+    getClaim.mockRejectedValue(boomError)
+
+    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: boomError },
+      'Failed to get claim'
+    )
+  })
+
+  it('should wrap non-Boom errors in Boom.internal', async () => {
+    const genericError = new Error('Database failure')
+    getClaim.mockRejectedValue(genericError)
+
+    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: genericError },
+      'Failed to get claim'
     )
   })
 })

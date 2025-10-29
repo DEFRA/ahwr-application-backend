@@ -26,7 +26,11 @@ import {
   claimType
 } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { createClaimHandler, isURNUniqueHandler } from './claims-controller.js'
+import {
+  createClaimHandler,
+  isURNUniqueHandler,
+  getClaimHandler
+} from './claims-controller.js'
 
 const {
   submitPaymentRequestMsgType,
@@ -56,6 +60,18 @@ export const claimHandlers = [
           return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
       }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/claims/{reference}',
+    options: {
+      validate: {
+        params: joi.object({
+          reference: joi.string().required()
+        })
+      },
+      handler: getClaimHandler
     }
   },
   {
@@ -188,11 +204,10 @@ export const claimHandlers = [
   },
   {
     method: 'PUT',
-    path: '/api/claim/update-by-reference',
+    path: '/api/claim/{claimReference}',
     options: {
       validate: {
         payload: joi.object({
-          reference: joi.string().valid().required(),
           status: joi.number().required(),
           user: joi.string().required(),
           note: joi.string()

@@ -2,7 +2,8 @@ import {
   createApplicationHandler,
   getApplicationsHandler,
   getApplicationClaimsHandler,
-  getApplicationHerdsHandler
+  getApplicationHerdsHandler,
+  getApplicationHandler
 } from './application-controller.js'
 import {
   newApplicationSchema,
@@ -69,6 +70,20 @@ export const applicationRoutes = [
         query: getApplicationHerdsQuerySchema,
         failAction(request, _h, err) {
           request.logger.error(err, 'Get application herds validation error')
+          throw Boom.badRequest(err.message)
+        }
+      }
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/applications/{applicationReference}',
+    options: {
+      handler: getApplicationHandler,
+      validate: {
+        params: Joi.object({ applicationReference: Joi.string() }),
+        failAction(request, _h, err) {
+          request.logger.error(err, 'Get application validation error')
           throw Boom.badRequest(err.message)
         }
       }

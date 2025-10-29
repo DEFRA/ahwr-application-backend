@@ -66,8 +66,8 @@ db.getCollection('claims').insertMany([
   {
     reference: 'FUBC-JTTU-SDQ7',
     applicationReference: 'IAHW-G3CL-V59P',
-    createdAt: new Date('2025-08-15 09:00:53.422000 +00:00'),
-    updatedAt: new Date('2025-08-15 09:00:53.422000 +00:00'),
+    createdAt: new Date('2025-08-15T09:00:53.000Z'),
+    updatedAt: new Date('2025-08-15T09:00:53.000Z'),
     createdBy: 'admin',
     updatedBy: null,
     type: 'FOLLOW_UP',

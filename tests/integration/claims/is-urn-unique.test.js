@@ -3,7 +3,7 @@ import { application } from '../../data/application-data.js'
 import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
 import { reviewClaim } from '../../data/claim-data.js'
 
-describe('Get applications', () => {
+describe('Is URN Unique', () => {
   let server
 
   beforeAll(async () => {

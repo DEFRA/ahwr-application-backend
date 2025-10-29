@@ -1,10 +1,13 @@
-import { processClaim, isURNNumberUnique } from './claims-service.js'
+import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getApplication,
   getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
 import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
-import { isURNUnique as isNWURNUnique } from '../../../repositories/claim-repository.js'
+import {
+  isURNUnique as isNWURNUnique,
+  getClaimByReference
+} from '../../../repositories/claim-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
@@ -214,5 +217,99 @@ describe('isURNNumberUnique', () => {
     const result = await isURNNumberUnique({ db, sbi, laboratoryURN })
 
     expect(result).toEqual({ isURNUnique: false })
+  })
+})
+
+describe('getClaim', () => {
+  const db = {}
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns claim when claim exists for reference', async () => {
+    getClaimByReference.mockResolvedValue({
+      reference: 'FUBC-JTTU-SDQ7',
+      applicationReference: 'IAHW-G3CL-V59P',
+      createdAt: new Date('2025-08-15T09:00:53.000Z'),
+      updatedAt: new Date('2025-08-15T09:00:53.000Z'),
+      createdBy: 'admin',
+      updatedBy: null,
+      type: 'FOLLOW_UP',
+      data: {
+        amount: 837,
+        piHunt: 'yes',
+        vetsName: 'frrrr',
+        claimType: 'E',
+        biosecurity: 'yes',
+        dateOfVisit: new Date('2025-08-15T00:00:00.000Z'),
+        testResults: 'negative',
+        dateOfTesting: new Date('2025-08-15T00:00:00.000Z'),
+        laboratoryURN: 'URN34567ddd',
+        vetRCVSNumber: '1234567',
+        speciesNumbers: 'yes',
+        typeOfLivestock: 'beef',
+        piHuntAllAnimals: 'yes',
+        piHuntRecommended: 'yes',
+        reviewTestResults: 'negative'
+      },
+      status: 'IN_CHECK',
+      statusHistory: [],
+      herd: {
+        id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        cph: '12/345/6789',
+        name: 'EventTester',
+        reasons: ['uniqueHealthNeeds'],
+        version: 2,
+        associatedAt: new Date('2025-08-15T09:00:53.420Z')
+      },
+      updateHistory: []
+    })
+
+    const result = await getClaim({ db, reference: 'FUBC-JTTU-SDQ7' })
+
+    expect(getClaimByReference).toHaveBeenCalledWith(db, 'FUBC-JTTU-SDQ7')
+    expect(result).toEqual({
+      reference: 'FUBC-JTTU-SDQ7',
+      applicationReference: 'IAHW-G3CL-V59P',
+      createdAt: new Date('2025-08-15T09:00:53.000Z'),
+      type: 'FOLLOW_UP',
+      data: {
+        amount: 837,
+        piHunt: 'yes',
+        vetsName: 'frrrr',
+        claimType: 'E',
+        biosecurity: 'yes',
+        dateOfVisit: new Date('2025-08-15T00:00:00.000Z'),
+        testResults: 'negative',
+        dateOfTesting: new Date('2025-08-15T00:00:00.000Z'),
+        laboratoryURN: 'URN34567ddd',
+        vetRCVSNumber: '1234567',
+        speciesNumbers: 'yes',
+        typeOfLivestock: 'beef',
+        piHuntAllAnimals: 'yes',
+        piHuntRecommended: 'yes',
+        reviewTestResults: 'negative'
+      },
+      status: 'IN_CHECK',
+      statusHistory: [],
+      herd: {
+        id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        cph: '12/345/6789',
+        name: 'EventTester',
+        reasons: ['uniqueHealthNeeds'],
+        version: 2,
+        associatedAt: new Date('2025-08-15T09:00:53.420Z')
+      },
+      updateHistory: []
+    })
+  })
+
+  it('returns not found error when claim does not exist for reference ', async () => {
+    getClaimByReference.mockResolvedValue(null)
+
+    await expect(getClaim({ db, reference: 'FUBC-JTTU-SDQ7' })).rejects.toThrow(
+      'Claim not found'
+    )
   })
 })
