@@ -4,13 +4,13 @@ import {
   getApplicationClaimsHandler,
   getApplicationHerdsHandler,
   getApplicationHandler
-} from './application-controller.js'
+} from './applications-controller.js'
 import {
   newApplicationSchema,
   getApplicationsQuerySchema,
   getApplicationClaimsQuerySchema,
   getApplicationHerdsQuerySchema
-} from './application-schema.js'
+} from './applications-schema.js'
 import Boom from '@hapi/boom'
 import Joi from 'joi'
 

@@ -5,7 +5,7 @@ import {
   getClaims,
   getHerds,
   getApplication
-} from './application-service.js'
+} from './applications-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 
@@ -14,7 +14,7 @@ jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/herd-repository.js')
 
-describe('application-service', () => {
+describe('applications-service', () => {
   const mockLogger = {
     setBindings: jest.fn()
   }
