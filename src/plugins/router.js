@@ -8,7 +8,7 @@ import { holidayHandlers } from '../routes/api/holidays.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { flagHandlers } from '../routes/api/flags.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
-import { applicationRoutes } from '../routes/api/applications/application-routes.js'
+import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
 
 const router = {
   plugin: {

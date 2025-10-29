@@ -6,7 +6,7 @@ import {
   getApplications,
   getClaims,
   getHerds
-} from './application-service.js'
+} from './applications-service.js'
 
 export const createApplicationHandler = async (request, h) => {
   try {
@@ -16,11 +16,15 @@ export const createApplicationHandler = async (request, h) => {
       db: request.db
     })
     return h.response(application).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to create application')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to create application')
     // TODO
     // appInsights.defaultClient.trackException({ exception: err })
-    throw Boom.internal(err)
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+    throw Boom.internal(error)
   }
 }
 
@@ -36,6 +40,10 @@ export const getApplicationsHandler = async (request, h) => {
     request.logger.error({ error }, 'Failed to get applications')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
     throw Boom.internal(error)
   }
 }
@@ -57,6 +65,10 @@ export const getApplicationClaimsHandler = async (request, h) => {
     request.logger.error({ error }, 'Failed to get application claims')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
     throw Boom.internal(error)
   }
 }
@@ -78,6 +90,10 @@ export const getApplicationHerdsHandler = async (request, h) => {
     request.logger.error({ error }, 'Failed to get application herds')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
     throw Boom.internal(error)
   }
 }
@@ -97,6 +113,10 @@ export const getApplicationHandler = async (request, h) => {
     request.logger.error({ error }, 'Failed to get application')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
     throw Boom.internal(error)
   }
 }

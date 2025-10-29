@@ -1,5 +1,5 @@
 import Boom from '@hapi/boom'
-import { applicationRoutes } from './application-routes.js'
+import { applicationRoutes } from './applications-routes.js'
 
 describe('applicationRoutes', () => {
   describe('POST /api/applications', () => {

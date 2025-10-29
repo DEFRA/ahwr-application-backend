@@ -4,20 +4,20 @@ import {
   getClaims,
   getHerds,
   getApplication
-} from './application-service.js'
+} from './applications-service.js'
 import {
   createApplicationHandler,
   getApplicationsHandler,
   getApplicationClaimsHandler,
   getApplicationHerdsHandler,
   getApplicationHandler
-} from './application-controller.js'
+} from './applications-controller.js'
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
 
-jest.mock('./application-service.js')
+jest.mock('./applications-service.js')
 
-describe('application-controller', () => {
+describe('applications-controller', () => {
   const mockLogger = {
     error: jest.fn()
   }
@@ -84,7 +84,7 @@ describe('application-controller', () => {
       ).rejects.toThrow(Boom.internal(mockError))
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: mockError },
+        { error: mockError },
         'Failed to create application'
       )
     })
