@@ -164,32 +164,36 @@ export const getHerds = async ({
   }
 }
 
-const isOWAppRef = (applicationReference) =>
+const isOWApplication = (applicationReference) =>
   applicationReference.startsWith('AHWR')
+
+const getOWApplication = async (db, applicationReference) => {
+  const result = await owAppRepo.getApplication(db, applicationReference)
+  if (!result) {
+    throw Boom.notFound('Application not found')
+  }
+
+  return {
+    type: 'VV',
+    reference: result.reference,
+    data: result.data,
+    status: result.status,
+    createdAt: result.createdAt,
+    organisation: result.organisation,
+    redacted: result.redacted,
+    updateHistory: result.updateHistory,
+    statusHistory: result.statusHistory,
+    contactHistory: result.contactHistory,
+    flags: result.flags,
+    eligiblePiiRedaction: result.eligiblePiiRedaction
+  }
+}
 
 export const getApplication = async ({ db, logger, applicationReference }) => {
   logger.setBindings({ applicationReference })
 
-  if (isOWAppRef(applicationReference)) {
-    const result = await owAppRepo.getApplication(db, applicationReference)
-    if (!result) {
-      throw Boom.notFound('Application not found')
-    }
-
-    return {
-      type: 'VV',
-      reference: result.reference,
-      data: result.data,
-      status: result.status,
-      createdAt: result.createdAt,
-      organisation: result.organisation,
-      redacted: result.redacted,
-      updateHistory: result.updateHistory,
-      statusHistory: result.statusHistory,
-      contactHistory: result.contactHistory,
-      flags: result.flags,
-      eligiblePiiRedaction: result.eligiblePiiRedaction
-    }
+  if (isOWApplication(applicationReference)) {
+    return getOWApplication(db, applicationReference)
   }
 
   const result = await appRepo.getApplication(db, applicationReference)

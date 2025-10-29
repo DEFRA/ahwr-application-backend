@@ -204,10 +204,11 @@ export const claimHandlers = [
   },
   {
     method: 'PUT',
-    path: '/api/claim/{claimReference}',
+    path: '/api/claim/update-by-reference',
     options: {
       validate: {
         payload: joi.object({
+          reference: joi.string().valid().required(),
           status: joi.number().required(),
           user: joi.string().required(),
           note: joi.string()
