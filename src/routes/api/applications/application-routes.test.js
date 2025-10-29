@@ -93,4 +93,28 @@ describe('applicationRoutes', () => {
       })
     })
   })
+
+  describe('GET /api/applications/{applicationReference}', () => {
+    const getRoute = applicationRoutes.find(
+      (r) =>
+        r.method === 'GET' &&
+        r.path === '/api/applications/{applicationReference}'
+    )
+
+    describe('failAction', () => {
+      it('should return 400 and log the error when validation fails', () => {
+        const mockError = new Error('Invalid query')
+        const mockLogger = { error: jest.fn() }
+        const mockRequest = { logger: mockLogger }
+
+        expect(() =>
+          getRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).toThrow(Boom.badRequest(mockError.message))
+        expect(mockLogger.error).toHaveBeenCalledWith(
+          mockError,
+          'Get application validation error'
+        )
+      })
+    })
+  })
 })

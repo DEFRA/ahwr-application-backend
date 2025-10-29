@@ -2,6 +2,7 @@ import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
 import {
   createApplication,
+  getApplication,
   getApplications,
   getClaims,
   getHerds
@@ -75,6 +76,25 @@ export const getApplicationHerdsHandler = async (request, h) => {
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
     request.logger.error({ error }, 'Failed to get application herds')
+    // TODO
+    // appInsights.defaultClient.trackException({ exception: error })
+    throw Boom.internal(error)
+  }
+}
+
+export const getApplicationHandler = async (request, h) => {
+  try {
+    const { applicationReference } = request.params
+
+    const application = await getApplication({
+      db: request.db,
+      logger: request.logger,
+      applicationReference
+    })
+
+    return h.response(application).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get application')
     // TODO
     // appInsights.defaultClient.trackException({ exception: error })
     throw Boom.internal(error)

@@ -7,3 +7,9 @@ export const isURNUnique = async ({ db, sbi, laboratoryURN }) => {
   })
   return !result
 }
+
+export const getApplication = async (db, reference) => {
+  return db.collection(OW_APPLICATION_COLLECTION).findOne({
+    reference
+  })
+}

@@ -1,8 +1,16 @@
-import * as repo from '../../../repositories/application-repository.js'
-import { getApplications, getClaims, getHerds } from './application-service.js'
+import * as appRepo from '../../../repositories/application-repository.js'
+import * as owAppRepo from '../../../repositories/ow-application-repository.js'
+import {
+  getApplications,
+  getClaims,
+  getHerds,
+  getApplication
+} from './application-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 
+jest.mock('../../../repositories/application-repository.js')
+jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/herd-repository.js')
 
@@ -42,7 +50,7 @@ describe('application-service', () => {
           redacted: false
         }
       ]
-      jest.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
 
       const result = await getApplications({
         sbi: '123456789',
@@ -51,7 +59,7 @@ describe('application-service', () => {
       })
 
       expect(mockLogger.setBindings).toHaveBeenCalledWith({ sbi: '123456789' })
-      expect(repo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
+      expect(appRepo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
       expect(result).toEqual([
         {
           type: 'EE',
@@ -81,7 +89,7 @@ describe('application-service', () => {
     })
 
     it('should return empty array when no applications exist for sbi in repo', async () => {
-      jest.spyOn(repo, 'getApplicationsBySbi').mockResolvedValue([])
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue([])
 
       const result = await getApplications({
         sbi: '123456789',
@@ -90,7 +98,7 @@ describe('application-service', () => {
       })
 
       expect(mockLogger.setBindings).toHaveBeenCalledWith({ sbi: '123456789' })
-      expect(repo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
+      expect(appRepo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
       expect(result).toEqual([])
     })
   })
@@ -281,6 +289,245 @@ describe('application-service', () => {
       expect(result).toEqual({
         herds: []
       })
+    })
+  })
+
+  describe('getApplication', () => {
+    const db = {}
+
+    it('should return OW application when application exists in db', async () => {
+      const mockResult = {
+        reference: 'AHWR-B571-6E79',
+        createdAt: new Date('2023-09-21T21:11:02.776Z'),
+        updatedAt: new Date('2024-11-20T13:51:24.283Z'),
+        createdBy: 'admin',
+        updatedBy: 'admin',
+        data: {
+          vetName: 'Mr CowWhisperer',
+          vetRcvs: '1208642',
+          urnResult: '355981',
+          visitDate: new Date('2023-11-10T00:00:00.000Z'),
+          dateOfClaim: new Date('2023-11-23T20:17:43.694Z'),
+          declaration: true,
+          offerStatus: 'accepted',
+          whichReview: 'beef',
+          dateOfTesting: new Date('2023-11-10T00:00:00.000Z'),
+          detailsCorrect: 'yes',
+          eligibleSpecies: 'yes',
+          confirmCheckDetails: 'yes'
+        },
+        organisation: {
+          sbi: '123456789',
+          name: 'Mr madeup',
+          email: 'karengilberta@trebligneraky.com.test',
+          address:
+            'Forest View Farm,PAYHEMBURY,CLAYTONS FARM,LITTLE LONDON,NEWBURY,GL3 4RA,United Kingdom',
+          orgEmail: 'burdassfrz@rfssadrubj.com.test',
+          farmerName: 'Karen Gilbert'
+        },
+        status: 'READY_TO_PAY',
+        statusHistory: [],
+        updateHistory: [],
+        contactHistory: [
+          {
+            id: '7e4dca92-2ee8-4420-8efc-eec7daafd26b',
+            field: 'email',
+            newValue: 'karengilberta@trebligneraky.com.test',
+            oldValue: 'notreal@madeitup.com',
+            createdAt: new Date('2024-11-20T13:51:24.291Z')
+          }
+        ],
+        redactionHistory: {},
+        flags: [],
+        claimed: false,
+        eligiblePiiRedaction: true
+      }
+      owAppRepo.getApplication.mockResolvedValue(mockResult)
+
+      const result = await getApplication({
+        db,
+        logger: mockLogger,
+        applicationReference: 'AHWR-B571-6E79'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'AHWR-B571-6E79'
+      })
+      expect(owAppRepo.getApplication).toHaveBeenCalledWith(
+        db,
+        'AHWR-B571-6E79'
+      )
+      expect(result).toEqual({
+        type: 'VV',
+        reference: 'AHWR-B571-6E79',
+        createdAt: new Date('2023-09-21T21:11:02.776Z'),
+        data: {
+          vetName: 'Mr CowWhisperer',
+          vetRcvs: '1208642',
+          urnResult: '355981',
+          visitDate: new Date('2023-11-10T00:00:00.000Z'),
+          dateOfClaim: new Date('2023-11-23T20:17:43.694Z'),
+          declaration: true,
+          offerStatus: 'accepted',
+          whichReview: 'beef',
+          dateOfTesting: new Date('2023-11-10T00:00:00.000Z'),
+          detailsCorrect: 'yes',
+          eligibleSpecies: 'yes',
+          confirmCheckDetails: 'yes'
+        },
+        organisation: {
+          sbi: '123456789',
+          name: 'Mr madeup',
+          email: 'karengilberta@trebligneraky.com.test',
+          address:
+            'Forest View Farm,PAYHEMBURY,CLAYTONS FARM,LITTLE LONDON,NEWBURY,GL3 4RA,United Kingdom',
+          orgEmail: 'burdassfrz@rfssadrubj.com.test',
+          farmerName: 'Karen Gilbert'
+        },
+        status: 'READY_TO_PAY',
+        statusHistory: [],
+        updateHistory: [],
+        contactHistory: [
+          {
+            id: '7e4dca92-2ee8-4420-8efc-eec7daafd26b',
+            field: 'email',
+            newValue: 'karengilberta@trebligneraky.com.test',
+            oldValue: 'notreal@madeitup.com',
+            createdAt: new Date('2024-11-20T13:51:24.291Z')
+          }
+        ],
+        flags: [],
+        eligiblePiiRedaction: true
+      })
+    })
+
+    it('should throw Boom.notFound when OW application does not exist in db', async () => {
+      owAppRepo.getApplication.mockResolvedValue(null)
+
+      await expect(
+        getApplication({
+          db,
+          logger: mockLogger,
+          applicationReference: 'AHWR-B571-6E79'
+        })
+      ).rejects.toThrow('Application not found')
+    })
+
+    it('should return NW application when application exists in db', async () => {
+      const mockResult = {
+        status: 'AGREED',
+        reference: 'IAHW-G3CL-V59P',
+        data: {
+          reference: 'TEMP-AAAA-AAAA',
+          declaration: true,
+          offerStatus: 'accepted',
+          confirmCheckDetails: 'yes'
+        },
+        organisation: {
+          name: 'Fake org name',
+          farmerName: 'Fake farmer name',
+          email: 'fake.farmer.email@example.com.test',
+          sbi: '123456789',
+          address: '1 fake street,fake town,United Kingdom',
+          orgEmail: 'fake.org.email@example.com.test'
+        },
+        createdAt: new Date(),
+        statusHistory: [
+          {
+            status: 'AGREED',
+            createdBy: 'admin',
+            createdAt: new Date('2025-04-02T08:46:19.637Z')
+          }
+        ],
+        updateHistory: [],
+        contactHistory: [],
+        flags: [
+          {
+            id: '0b401d15-b594-4bce-851a-0f676f1ce5a6',
+            note: "User did not agree with multi herds T&C's",
+            deleted: true,
+            createdAt: new Date('2025-04-30T10:42:04.707Z'),
+            createdBy: 'Rob Catton (EqualExperts)',
+            deletedAt: new Date('2025-04-30T10:50:55.169Z'),
+            deletedBy: 'Rob Catton (EqualExperts)',
+            appliesToMh: true,
+            deletedNote: "User has changed their mind and accepted the T&C's"
+          }
+        ],
+        eligiblePiiRedaction: true
+      }
+      appRepo.getApplication.mockResolvedValue(mockResult)
+
+      const result = await getApplication({
+        db,
+        logger: mockLogger,
+        applicationReference: 'IAHW-G3CL-V59P'
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-G3CL-V59P'
+      })
+      expect(appRepo.getApplication).toHaveBeenCalledWith(db, 'IAHW-G3CL-V59P')
+      expect(result).toEqual({
+        type: 'EE',
+        status: 'AGREED',
+        reference: 'IAHW-G3CL-V59P',
+        data: {
+          reference: 'TEMP-AAAA-AAAA',
+          declaration: true,
+          offerStatus: 'accepted',
+          confirmCheckDetails: 'yes'
+        },
+        organisation: {
+          name: 'Fake org name',
+          farmerName: 'Fake farmer name',
+          email: 'fake.farmer.email@example.com.test',
+          sbi: '123456789',
+          address: '1 fake street,fake town,United Kingdom',
+          orgEmail: 'fake.org.email@example.com.test'
+        },
+        createdAt: new Date(),
+        statusHistory: [
+          {
+            status: 'AGREED',
+            createdBy: 'admin',
+            createdAt: new Date('2025-04-02T08:46:19.637Z')
+          }
+        ],
+        updateHistory: [],
+        contactHistory: [],
+        flags: [
+          {
+            id: '0b401d15-b594-4bce-851a-0f676f1ce5a6',
+            note: "User did not agree with multi herds T&C's",
+            deleted: true,
+            createdAt: new Date('2025-04-30T10:42:04.707Z'),
+            createdBy: 'Rob Catton (EqualExperts)',
+            deletedAt: new Date('2025-04-30T10:50:55.169Z'),
+            deletedBy: 'Rob Catton (EqualExperts)',
+            appliesToMh: true,
+            deletedNote: "User has changed their mind and accepted the T&C's"
+          }
+        ],
+        eligiblePiiRedaction: true
+      })
+    })
+
+    it('should throw Boom.notFound when NW application does not exist in db', async () => {
+      appRepo.getApplication.mockResolvedValue(undefined)
+
+      await expect(
+        getApplication({
+          db,
+          logger: mockLogger,
+          applicationReference: 'EE999'
+        })
+      ).rejects.toEqual(
+        expect.objectContaining({
+          isBoom: true,
+          message: 'Application not found'
+        })
+      )
     })
   })
 })
