@@ -1,5 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import { config } from '../src/config.js'
+import { config } from '../src/config/config.js'
 
 export default async function globalSetup() {
   const dbName = 'testdb'

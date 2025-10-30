@@ -1,5 +1,4 @@
 import { createServer } from '../../src/server.js'
-import { config } from '../../src/config/config.js'
 
 let server
 
