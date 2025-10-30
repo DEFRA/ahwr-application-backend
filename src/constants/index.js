@@ -1,4 +1,4 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { claimType } from 'ffc-ahwr-common-library'
 
 export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date(
@@ -6,7 +6,7 @@ export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date(
 )
 
 export const MULTIPLE_HERDS_RELEASE_DATE = new Date(
-  config.multiHerds.releaseDate
+  config.get('multiHerds.releaseDate')
 )
 
 export const applicationStatus = {

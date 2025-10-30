@@ -1,13 +1,14 @@
 import convict from 'convict'
 import convictFormatWithValidator from 'convict-format-with-validator'
 
-import { convictValidateMongoUri } from './common/helpers/convict/validate-mongo-uri.js'
+import { convictValidateMongoUri } from './convict/validate-mongo-uri.js'
 
 convict.addFormat(convictValidateMongoUri)
 convict.addFormats(convictFormatWithValidator)
 
 const isProduction = process.env.NODE_ENV === 'production'
-const isTest = process.env.NODE_ENV === 'test'
+const usePrettyPrint = process.env.USE_PRETTY_PRINT === 'true'
+const msgTypePrefix = 'uk.gov.ffc.ahwr'
 
 const config = convict({
   serviceVersion: {
@@ -34,6 +35,26 @@ const config = convict({
     format: String,
     default: 'ahwr-application-backend'
   },
+  uris: {
+    documentGeneratorApiUri: {
+      doc: 'Api Uri for Document Generator Service',
+      format: String,
+      default: 'http://localhost:3002',
+      env: 'DOCUMENT_GENERATOR_SERVICE_URI'
+    },
+    sfdMessagingProxyApiUri: {
+      doc: 'Api Uri for Sfd Mesaging Proxy Service',
+      format: String,
+      default: 'http://localhost:3002',
+      env: 'SFD_MESSAGING_PROXY_SERVICE_URI'
+    },
+    messageGeneratorApiUri: {
+      doc: 'Api Uri for Message Generator Service',
+      format: String,
+      default: 'http://localhost:3002',
+      env: 'MESSAGE_GENERATOR_SERVICE_URI'
+    }
+  },
   cdpEnvironment: {
     doc: 'The CDP environment the app is running in. With the addition of "local" for local development',
     format: [
@@ -49,31 +70,84 @@ const config = convict({
     default: 'local',
     env: 'ENVIRONMENT'
   },
+  env: {
+    doc: 'The Node environment',
+    format: ['development', 'test', 'production'],
+    default: 'development',
+    env: 'NODE_ENV'
+  },
+  isDev: {
+    doc: 'The Node environment',
+    format: Boolean,
+    default: process.env.NODE_ENV === 'development'
+  },
   log: {
-    isEnabled: {
-      doc: 'Is logging enabled',
-      format: Boolean,
-      default: !isTest,
-      env: 'LOG_ENABLED'
-    },
     level: {
       doc: 'Logging level',
       format: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-      default: 'info',
+      default: process.env.NODE_ENV === 'test' ? 'silent' : 'info',
       env: 'LOG_LEVEL'
     },
     format: {
       doc: 'Format to output logs in',
       format: ['ecs', 'pino-pretty'],
-      default: isProduction ? 'ecs' : 'pino-pretty',
+      default: usePrettyPrint ? 'pino-pretty' : 'ecs',
       env: 'LOG_FORMAT'
     },
     redact: {
       doc: 'Log paths to redact',
       format: Array,
       default: isProduction
-        ? ['req.headers.authorization', 'req.headers.cookie', 'res.headers']
-        : ['req', 'res', 'responseTime']
+        ? [
+            'req.headers.authorization',
+            'req.headers.cookie',
+            'res.headers',
+            'payload.vetsName',
+            'payload.vetRCVSNumber'
+          ]
+        : []
+    }
+  },
+  messageTypes: {
+    applicationRequestMsgType: {
+      doc: 'Message type for application requests',
+      format: String,
+      default: `${msgTypePrefix}.app.request`
+    },
+    applicationResponseMsgType: {
+      doc: 'Message type for application responses',
+      format: String,
+      default: `${msgTypePrefix}.app.response`
+    },
+    applicationEmailDocRequestMsgType: {
+      doc: 'Message type for email doc requests',
+      format: String,
+      default: `${msgTypePrefix}.app.email.doc.request`
+    },
+    moveClaimToPaidMsgType: {
+      doc: 'Message type for claim to paid',
+      format: String,
+      default: `${msgTypePrefix}.set.paid.status`
+    },
+    redactPiiRequestMsgType: {
+      doc: 'Message type for pii redaction requests',
+      format: String,
+      default: `${msgTypePrefix}.redact.pii.request`
+    },
+    submitPaymentRequestMsgType: {
+      doc: 'Message type for payment requests',
+      format: String,
+      default: `${msgTypePrefix}.submit.payment.request`
+    },
+    sfdRequestMsgType: {
+      doc: 'Message type for sfd requests',
+      format: String,
+      default: `${msgTypePrefix}.sfd.request`
+    },
+    messageGeneratorMsgType: {
+      doc: 'Message type for claim status update requests',
+      format: String,
+      default: `${msgTypePrefix}.claim.status.update`
     }
   },
   mongo: {
@@ -104,7 +178,7 @@ const config = convict({
           'secondaryPreferred',
           'nearest'
         ],
-        default: 'secondary'
+        default: 'primaryPreferred'
       }
     }
   },
@@ -114,6 +188,12 @@ const config = convict({
     nullable: true,
     default: null,
     env: 'HTTP_PROXY'
+  },
+  complianceCheckRatio: {
+    doc: 'Ratio value used to determine how many claims to check for compliance',
+    format: Number,
+    default: 1,
+    env: 'CLAIM_COMPLIANCE_CHECK_RATIO'
   },
   isMetricsEnabled: {
     doc: 'Enable metrics reporting',
@@ -195,6 +275,28 @@ const config = convict({
         sensitive: true,
         env: 'QUEUE_CONNECTION_STRING'
       }
+    }
+  },
+  multiHerds: {
+    releaseDate: {
+      doc: 'Release date for go live of multi herds feature',
+      format: String,
+      default: '2025-05-01',
+      env: 'MULTI_HERDS_RELEASE_DATE'
+    }
+  },
+  featureAssurance: {
+    enabled: {
+      doc: 'Feature assurance enabled',
+      format: Boolean,
+      default: process.env.FEATURE_ASSURANCE_ENABLED === 'true'
+    },
+    startDate: {
+      doc: 'Release date for go live of multi herds feature',
+      format: String,
+      default: null,
+      nullable: true,
+      env: 'FEATURE_ASSURANCE_START'
     }
   }
 })

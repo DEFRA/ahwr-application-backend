@@ -8,16 +8,19 @@ import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { sendMessage } from '../../../messaging/send-message.js'
 import { v4 as uuid } from 'uuid'
-import appInsights from 'applicationinsights'
 import {
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
   UNNAMED_HERD
 } from 'ffc-ahwr-common-library'
-import { config } from '../../../config/index.js'
+import { config } from '../../../config/config.js'
 import { processHerd } from './herd-processor.js'
+import { messageQueueConfig } from '../../../config/message-queue.js'
 
-const { messageGeneratorMsgType, messageGeneratorQueue } = config
+const messageGeneratorMsgType = config.get(
+  'messageTypes.messageGeneratorMsgType'
+)
+const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: get from main config
 
 const addClaimAndHerdToDatabase = async ({
   sbi,
@@ -135,7 +138,7 @@ export async function generateEventsAndComms(
   const {
     amount,
     typeOfLivestock,
-    dateOfVisit,
+    // dateOfVisit,
     reviewTestResults,
     piHuntRecommended,
     piHuntAllAnimals
@@ -179,20 +182,20 @@ export async function generateEventsAndComms(
     { sessionId: uuid() }
   )
 
-  appInsights.defaultClient.trackEvent({
-    name: 'process-claim',
-    properties: {
-      data: {
-        applicationReference,
-        typeOfLivestock,
-        dateOfVisit,
-        claimType: type,
-        piHunt: claim.data.piHunt
-      },
-      reference: claim.reference,
-      status: claim.statusId,
-      sbi,
-      scheme: 'new-world'
-    }
-  })
+  // appInsights.defaultClient.trackEvent({
+  //   name: 'process-claim',
+  //   properties: {
+  //     data: {
+  //       applicationReference,
+  //       typeOfLivestock,
+  //       dateOfVisit,
+  //       claimType: type,
+  //       piHunt: claim.data.piHunt
+  //     },
+  //     reference: claim.reference,
+  //     status: claim.statusId,
+  //     sbi,
+  //     scheme: 'new-world'
+  //   }
+  // })
 }

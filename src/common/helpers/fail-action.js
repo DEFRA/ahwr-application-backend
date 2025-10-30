@@ -1,6 +1,6 @@
-import { createLogger } from './logging/logger.js'
+import { getLogger } from '../../logging/logger.js'
 
-const logger = createLogger()
+const logger = getLogger()
 
 export function failAction(_request, _h, error) {
   logger.warn(error, error?.message)

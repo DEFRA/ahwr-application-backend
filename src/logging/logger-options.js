@@ -1,5 +1,5 @@
 import { ecsFormat } from '@elastic/ecs-pino-format'
-import { config } from '../../../config.js'
+import { config } from '../config/config.js'
 import { getTraceId } from '@defra/hapi-tracing'
 
 const logConfig = config.get('log')
@@ -13,11 +13,18 @@ const formatters = {
       serviceName
     })
   },
-  'pino-pretty': { transport: { target: 'pino-pretty' } }
+  'pino-pretty': {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        singleLine: true,
+        colorize: true
+      }
+    }
+  }
 }
 
 export const loggerOptions = {
-  enabled: logConfig.isEnabled,
   ignorePaths: ['/health'],
   redact: {
     paths: logConfig.redact,

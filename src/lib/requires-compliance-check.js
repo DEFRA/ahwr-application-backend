@@ -1,4 +1,4 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { applicationStatus } from '../constants/index.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 
@@ -20,7 +20,7 @@ export const generateClaimStatus = async (
 }
 
 const getClaimStatusBasedOnRatio = async () => {
-  const complianceCheckRatio = Number(config.complianceCheckRatio)
+  const complianceCheckRatio = Number(config.get('complianceCheckRatio'))
 
   // if complianceCheckRatio is 0 or less this means compliance checks are turned off
   if (complianceCheckRatio <= 0) {
@@ -40,10 +40,9 @@ const getClaimStatusBasedOnRatio = async () => {
 const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (
   visitDateAsString
 ) => {
+  const { enabled, startDate } = config.get('featureAssurance')
   return (
-    config.featureAssurance.enabled &&
-    config.featureAssurance.startDate &&
-    new Date(visitDateAsString) >= new Date(config.featureAssurance.startDate)
+    enabled && startDate && new Date(visitDateAsString) >= new Date(startDate)
   )
 }
 
@@ -52,7 +51,7 @@ const getClaimStatusBasedOnFeatureAssuranceRules = async (
   previousClaimsForSpecies,
   logger
 ) => {
-  // previous claims have been updated to include herd info were neccessary by this point,
+  // previous claims have been updated to include herd info were necessary by this point,
   // so don't need to differentiate between unnamed herd claims being linked to the claim being processed or not.
   const hasClaimedForMultipleHerdsForSpecies = previousClaimsForSpecies.some(
     (c) => c.data.herdId !== herdId

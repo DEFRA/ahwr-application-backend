@@ -3,8 +3,8 @@ import {
   Unit,
   StorageResolution
 } from 'aws-embedded-metrics'
-import { config } from '../../config.js'
-import { createLogger } from './logging/logger.js'
+import { config } from '../../config/config.js'
+import { getLogger } from '../../logging/logger.js'
 
 const metricsCounter = async (metricName, value = 1) => {
   if (!config.get('isMetricsEnabled')) {
@@ -21,7 +21,7 @@ const metricsCounter = async (metricName, value = 1) => {
     )
     await metricsLogger.flush()
   } catch (error) {
-    createLogger().error(error, error.message)
+    getLogger().error(error, error.message)
   }
 }
 

@@ -8,7 +8,7 @@ import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-
 import { StatusCodes } from 'http-status-codes'
 import { sendMessage as sendMessageViaFetch } from '../../azure/ahwr-event-queue.js'
 import { sendMessage as sendMessageViaLib } from '../../azure/send-message.js'
-import { config } from '../../config.js'
+import { config } from '../../config/config.js'
 
 const eventQueueConfig = config.get('azure.eventQueue')
 

@@ -1,8 +1,9 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { setPaymentStatusToPaid } from './application/set-payment-status-to-paid.js'
 import { processRedactPiiRequest } from './application/process-redact-pii.js'
 
-const { moveClaimToPaidMsgType, redactPiiRequestMsgType } = config
+const { moveClaimToPaidMsgType, redactPiiRequestMsgType } =
+  config.get('messageTypes')
 
 export const processApplicationMessage = async (message, receiver, logger) => {
   try {

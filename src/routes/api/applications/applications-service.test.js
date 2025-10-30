@@ -414,6 +414,7 @@ describe('applications-service', () => {
     })
 
     it('should return NW application when application exists in db', async () => {
+      const createdAt = new Date()
       const mockResult = {
         status: 'AGREED',
         reference: 'IAHW-G3CL-V59P',
@@ -431,7 +432,7 @@ describe('applications-service', () => {
           address: '1 fake street,fake town,United Kingdom',
           orgEmail: 'fake.org.email@example.com.test'
         },
-        createdAt: new Date(),
+        createdAt,
         statusHistory: [
           {
             status: 'AGREED',
@@ -486,7 +487,7 @@ describe('applications-service', () => {
           address: '1 fake street,fake town,United Kingdom',
           orgEmail: 'fake.org.email@example.com.test'
         },
-        createdAt: new Date(),
+        createdAt,
         statusHistory: [
           {
             status: 'AGREED',

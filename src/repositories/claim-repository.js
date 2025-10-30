@@ -88,7 +88,7 @@ export const updateClaimByReference = async (data, note, logger) => {
   //     data.sbi
   //   )
   // } catch (err) {
-  //   logger.setBindings({ err })
+  //   logger.setBindings({ error: err})
   //   throw err
   // }
 }

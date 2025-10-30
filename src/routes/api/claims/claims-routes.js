@@ -1,7 +1,7 @@
 import joi from 'joi'
 import { v4 as uuid } from 'uuid'
 import { sendMessage } from '../../../messaging/send-message.js'
-import { config } from '../../../config/index.js'
+import { config } from '../../../config/config.js'
 import {
   piHunt,
   piHuntAllAnimals,
@@ -31,13 +31,12 @@ import {
   isURNUniqueHandler,
   getClaimHandler
 } from './claims-controller.js'
+import { messageQueueConfig } from '../../../config/message-queue.js'
 
-const {
-  submitPaymentRequestMsgType,
-  submitRequestQueue,
-  messageGeneratorMsgType,
-  messageGeneratorQueue
-} = config
+const submitPaymentRequestMsgType = config.get('messageTypes')
+const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
+const messageGeneratorMsgType = config.get('messageTypes')
+const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: get from main config
 
 const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
   typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
@@ -121,7 +120,7 @@ export const claimHandlers = [
             .optional()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
@@ -189,7 +188,7 @@ export const claimHandlers = [
           dateOfVisit: joi.date().required()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
@@ -214,7 +213,7 @@ export const claimHandlers = [
           note: joi.string()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
 
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }

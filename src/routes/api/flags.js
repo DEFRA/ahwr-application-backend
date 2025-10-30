@@ -17,7 +17,7 @@ export const flagHandlers = [
           deletedNote: joi.string().required()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },

@@ -1,10 +1,12 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { sendMessage } from '../messaging/send-message.js'
+import { messageQueueConfig } from '../config/message-queue.js'
 
-const {
-  applicationEmailDocRequestMsgType,
-  applicationDocCreationRequestQueue
-} = config
+const applicationEmailDocRequestMsgType = config.get(
+  'messageTypes.applicationEmailDocRequestMsgType'
+)
+const applicationDocCreationRequestQueue =
+  messageQueueConfig.applicationDocCreationRequestQueue // TODO: should move to main config
 
 export const requestApplicationDocumentGenerateAndEmail = async (
   emailParams

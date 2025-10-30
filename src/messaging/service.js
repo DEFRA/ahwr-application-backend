@@ -1,7 +1,7 @@
 import { MessageReceiver } from 'ffc-messaging'
-import { closeAllConnections } from '../messaging/create-message-sender.js'
-import { config } from '../config/index.js'
+import { closeAllConnections } from './create-message-sender.js'
 import { processApplicationMessage } from './process-message.js'
+import { messageQueueConfig } from '../config/message-queue.js'
 
 let applicationReceiver
 
@@ -9,7 +9,7 @@ export const startMessagingService = async (logger) => {
   const applicationAction = (message) =>
     processApplicationMessage(message, applicationReceiver, logger.child({}))
   applicationReceiver = new MessageReceiver(
-    config.applicationRequestQueue,
+    messageQueueConfig.applicationRequestQueue, // TODO: should be main config
     applicationAction
   )
   await applicationReceiver.subscribe()
