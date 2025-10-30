@@ -90,7 +90,6 @@ export const evalSortField = (sort) => {
     }
   }
 
-  // Default sort if no sort object provided
   return { createdAt: -1 }
 }
 
