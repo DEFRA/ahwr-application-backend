@@ -26,6 +26,8 @@ module.exports = {
   testPathIgnorePatterns: [],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  globalSetup: './tests/globalSetup.js',
+  globalTeardown: './tests/globalTeardown.js',
   transform: {
     '^.+\\.[j]sx?$': 'babel-jest'
   },
