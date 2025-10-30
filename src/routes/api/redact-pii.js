@@ -1,5 +1,5 @@
 import HttpStatus from 'http-status-codes'
-import { config } from '../../config.js'
+import { config } from '../../config/config.js'
 import { sendMessageToSQS } from '../../messaging/send-message.js'
 
 const { redactPiiRequestMsgType } = {

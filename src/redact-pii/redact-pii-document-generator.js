@@ -1,8 +1,8 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
 import wreck from '@hapi/wreck'
 
-const { documentGeneratorApiUri } = config
+const { documentGeneratorApiUri } = config.get('uris')
 
 export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${documentGeneratorApiUri}/redact/pii`

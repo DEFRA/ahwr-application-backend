@@ -1,8 +1,8 @@
-import { config } from '../config/index.js'
+import { config } from '../config/config.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
 import wreck from '@hapi/wreck'
 
-const { sfdMessagingProxyApiUri } = config
+const { sfdMessagingProxyApiUri } = config.get('uris')
 
 export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${sfdMessagingProxyApiUri}/redact/pii`

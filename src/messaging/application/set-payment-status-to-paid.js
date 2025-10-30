@@ -10,10 +10,14 @@ import {
   UNNAMED_HERD
 } from 'ffc-ahwr-common-library'
 import { sendMessage } from '../send-message.js'
-import { config } from '../../config/index.js'
+import { config } from '../../config/config.js'
 import { v4 as uuid } from 'uuid'
+import { messageQueueConfig } from '../../config/message-queue.js'
 
-const { messageGeneratorMsgType, messageGeneratorQueue } = config
+const messageGeneratorMsgType = config.get(
+  'messageTypes.messageGeneratorMsgType'
+)
+const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: should be in main config
 
 export const setPaymentStatusToPaid = async (message, logger) => {
   try {

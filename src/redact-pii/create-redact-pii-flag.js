@@ -46,7 +46,7 @@ export const create = async (applicationsToRedact, redactProgress, logger) => {
       `addFlagForRedactPII with: ${JSON.stringify(applicationsToRedact)}`
     )
   } catch (err) {
-    logger.setBindings({ err })
+    logger.setBindings({ error: err })
     await updateApplicationRedactRecords(
       applicationsToRedact,
       true,

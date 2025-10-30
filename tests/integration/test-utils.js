@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import { createServer } from '../../src/server.js'
-import { config } from '../../src/config.js'
+import { config } from '../../src/config/config.js'
 
 let mongod
 let server

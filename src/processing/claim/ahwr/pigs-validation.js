@@ -10,7 +10,6 @@ import {
   PIG_GENETIC_SEQUENCING_VALUES,
   claimType
 } from 'ffc-ahwr-common-library'
-import { config } from '../../../config/index.js'
 
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
@@ -66,9 +65,6 @@ const numberOfSamplesTested = {
     .required()
 }
 
-const diseaseStatus = {
-  diseaseStatus: joi.string().valid('1', '2', '3', '4').required()
-}
 const pigsFollowUpTest = {
   pigsFollowUpTest: joi.string().valid('pcr', 'elisa').required()
 }
@@ -107,10 +103,6 @@ const biosecurityData = {
 }
 
 const getPigDiseaseData = () => {
-  if (config.pigUpdates.enabled === false) {
-    return diseaseStatus
-  }
-
   return {
     ...pigsFollowUpTest,
     ...pigsPcrTestResult,

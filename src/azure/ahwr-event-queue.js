@@ -1,9 +1,8 @@
 import crypto from 'crypto-js'
 import { ProxyAgent } from 'undici'
-import { config } from '../config.js'
+import { config } from '../config/config.js'
 // import { initCache } from '../common/helpers/cache.js'
 
-const isLoggingEnabled = config.get('log.isEnabled')
 const httpProxy = config.get('httpProxy')
 const eventQueueConfig = config.get('azure.eventQueue')
 
@@ -46,8 +45,7 @@ const proxyFetch = (url, options) => {
 }
 
 export const sendMessage = async (server, logger, body) => {
-  logger.info(`logging enabled ${isLoggingEnabled}`)
-  if (isLoggingEnabled && logger && typeof logger.info === 'function') {
+  if (logger && typeof logger.info === 'function') {
     logger.info(
       `Message to be sent to AHWR Event queue: ${JSON.stringify(body)}`
     )

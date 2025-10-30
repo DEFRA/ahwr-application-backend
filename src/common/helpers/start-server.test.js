@@ -1,6 +1,6 @@
 import { startServer } from './start-server.js'
 import { createServer } from '../../server.js'
-import { config } from '../../config.js'
+import { config } from '../../config/config.js'
 
 const mockLogger = { info: jest.fn(), error: jest.fn() }
 const mockServer = { start: jest.fn(), logger: mockLogger }
@@ -8,7 +8,7 @@ const mockServer = { start: jest.fn(), logger: mockLogger }
 jest.mock('../../server.js', () => ({
   createServer: jest.fn().mockImplementation(() => mockServer)
 }))
-jest.mock('../../config.js', () => ({
+jest.mock('../../config/config.js', () => ({
   config: {
     get: jest.fn()
   }

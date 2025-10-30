@@ -13,7 +13,7 @@ import {
   getFlagByAppRef,
   getFlagsForApplication
 } from '../../repositories/flag-repository.js'
-import { config } from '../../config/index.js'
+import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import {
   applicationStatus as APPLICATION_STATUS,
@@ -24,8 +24,10 @@ import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
 import { getHerdsByAppRefAndSpecies } from '../../repositories/herd-repository.js'
+import { messageQueueConfig } from '../../config/message-queue.js'
 
-const { submitPaymentRequestMsgType, submitRequestQueue } = config
+const submitPaymentRequestMsgType = config.get('messageTypes')
+const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
 
 export const applicationHandlers = [
   {
@@ -103,7 +105,7 @@ export const applicationHandlers = [
           note: joi.string()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -133,6 +135,7 @@ export const applicationHandlers = [
     handler: async (request, h) => {
       try {
         request.logger.setBindings({ sbi: request.payload?.sbi })
+        // FIXME: Can this be deleted, because the function it refers to does not exist
         const appProcessed = await processApplicationApi(
           request.payload,
           request.logger
@@ -156,7 +159,7 @@ export const applicationHandlers = [
           note: joi.string()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -198,7 +201,7 @@ export const applicationHandlers = [
             note
           })
         } catch (err) {
-          request.logger.setBindings({ applicationUpdateError: err })
+          request.logger.setBindings({ error: err })
         }
         return h.response().code(HttpStatus.OK)
       }
@@ -223,7 +226,7 @@ export const applicationHandlers = [
           .or('vetName', 'visitDate', 'vetRcvs')
           .required(),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -275,7 +278,7 @@ export const applicationHandlers = [
           appliesToMh: joi.bool().required()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -293,7 +296,7 @@ export const applicationHandlers = [
 
         const flag = await getFlagByAppRef(ref, appliesToMh)
 
-        // If the flag already exists then we dont create anything
+        // If the flag already exists then we don't create anything
         if (flag) {
           return h.response().code(HttpStatus.NO_CONTENT)
         }
@@ -338,7 +341,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -365,7 +368,7 @@ export const applicationHandlers = [
           species: joi.string().valid(...Object.values(livestockTypes))
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
@@ -406,7 +409,7 @@ export const applicationHandlers = [
           user: joi.string().required()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },

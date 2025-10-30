@@ -27,7 +27,7 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
       `applicationDatabaseRedactPII with: ${JSON.stringify(agreementsToRedact)}`
     )
   } catch (err) {
-    logger.setBindings({ err })
+    logger.setBindings({ error: err })
     await updateApplicationRedactRecords(
       agreementsToRedact,
       true,

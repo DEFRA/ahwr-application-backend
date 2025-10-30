@@ -25,7 +25,7 @@ export const claimsHandlers = [
           .or('vetsName', 'dateOfVisit', 'vetRCVSNumber')
           .required(),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ err })
+          request.logger.setBindings({ error: err })
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       }
