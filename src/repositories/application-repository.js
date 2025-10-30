@@ -1,6 +1,6 @@
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 // import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
-// import { startandEndDate } from '../lib/date-utils.js'
+import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
 import { APPLICATION_COLLECTION } from '../constants/index.js'
@@ -66,28 +66,71 @@ export const getByEmail = async (email) => {
 }
 
 export const evalSortField = (sort) => {
-  // TODO 1182 impl
-  // if (sort?.field) {
-  //   switch (sort.field.toLowerCase()) {
-  //     case 'status':
-  //       return [
-  //         models.status,
-  //         sort.field.toLowerCase(),
-  //         sort.direction ?? 'ASC'
-  //       ]
-  //     case 'apply date':
-  //       return ['createdAt', sort.direction ?? 'ASC']
-  //     case 'reference':
-  //       return ['reference', sort.direction ?? 'ASC']
-  //     case 'sbi':
-  //       return ['data.organisation.sbi', sort.direction ?? 'ASC']
-  //     case 'organisation':
-  //       return ['data.organisation.name', sort.direction ?? 'ASC']
-  //     default:
-  //       return ['createdAt', sort.direction ?? 'ASC']
-  //   }
-  // }
-  return ['createdAt', sort?.direction ?? 'ASC']
+  if (sort?.field) {
+    const direction = sort.direction?.toUpperCase() === 'DESC' ? -1 : 1
+
+    switch (sort.field.toLowerCase()) {
+      case 'status':
+        return { status: direction }
+
+      case 'apply date':
+        return { createdAt: direction }
+
+      case 'reference':
+        return { reference: direction }
+
+      case 'sbi':
+        return { 'organisation.sbi': direction }
+
+      case 'organisation':
+        return { 'organisation.name': direction }
+
+      default:
+        return { createdAt: direction }
+    }
+  }
+
+  // Default sort if no sort object provided
+  return { createdAt: -1 }
+}
+
+const buildSearchQuery = (searchText, searchType, filter) => {
+  const query = {}
+
+  if (searchText) {
+    switch (searchType) {
+      case 'sbi':
+        query['organisation.sbi'] = searchText
+        break
+
+      case 'organisation':
+        query['organisation.name'] = { $regex: searchText, $options: 'i' }
+        break
+
+      case 'ref':
+        query.reference = searchText
+        break
+
+      case 'date': {
+        const { startDate, endDate } = startandEndDate(searchText)
+        query.createdAt = { $gte: startDate, $lt: endDate }
+        break
+      }
+
+      case 'status':
+        query.status = { $regex: searchText, $options: 'i' }
+        break
+
+      default:
+        break
+    }
+  }
+
+  if (filter && filter.length > 0) {
+    query.status = { $in: filter }
+  }
+
+  return query
 }
 
 // const buildSearchQuery = (searchText, searchType, filter) => {
@@ -162,42 +205,59 @@ export const searchApplications = async (
   limit = 10,
   sort = { field: 'createdAt', direction: 'DESC' }
 ) => {
-  // TODO 1182 impl
-  const applicationsDB = await db
+  const query = buildSearchQuery(searchText, searchType, filter)
+
+  const total = await db
     .collection(APPLICATION_COLLECTION)
-    .find({}, { projection: { _id: 0 } })
-    .toArray()
-  // let query = buildSearchQuery(searchText, searchType, filter)
+    .countDocuments(query)
 
-  const total = applicationsDB.length
-  const applications = applicationsDB.map((app) => {
-    return { ...app, status: { status: 'agreed' }, flags: [] }
-  })
-  const applicationStatus = applicationsDB.map((app) => {
-    return { status: 'agreed', total }
-  })
+  let applicationStatus = []
+  let applications = []
 
-  // total = await models.application.count(query)
+  if (total > 0) {
+    applicationStatus = await db
+      .collection(APPLICATION_COLLECTION)
+      .aggregate([
+        { $match: query },
+        {
+          $group: {
+            _id: '$status',
+            total: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            status: '$_id',
+            total: 1
+          }
+        }
+      ])
+      .toArray()
 
-  // if (total > 0) {
-  //   applicationStatus = await models.application.findAll({
-  //     attributes: [
-  //       'status.status',
-  //       [sequelize.fn('COUNT', 'application.id'), 'total']
-  //     ],
-  //     ...query,
-  //     group: ['status.status', 'flags.id'],
-  //     raw: true
-  //   })
-  //   sort = evalSortField(sort)
-  //   query = {
-  //     ...query,
-  //     order: [sort],
-  //     limit,
-  //     offset
-  //   }
-  //   applications = await models.application.findAll(query)
-  // }
+    const sortObject = evalSortField(sort)
+
+    applications = await db
+      .collection(APPLICATION_COLLECTION)
+      .aggregate([
+        { $match: query },
+        { $sort: sortObject },
+        { $skip: offset },
+        { $limit: limit },
+        {
+          $addFields: {
+            flags: {
+              $filter: {
+                input: { $ifNull: ['$flags', []] },
+                as: 'flag',
+                cond: { $ne: ['$$flag.deleted', true] }
+              }
+            }
+          }
+        }
+      ])
+      .toArray()
+  }
 
   return {
     applications,

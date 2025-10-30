@@ -19,7 +19,6 @@ import {
   applicationStatus as APPLICATION_STATUS,
   livestockTypes
 } from '../../constants/index.js'
-import { processApplicationApi } from '../../messaging/application/process-application.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
@@ -31,27 +30,8 @@ const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get fr
 
 export const applicationHandlers = [
   {
-    method: 'get',
-    path: '/api/application/get/{ref}',
-    options: {
-      validate: {
-        params: joi.object({
-          ref: joi.string().valid()
-        })
-      },
-      handler: async (request, h) => {
-        const application = await getApplication(request.db, request.params.ref)
-        if (application) {
-          return h.response(application).code(HttpStatus.OK)
-        } else {
-          return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
-        }
-      }
-    }
-  },
-  {
-    method: 'post',
-    path: '/api/application/search',
+    method: 'POST',
+    path: '/api/applications/search',
     options: {
       validate: {
         payload: joi.object({
@@ -126,24 +106,6 @@ export const applicationHandlers = [
         })
 
         return h.response().code(HttpStatus.OK)
-      }
-    }
-  },
-  {
-    method: 'post',
-    path: '/api/application/processor',
-    handler: async (request, h) => {
-      try {
-        request.logger.setBindings({ sbi: request.payload?.sbi })
-        // FIXME: Can this be deleted, because the function it refers to does not exist
-        const appProcessed = await processApplicationApi(
-          request.payload,
-          request.logger
-        )
-        return h.response(appProcessed).code(HttpStatus.OK)
-      } catch (error) {
-        request.logger.setBindings({ err: error })
-        return h.response({ error }).code(HttpStatus.BAD_REQUEST).takeover()
       }
     }
   },
