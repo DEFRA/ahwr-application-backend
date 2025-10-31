@@ -132,69 +132,6 @@ const buildSearchQuery = (searchText, searchType, filter) => {
   return query
 }
 
-// const buildSearchQuery = (searchText, searchType, filter) => {
-//   const query = {
-//     include: [
-//       {
-//         model: models.status,
-//         attributes: ['status']
-//       },
-//       {
-//         model: models.flag,
-//         as: 'flags',
-//         attributes: ['appliesToMh'],
-//         where: {
-//           deletedBy: null
-//         },
-//         required: false
-//       }
-//     ]
-//   }
-
-//   if (searchText) {
-//     switch (searchType) {
-//       case 'sbi':
-//         query.where = { 'data.organisation.sbi': searchText }
-//         break
-//       case 'organisation':
-//         query.where = {
-//           'data.organisation.name': { [Op.iLike]: `%${searchText}%` }
-//         }
-//         break
-//       case 'ref':
-//         query.where = { reference: searchText }
-//         break
-//       case 'date':
-//         query.where = {
-//           createdAt: {
-//             [Op.gte]: startandEndDate(searchText).startDate,
-//             [Op.lt]: startandEndDate(searchText).endDate
-//           }
-//         }
-//         break
-//       case 'status':
-//         query.include[0] = {
-//           model: models.status,
-//           attributes: ['status'],
-//           where: { status: { [Op.iLike]: `%${searchText}%` } }
-//         }
-//         break
-//       default:
-//         break
-//     }
-//   }
-
-//   if (filter && filter.length > 0) {
-//     query.include[0] = {
-//       model: models.status,
-//       attributes: ['status'],
-//       where: { status: filter }
-//     }
-//   }
-
-//   return query
-// }
-
 export const searchApplications = async (
   db,
   searchText,
@@ -210,37 +147,14 @@ export const searchApplications = async (
     .collection(APPLICATION_COLLECTION)
     .countDocuments(query)
 
-  let applicationStatus = []
   let applications = []
 
   if (total > 0) {
-    applicationStatus = await db
-      .collection(APPLICATION_COLLECTION)
-      .aggregate([
-        { $match: query },
-        {
-          $group: {
-            _id: '$status',
-            total: { $sum: 1 }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            status: '$_id',
-            total: 1
-          }
-        }
-      ])
-      .toArray()
-
-    const sortObject = evalSortField(sort)
-
     applications = await db
       .collection(APPLICATION_COLLECTION)
       .aggregate([
         { $match: query },
-        { $sort: sortObject },
+        { $sort: evalSortField(sort) },
         { $skip: offset },
         { $limit: limit },
         {
@@ -260,8 +174,7 @@ export const searchApplications = async (
 
   return {
     applications,
-    total,
-    applicationStatus
+    total
   }
 }
 

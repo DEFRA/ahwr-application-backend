@@ -50,22 +50,20 @@ export const applicationHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { applications, total, applicationStatus } =
-          await searchApplications(
-            request.db,
-            request.payload.search?.text ?? '',
-            request.payload.search?.type,
-            request.payload.filter,
-            request.payload.offset,
-            request.payload.limit,
-            request.payload.sort
-          )
+        const { applications, total } = await searchApplications(
+          request.db,
+          request.payload.search?.text ?? '',
+          request.payload.search?.type,
+          request.payload.filter,
+          request.payload.offset,
+          request.payload.limit,
+          request.payload.sort
+        )
 
         return h
           .response({
             applications,
-            total,
-            applicationStatus
+            total
           })
           .code(HttpStatus.OK)
       }
