@@ -115,7 +115,10 @@ describe('processClaim', () => {
       processClaim({ payload, logger: mockLogger, db: mockDb })
     ).rejects.toThrow('NotFound')
 
-    expect(getApplication).toHaveBeenCalledWith(mockDb, 'IAHW-AAAA-AAAA')
+    expect(getApplication).toHaveBeenCalledWith({
+      db: mockDb,
+      reference: 'IAHW-AAAA-AAAA'
+    })
   })
 
   test('throws BadRequest when request is invalid', async () => {

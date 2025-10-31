@@ -224,14 +224,6 @@ export const addHerdToClaimData = async ({
   // })
 }
 
-export const findAllClaimUpdateHistory = (reference) => {
-  // TODO 1182 impl
-  return []
-  // return models.claim_update_history.findAll({
-  //   where: { reference }
-  // })
-}
-
 export const redactPII = async (applicationReference, logger) => {
   // TODO 1182 impl
   // const redactedValueByField = {

@@ -24,7 +24,10 @@ export const processClaim = async ({ payload, logger, db }) => {
   } = payload
   const { typeOfLivestock, laboratoryURN } = data || {}
 
-  const application = await getApplication(db, applicationReference)
+  const application = await getApplication({
+    db,
+    reference: applicationReference
+  })
   if (!application) {
     throw Boom.notFound('Application not found')
   }
