@@ -9,6 +9,7 @@ import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { flagHandlers } from '../routes/api/flags.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
+import { applicationHandlers } from '../routes/api/applications.js'
 
 const router = {
   plugin: {
@@ -16,6 +17,7 @@ const router = {
     register: (server, _options) => {
       server.route(
         [health]
+          .concat(applicationHandlers)
           .concat(applicationRoutes)
           .concat(latestContactDetailsHandlers)
           .concat(applicationHistoryHandlers)
