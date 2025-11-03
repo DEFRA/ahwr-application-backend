@@ -468,7 +468,10 @@ describe('applications-service', () => {
       expect(mockLogger.setBindings).toHaveBeenCalledWith({
         applicationReference: 'IAHW-G3CL-V59P'
       })
-      expect(appRepo.getApplication).toHaveBeenCalledWith(db, 'IAHW-G3CL-V59P')
+      expect(appRepo.getApplication).toHaveBeenCalledWith({
+        db,
+        reference: 'IAHW-G3CL-V59P'
+      })
       expect(result).toEqual({
         type: 'EE',
         status: 'AGREED',

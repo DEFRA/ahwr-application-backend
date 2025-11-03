@@ -5,7 +5,21 @@ import { startandEndDate } from '../lib/date-utils.js'
 
 import { APPLICATION_COLLECTION } from '../constants/index.js'
 
-export const getApplication = async (db, reference) => {
+export const getApplication = async ({
+  db,
+  reference,
+  includeDeletedFlags = false
+}) => {
+  const flagFilter = includeDeletedFlags
+    ? '$flags'
+    : {
+        $filter: {
+          input: '$flags',
+          as: 'flag',
+          cond: { $eq: ['$$flag.deleted', false] }
+        }
+      }
+
   return db
     .collection(APPLICATION_COLLECTION)
     .aggregate([
@@ -27,13 +41,7 @@ export const getApplication = async (db, reference) => {
           status: 1,
           flags: {
             $map: {
-              input: {
-                $filter: {
-                  input: '$flags',
-                  as: 'flag',
-                  cond: { $eq: ['$$flag.deleted', false] }
-                }
-              },
+              input: flagFilter,
               as: 'flag',
               in: { appliesToMh: '$$flag.appliesToMh' }
             }

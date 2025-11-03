@@ -196,7 +196,10 @@ export const getApplication = async ({ db, logger, applicationReference }) => {
     return getOWApplication(db, applicationReference)
   }
 
-  const result = await appRepo.getApplication(db, applicationReference)
+  const result = await appRepo.getApplication({
+    db,
+    reference: applicationReference
+  })
   if (!result) {
     throw Boom.notFound('Application not found')
   }

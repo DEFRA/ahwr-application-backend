@@ -1,16 +1,8 @@
 import Joi from 'joi'
-import { getApplicationHistory } from '../../azure-storage/application-status-repository.js'
-import {
-  findAllClaimUpdateHistory,
-  getClaimByReference
-} from '../../repositories/claim-repository.js'
-import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
+import { getClaimByReference } from '../../repositories/claim-repository.js'
 import { StatusCodes } from 'http-status-codes'
-import { sendMessage as sendMessageViaFetch } from '../../azure/ahwr-event-queue.js'
-import { sendMessage as sendMessageViaLib } from '../../azure/send-message.js'
-import { config } from '../../config/config.js'
-
-const eventQueueConfig = config.get('azure.eventQueue')
+import { getApplication } from '../../repositories/application-repository.js'
+import { getApplication as getOWApplication } from '../../repositories/ow-application-repository.js'
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {
@@ -23,10 +15,18 @@ export const buildFlagEvents = (flags) => {
     }
   }
 
-  return flags.flatMap(({ dataValues }) => {
-    const { appliesToMh } = dataValues
+  return flags.flatMap((flag) => {
+    const {
+      appliesToMh,
+      note,
+      createdBy,
+      createdAt,
+      deletedAt,
+      deletedNote,
+      deletedBy
+    } = flag
 
-    if (!dataValues.deletedAt) {
+    if (!deletedAt) {
       const { eventType, newValue, oldValue } = getText(appliesToMh, 'flagged')
 
       // Only 1 event needed, as flag was created but not deleted
@@ -36,9 +36,9 @@ export const buildFlagEvents = (flags) => {
           updatedProperty: 'agreementFlag',
           newValue,
           oldValue,
-          note: dataValues.note,
-          updatedBy: dataValues.createdBy,
-          updatedAt: dataValues.createdAt
+          note,
+          updatedBy: createdBy,
+          updatedAt: createdAt
         }
       ]
     }
@@ -53,121 +53,92 @@ export const buildFlagEvents = (flags) => {
         updatedProperty: 'agreementFlag',
         newValue: deleted.newValue,
         oldValue: deleted.oldValue,
-        note: dataValues.deletedNote,
-        updatedBy: dataValues.deletedBy,
-        updatedAt: dataValues.deletedAt
+        note: deletedNote,
+        updatedBy: deletedBy,
+        updatedAt: deletedAt
       },
       {
         eventType: created.eventType,
         updatedProperty: 'agreementFlag',
         newValue: created.newValue,
         oldValue: created.oldValue,
-        note: dataValues.note,
-        updatedBy: dataValues.createdBy,
-        updatedAt: dataValues.createdAt
+        note,
+        updatedBy: createdBy,
+        updatedAt: createdAt
       }
     ]
   })
 }
 
+const normaliseUpdateHistory = (update) => ({
+  eventType: update.eventType,
+  updatedProperty: update.updatedProperty,
+  newValue: update.newValue,
+  oldValue: update.oldValue,
+  note: update.note,
+  updatedBy: update.createdBy,
+  updatedAt: update.createdAt
+})
+
+const normaliseStatusHistory = ({ status, note, createdBy, createdAt }) => ({
+  eventType: 'status-updated',
+  updatedProperty: 'status',
+  newValue: status,
+  note,
+  updatedBy: createdBy,
+  updatedAt: createdAt
+})
+
 export const applicationHistoryHandlers = [
   {
     method: 'GET',
-    path: '/api/application/history/{ref}',
+    path: '/api/applications/{claimOrOWAppRef}/history',
     options: {
       validate: {
         params: Joi.object({
-          ref: Joi.string().valid()
+          claimOrOWAppRef: Joi.string().valid()
         })
       },
       handler: async (request, h) => {
-        // TODO 1178 TEMP - test comms with Azure
-        try {
-          const ahwrEventMessage = {
-            sourceSystem: 'AHWR',
-            message: 'Hello from CDP via fetch!'
-          }
-          await sendMessageViaFetch(
-            request.server,
-            request.logger,
-            ahwrEventMessage
-          )
-          await sendMessageViaLib(
-            {
-              message: 'Hello from CDP via lib!'
-            },
-            'uk.gov.ffc.ahwr.event',
-            {
-              address: eventQueueConfig.address,
-              type: 'queue',
-              appInsights: undefined,
-              host: eventQueueConfig.host,
-              password: eventQueueConfig.password,
-              username: eventQueueConfig.username,
-              useCredentialChain: false,
-              managedIdentityClientId: undefined,
-              connectionString: eventQueueConfig.connection,
-              retries: 50,
-              retryWaitInMs: 100
-            },
-            { sessionId: '456' }
-          )
-        } catch (error) {
-          console.log(`BH TEST 6: ${error}`)
-          console.log(`BH TEST 7: ${JSON.stringify(error)}`)
-          request.logger.error({ sfdCommunicationError: error })
-        }
-        console.log('BH TEST 8')
-
         const db = request.db
-        const reference = request.params.ref
-        const history = await getApplicationHistory(db, reference)
-        const normalisedHistoryRecords = history.map((record) => {
-          const { statusId, note } = JSON.parse(record.Payload)
+        const claimOrOWAppRef = request.params.claimOrOWAppRef
+        const isOWAppRef = claimOrOWAppRef.includes('AHWR')
 
-          return {
-            eventType: record.EventType,
-            updatedProperty: 'statusId',
-            newValue: statusId,
-            note,
-            updatedBy: record.ChangedBy,
-            updatedAt: record.ChangedOn
-          }
-        })
+        let statusHistory
+        let updateHistory
+        let flags
 
-        console.log('BH TEST 9')
+        if (isOWAppRef) {
+          const application = await getOWApplication(db, claimOrOWAppRef)
 
-        const dataUpdates = await findAllClaimUpdateHistory(reference)
+          statusHistory = application.statusHistory
+          updateHistory = application.updateHistory
+          flags = application.flags
+        } else {
+          const claim = await getClaimByReference(db, claimOrOWAppRef)
+          const application = await getApplication({
+            db,
+            reference: claim.applicationReference,
+            includeDeletedFlags: true
+          })
 
-        const normalisedDataUpdates = dataUpdates.map((claimUpdate) => ({
-          eventType: claimUpdate.eventType,
-          updatedProperty: claimUpdate.updatedProperty,
-          newValue: claimUpdate.newValue,
-          oldValue: claimUpdate.oldValue,
-          note: claimUpdate.note,
-          updatedBy: claimUpdate.createdBy,
-          updatedAt: claimUpdate.createdAt
-        }))
+          statusHistory = claim.statusHistory
+          updateHistory = claim.updateHistory
+          flags = application.flags
+        }
 
-        const isOldWorldAgreementReference = reference.includes('AHWR')
-
-        console.log('BH TEST 10')
-
-        const applicationReference = isOldWorldAgreementReference
-          ? reference
-          : (await getClaimByReference(db, reference))?.applicationReference
-
-        const flags =
-          await getFlagsForApplicationIncludingDeleted(applicationReference)
-
-        const applicationFlagHistory = buildFlagEvents(flags)
-
-        console.log('BH TEST 11')
+        const normalisedStatusHistory = statusHistory.map(
+          normaliseStatusHistory
+        )
+        const normalisedUpdateHistory = updateHistory.map(
+          normaliseUpdateHistory
+        )
+        const normalisedFlagHistory = buildFlagEvents(flags)
 
         const historyRecords = [
-          ...normalisedHistoryRecords,
-          ...normalisedDataUpdates,
-          ...applicationFlagHistory
+          ...normalisedStatusHistory,
+          ...normalisedUpdateHistory,
+          ...normalisedFlagHistory
         ].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
 
         return h.response({ historyRecords }).code(StatusCodes.OK)
