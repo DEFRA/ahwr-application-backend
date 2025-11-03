@@ -6,7 +6,7 @@ import { raiseApplicationFlagDeletedEvent } from '../../event-publisher/index.js
 export const flagHandlers = [
   {
     method: 'patch',
-    path: '/api/application/flag/{flagId}/delete',
+    path: '/api/applications/flag/{flagId}/delete',
     options: {
       validate: {
         params: joi.object({

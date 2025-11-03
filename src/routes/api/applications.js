@@ -15,14 +15,10 @@ import {
 } from '../../repositories/flag-repository.js'
 import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
-import {
-  applicationStatus as APPLICATION_STATUS,
-  livestockTypes
-} from '../../constants/index.js'
+import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
-import { getHerdsByAppRefAndSpecies } from '../../repositories/herd-repository.js'
 import { messageQueueConfig } from '../../config/message-queue.js'
 
 const submitPaymentRequestMsgType = config.get('messageTypes')
@@ -71,7 +67,7 @@ export const applicationHandlers = [
   },
   {
     method: 'put',
-    path: '/api/application/{ref}',
+    path: '/api/applications/{ref}',
     options: {
       validate: {
         params: joi.object({
@@ -109,7 +105,7 @@ export const applicationHandlers = [
   },
   {
     method: 'post',
-    path: '/api/application/claim',
+    path: '/api/applications/claim',
     options: {
       validate: {
         payload: joi.object({
@@ -226,7 +222,7 @@ export const applicationHandlers = [
   },
   {
     method: 'post',
-    path: '/api/application/{ref}/flag',
+    path: '/api/applications/{ref}/flag',
     options: {
       validate: {
         params: joi.object({
@@ -294,7 +290,7 @@ export const applicationHandlers = [
   },
   {
     method: 'get',
-    path: '/api/application/{ref}/flag',
+    path: '/api/applications/{ref}/flag',
     options: {
       validate: {
         params: joi.object({
@@ -317,47 +313,8 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'get',
-    path: '/api/application/{ref}/herds',
-    options: {
-      validate: {
-        params: joi.object({
-          ref: joi.string().valid()
-        }),
-        query: joi.object({
-          species: joi.string().valid(...Object.values(livestockTypes))
-        }),
-        failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
-          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
-        }
-      },
-      handler: async (request, h) => {
-        const { ref } = request.params
-        const { species } = request.query
-
-        request.logger.setBindings({ ref, species })
-
-        const herds = await getHerdsByAppRefAndSpecies(ref, species)
-
-        return h
-          .response(
-            herds.map((herd) => ({
-              herdId: herd.id,
-              herdVersion: herd.version,
-              herdName: herd.herdName,
-              cph: herd.cph,
-              herdReasons: herd.herdReasons,
-              species: herd.species
-            }))
-          )
-          .code(HttpStatus.OK)
-      }
-    }
-  },
-  {
     method: 'put',
-    path: '/api/application/{ref}/eligible-pii-redaction',
+    path: '/api/applications/{ref}/eligible-pii-redaction',
     options: {
       validate: {
         params: joi.object({

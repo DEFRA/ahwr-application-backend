@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 export const applicationEventsHandlers = [
   {
     method: 'GET',
-    path: '/api/application/events/{ref}',
+    path: '/api/applications/events/{ref}',
     options: {
       validate: {
         params: joi.object({

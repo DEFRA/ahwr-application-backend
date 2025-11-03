@@ -1,211 +1,180 @@
-// import { startandEndDate } from '../../lib/date-utils.js'
+import { startandEndDate } from '../../lib/date-utils.js'
+import { CLAIMS_COLLECTION } from '../../constants/index.js'
 
-// const evalSortField = (sort) => {
-//   const direction = sort?.direction ?? 'ASC'
-//   const field = sort?.field?.toLowerCase()
+const MONGO_OP_BY_FILTER_OP = {
+  eq: '$eq',
+  ne: '$ne',
+  gt: '$gt',
+  gte: '$gte',
+  lt: '$lt',
+  lte: '$lte',
+  in: '$in',
+  nin: '$nin',
+  regex: '$regex'
+}
 
-//   if (!field) {
-//     return ['createdAt', direction]
-//   }
+const SEARCH_TYPES = [
+  'ref',
+  'appRef',
+  'type',
+  'species',
+  'status',
+  'sbi',
+  'date',
+  'reset'
+]
+const APPLICATION_SEARCH_TYPES = ['sbi']
 
-//   const orderBySortField = {
-//     status: [models.status, field, direction],
-//     'claim date': ['createdAt', direction],
-//     sbi: ['data.organisation.sbi', direction],
-//     'claim number': ['reference', direction],
-//     'type of visit': ['type', direction],
-//     species: ['data.typeOfLivestock', direction]
-//   }
+const evalSortField = (sort) => {
+  const direction = sort?.direction?.toUpperCase() === 'DESC' ? -1 : 1
+  const field = sort?.field?.toLowerCase()
 
-//   return orderBySortField[field] || ['createdAt', direction]
-// }
+  if (!field) {
+    return { createdAt: direction }
+  }
+
+  const orderBySortField = {
+    status: { status: direction },
+    'claim date': { createdAt: direction },
+    sbi: { 'application.organisation.sbi': direction },
+    'claim number': { reference: direction },
+    'type of visit': { type: direction },
+    species: { 'data.typeOfLivestock': direction }
+  }
+
+  return orderBySortField[field] || { createdAt: direction }
+}
+
+const applyClaimSearchConditions = (matchStage, search) => {
+  const { text, type } = search || {}
+
+  if (!text || !type) {
+    return
+  }
+
+  switch (type) {
+    case 'ref':
+      matchStage.reference = { $regex: text, $options: 'i' }
+      break
+    case 'appRef':
+      matchStage.applicationReference = { $regex: text, $options: 'i' }
+      break
+    case 'status':
+      matchStage.status = { $regex: text, $options: 'i' }
+      break
+    case 'type':
+      matchStage.type = text
+      break
+    case 'species':
+      matchStage['data.typeOfLivestock'] = { $regex: text, $options: 'i' }
+      break
+    case 'date': {
+      const { startDate, endDate } = startandEndDate(text)
+      matchStage['createdAt'] = {
+        $gte: startDate,
+        $lt: endDate
+      }
+      break
+    }
+    default:
+  }
+}
+
+const applyApplicationSearchConditions = (matchStage, search) => {
+  const { text, type } = search || {}
+  if (!text || !type) return
+
+  switch (type) {
+    case 'sbi':
+      matchStage['application.organisation.sbi'] = {
+        $regex: text,
+        $options: 'i'
+      }
+      break
+    default:
+      break
+  }
+}
 
 export const searchClaims = async (
   search,
   filter,
   offset,
   limit,
-  sort = { field: 'createdAt', direction: 'DESC' }
+  sort = { field: 'createdAt', direction: 'DESC' },
+  db
 ) => {
-  // TODO 1182 impl
-  return []
+  if (search?.type && !SEARCH_TYPES.includes(search.type)) {
+    return { total: 0, claims: [] }
+  }
 
-  // if (
-  //   search?.type &&
-  //   ![
-  //     'ref',
-  //     'appRef',
-  //     'type',
-  //     'species',
-  //     'status',
-  //     'sbi',
-  //     'date',
-  //     'reset'
-  //   ].includes(search.type)
-  // ) {
-  //   return { total: 0, claims: [] }
-  // }
+  const claimMatchStage = {}
+  const appMatchStage = {}
 
-  // const query = {
-  //   include: [
-  //     {
-  //       model: models.status,
-  //       attributes: ['status']
-  //     },
-  //     {
-  //       model: models.application,
-  //       attributes: ['data']
-  //     },
-  //     {
-  //       model: models.flag,
-  //       as: 'flags',
-  //       attributes: ['appliesToMh'],
-  //       where: {
-  //         deletedBy: null
-  //       },
-  //       required: false
-  //     }
-  //   ]
-  // }
+  if (search) {
+    if (APPLICATION_SEARCH_TYPES.includes(search.type)) {
+      applyApplicationSearchConditions(appMatchStage, search)
+    } else {
+      applyClaimSearchConditions(claimMatchStage, search)
+    }
+  }
 
-  // applySearchConditions(query, search)
+  const pipeline = [
+    { $match: claimMatchStage },
+    {
+      $lookup: {
+        from: 'applications',
+        localField: 'applicationReference',
+        foreignField: 'reference',
+        as: 'application'
+      }
+    },
+    { $unwind: { path: '$application', preserveNullAndEmptyArrays: true } },
+    {
+      $addFields: {
+        'application.flags': {
+          $filter: {
+            input: '$application.flags',
+            as: 'flag',
+            cond: { $eq: ['$$flag.deletedBy', null] }
+          }
+        }
+      }
+    }
+  ]
 
-  // if (filter) {
-  //   query.where = {
-  //     ...query.where,
-  //     [filter.field]: {
-  //       [Op[filter.op]]: filter.value
-  //     }
-  //   }
-  // }
+  if (Object.keys(appMatchStage).length > 0) {
+    pipeline.push({ $match: appMatchStage })
+  }
 
-  // const claims = await models.claim.findAll({
-  //   ...query,
-  //   order: [evalSortField(sort)],
-  //   limit,
-  //   offset
-  // })
+  if (filter) {
+    const mongoOp = MONGO_OP_BY_FILTER_OP[filter.op]
+    if (mongoOp) {
+      pipeline.push({
+        $match: {
+          [filter.field]: { [mongoOp]: filter.value }
+        }
+      })
+    }
+  }
 
-  // const total = await models.claim.count(query)
+  const countPipeline = [...pipeline, { $count: 'total' }]
+  const totalResult = await db
+    .collection(CLAIMS_COLLECTION)
+    .aggregate(countPipeline)
+    .toArray()
+  const total = totalResult[0]?.total || 0
 
-  // const herdKeys = claims
-  //   .map((claim) => {
-  //     const { herdId, herdVersion } = claim.dataValues.data || {}
-  //     return herdId && herdVersion ? `${herdId}::${herdVersion}` : null
-  //   })
-  //   .filter(Boolean)
+  pipeline.push(
+    { $sort: evalSortField(sort) },
+    { $skip: offset },
+    { $limit: limit }
+  )
 
-  // const uniqueKeys = [...new Set(herdKeys)]
+  const claims = await db
+    .collection(CLAIMS_COLLECTION)
+    .aggregate(pipeline)
+    .toArray()
 
-  // const herdWhere = {
-  //   [Op.or]: uniqueKeys.map((key) => {
-  //     const [id, version] = key.split('::')
-
-  //     return {
-  //       id,
-  //       version
-  //     }
-  //   })
-  // }
-
-  // const herds = await models.herd.findAll({ where: herdWhere })
-
-  // const herdMap = new Map(
-  //   herds.map((herd) => [
-  //     `${herd.dataValues.id}::${herd.dataValues.version}`,
-  //     herd.toJSON()
-  //   ])
-  // )
-
-  // const claimsWithHerd = claims.map((claim) => {
-  //   const { herdId, herdVersion } = claim.dataValues.data || {}
-  //   const herdKey = `${herdId}::${herdVersion}`
-  //   const herd = herdMap.get(herdKey)
-
-  //   return {
-  //     ...claim.toJSON(),
-  //     herd
-  //   }
-  // })
-
-  // return {
-  //   total,
-  //   claims: claimsWithHerd
-  // }
+  return { total, claims }
 }
-
-// const applySearchConditions = (query, search) => {
-//   if (!search?.text || !search?.type) {
-//     return
-//   }
-
-//   const { text, type } = search
-
-//   switch (type) {
-//     case 'ref':
-//       query.where = { reference: text }
-//       break
-//     case 'appRef':
-//       query.where = { applicationReference: text }
-//       break
-//     case 'type':
-//       query.where = { type: text }
-//       break
-//     case 'species':
-//       query.where = { 'data.typeOfLivestock': text }
-//       break
-//     case 'status':
-//       query.include = [
-//         {
-//           model: models.application,
-//           attributes: ['data']
-//         },
-//         {
-//           model: models.status,
-//           attributes: ['status'],
-//           where: { status: { [Op.iLike]: `%${text}%` } }
-//         },
-//         {
-//           model: models.flag,
-//           as: 'flags',
-//           attributes: ['appliesToMh'],
-//           where: { deletedBy: null },
-//           required: false
-//         }
-//       ]
-//       break
-//     case 'sbi': {
-//       query.include = [
-//         {
-//           model: models.status,
-//           attributes: ['status']
-//         },
-//         {
-//           model: models.application,
-//           attributes: ['data'],
-//           where: { 'data.organisation.sbi': text }
-//         },
-//         {
-//           model: models.flag,
-//           as: 'flags',
-//           attributes: ['appliesToMh'],
-//           where: { deletedBy: null },
-//           required: false
-//         }
-//       ]
-//       break
-//     }
-//     case 'date': {
-//       const { startDate, endDate } = startandEndDate(text)
-//       query.where = {
-//         createdAt: {
-//           [Op.gte]: startDate,
-//           [Op.lt]: endDate
-//         }
-//       }
-//       break
-//     }
-//     default:
-//       break
-//   }
-// }
