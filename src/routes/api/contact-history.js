@@ -10,7 +10,7 @@ import { StatusCodes } from 'http-status-codes'
 export const contactHistoryHandlers = [
   {
     method: 'GET',
-    path: '/api/application/contact-history/{ref}',
+    path: '/api/applications/contact-history/{ref}',
     options: {
       validate: {
         params: Joi.object({
@@ -26,7 +26,7 @@ export const contactHistoryHandlers = [
   },
   {
     method: 'PUT',
-    path: '/api/application/contact-history',
+    path: '/api/applications/contact-history',
     options: {
       validate: {
         payload: Joi.object({

@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 export const latestContactDetailsHandlers = [
   {
     method: 'GET',
-    path: '/api/application/latest-contact-details/{ref}',
+    path: '/api/applications/latest-contact-details/{ref}',
     options: {
       validate: {
         params: joi.object({

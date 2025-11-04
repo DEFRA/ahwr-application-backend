@@ -44,7 +44,7 @@ const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
 export const claimHandlers = [
   {
     method: 'GET',
-    path: '/api/claim/get-by-reference/{ref}',
+    path: '/api/claims/get-by-reference/{ref}',
     options: {
       validate: {
         params: joi.object({
@@ -75,7 +75,7 @@ export const claimHandlers = [
   },
   {
     method: 'GET',
-    path: '/api/claim/get-by-application-reference/{ref}',
+    path: '/api/claims/get-by-application-reference/{ref}',
     options: {
       validate: {
         params: joi.object({
@@ -106,7 +106,7 @@ export const claimHandlers = [
   },
   {
     method: 'POST',
-    path: '/api/claim/search',
+    path: '/api/claims/search',
     options: {
       validate: {
         payload: joi.object({
@@ -131,7 +131,8 @@ export const claimHandlers = [
           filter,
           offset,
           limit,
-          sort
+          sort,
+          request.db
         )
         return h.response({ total, claims }).code(StatusCodes.OK)
       }
@@ -159,7 +160,7 @@ export const claimHandlers = [
   },
   {
     method: 'POST',
-    path: '/api/claim/get-amount',
+    path: '/api/claims/get-amount',
     options: {
       validate: {
         payload: joi.object({
@@ -203,7 +204,7 @@ export const claimHandlers = [
   },
   {
     method: 'PUT',
-    path: '/api/claim/update-by-reference',
+    path: '/api/claims/update-by-reference',
     options: {
       validate: {
         payload: joi.object({
