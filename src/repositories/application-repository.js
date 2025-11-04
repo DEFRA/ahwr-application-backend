@@ -3,7 +3,10 @@
 import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 
-import { APPLICATION_COLLECTION } from '../constants/index.js'
+import {
+  APPLICATION_COLLECTION,
+  OW_APPLICATION_COLLECTION
+} from '../constants/index.js'
 
 export const getApplication = async ({
   db,
@@ -145,9 +148,20 @@ export const searchApplications = async (
 ) => {
   const query = buildSearchQuery(searchText, searchType, filter)
 
-  const total = await db
+  const totalResult = await db
     .collection(APPLICATION_COLLECTION)
-    .countDocuments(query)
+    .aggregate([
+      { $match: query },
+      {
+        $unionWith: {
+          coll: OW_APPLICATION_COLLECTION,
+          pipeline: [{ $match: query }]
+        }
+      },
+      { $count: 'total' }
+    ])
+    .toArray()
+  const total = totalResult[0]?.total || 0
 
   let applications = []
 
@@ -156,6 +170,24 @@ export const searchApplications = async (
       .collection(APPLICATION_COLLECTION)
       .aggregate([
         { $match: query },
+        {
+          $addFields: {
+            type: 'EE'
+          }
+        },
+        {
+          $unionWith: {
+            coll: OW_APPLICATION_COLLECTION,
+            pipeline: [
+              { $match: query },
+              {
+                $addFields: {
+                  type: 'VV'
+                }
+              }
+            ]
+          }
+        },
         { $sort: evalSortField(sort) },
         { $skip: offset },
         { $limit: limit },
