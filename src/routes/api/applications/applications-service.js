@@ -180,7 +180,7 @@ const getOWApplication = async (db, applicationReference) => {
     status: result.status,
     createdAt: result.createdAt,
     organisation: result.organisation,
-    redacted: result.redacted,
+    redacted: result.redactionHistory?.success === 'Y',
     updateHistory: result.updateHistory,
     statusHistory: result.statusHistory,
     contactHistory: result.contactHistory,

@@ -47,13 +47,7 @@ export const getApplication = async ({
             }
           },
           redacted: {
-            $anyElementTrue: {
-              $map: {
-                input: { $ifNull: ['$redactionHistory', []] },
-                as: 'r',
-                in: { $eq: ['$$r.success', 'Y'] }
-              }
-            }
+            $eq: [{ $ifNull: ['$redactionHistory.success', 'N'] }, 'Y']
           }
         }
       },
@@ -476,13 +470,7 @@ export const getApplicationsBySbi = async (db, sbi) => {
             }
           },
           redacted: {
-            $anyElementTrue: {
-              $map: {
-                input: { $ifNull: ['$redactionHistory', []] },
-                as: 'r',
-                in: { $eq: ['$$r.success', 'Y'] }
-              }
-            }
+            $eq: [{ $ifNull: ['$redactionHistory.success', 'N'] }, 'Y']
           }
         }
       },
