@@ -47,7 +47,6 @@ const evalSortField = (sort) => {
 
 const applyClaimSearchConditions = (matchStage, search) => {
   const { text, type } = search || {}
-
   if (!text || !type) {
     return
   }
@@ -77,12 +76,15 @@ const applyClaimSearchConditions = (matchStage, search) => {
       break
     }
     default:
+      break
   }
 }
 
 const applyApplicationSearchConditions = (matchStage, search) => {
   const { text, type } = search || {}
-  if (!text || !type) return
+  if (!text || !type) {
+    return
+  }
 
   switch (type) {
     case 'sbi':
