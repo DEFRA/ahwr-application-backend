@@ -397,7 +397,8 @@ describe('applications-service', () => {
           }
         ],
         flags: [],
-        eligiblePiiRedaction: true
+        eligiblePiiRedaction: true,
+        redacted: false
       })
     })
 
