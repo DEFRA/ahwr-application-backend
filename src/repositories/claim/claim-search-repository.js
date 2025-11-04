@@ -86,15 +86,11 @@ const applyApplicationSearchConditions = (matchStage, search) => {
     return
   }
 
-  switch (type) {
-    case 'sbi':
-      matchStage['application.organisation.sbi'] = {
-        $regex: text,
-        $options: 'i'
-      }
-      break
-    default:
-      break
+  if (type === 'sbi') {
+    matchStage['application.organisation.sbi'] = {
+      $regex: text,
+      $options: 'i'
+    }
   }
 }
 
