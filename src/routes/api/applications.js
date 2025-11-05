@@ -11,9 +11,9 @@ import {
   createFlag
 } from '../../repositories/application-repository.js'
 import {
-  findApplication as findOWApplication,
-  getFlagByAppRef as getOWFlagByAppRef,
-  createFlag as createOWFlag
+  findOWApplication,
+  getOWFlagByAppRef,
+  createOWFlag
 } from '../../repositories/ow-application-repository.js'
 import { getFlagsForApplication } from '../../repositories/flag-repository.js'
 import { config } from '../../config/config.js'

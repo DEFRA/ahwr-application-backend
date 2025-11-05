@@ -2,7 +2,7 @@ import Joi from 'joi'
 import { getClaimByReference } from '../../repositories/claim-repository.js'
 import { StatusCodes } from 'http-status-codes'
 import { getApplication } from '../../repositories/application-repository.js'
-import { getApplication as getOWApplication } from '../../repositories/ow-application-repository.js'
+import { getOWApplication } from '../../repositories/ow-application-repository.js'
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {

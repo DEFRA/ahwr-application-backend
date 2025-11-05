@@ -1,6 +1,6 @@
 import { OW_APPLICATION_COLLECTION } from '../constants/index.js'
 
-export const isURNUnique = async ({ db, sbi, laboratoryURN }) => {
+export const isOWURNUnique = async ({ db, sbi, laboratoryURN }) => {
   const result = await db.collection(OW_APPLICATION_COLLECTION).findOne({
     'organisation.sbi': sbi,
     'data.urnResult': { $regex: `^${laboratoryURN}$`, $options: 'i' }
@@ -8,17 +8,17 @@ export const isURNUnique = async ({ db, sbi, laboratoryURN }) => {
   return !result
 }
 
-export const getApplication = async (db, reference) => {
+export const getOWApplication = async (db, reference) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOne({
     reference
   })
 }
 
-export const findApplication = async (db, reference) => {
+export const findOWApplication = async (db, reference) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOne({ reference })
 }
 
-export const getFlagByAppRef = async (
+export const getOWFlagByAppRef = async (
   db,
   applicationReference,
   appliesToMh
@@ -44,7 +44,7 @@ export const getFlagByAppRef = async (
     .next()
 }
 
-export const createFlag = async (db, applicationReference, data) => {
+export const createOWFlag = async (db, applicationReference, data) => {
   return db
     .collection(OW_APPLICATION_COLLECTION)
     .updateOne({ reference: applicationReference }, { $push: { flags: data } })

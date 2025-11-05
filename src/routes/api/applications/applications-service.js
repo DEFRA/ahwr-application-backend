@@ -168,7 +168,7 @@ const isOWApplication = (applicationReference) =>
   applicationReference.startsWith('AHWR')
 
 const getOWApplication = async (db, applicationReference) => {
-  const result = await owAppRepo.getApplication(db, applicationReference)
+  const result = await owAppRepo.getOWApplication(db, applicationReference)
   if (!result) {
     throw Boom.notFound('Application not found')
   }
