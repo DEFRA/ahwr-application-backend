@@ -544,3 +544,19 @@ export const createFlag = async (db, applicationReference, data) => {
     .collection(APPLICATION_COLLECTION)
     .updateOne({ reference: applicationReference }, { $push: { flags: data } })
 }
+
+export const deleteFlag = async (db, flagId, user, deletedNote) => {
+  const result = await db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
+    { 'flags.id': flagId },
+    {
+      $set: {
+        'flags.$.deletedAt': new Date(),
+        'flags.$.deletedBy': user,
+        'flags.$.deletedNote': deletedNote,
+        'flags.$.deleted': true
+      }
+    },
+    { returnDocument: 'after' }
+  )
+  return result?.flags?.find((f) => f.id === flagId)
+}

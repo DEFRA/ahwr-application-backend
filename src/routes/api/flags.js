@@ -1,12 +1,13 @@
 import joi from 'joi'
-import { deleteFlag, getAllFlags } from '../../repositories/flag-repository.js'
+import { getAllFlags } from '../../repositories/flag-repository.js'
 import HttpStatus from 'http-status-codes'
-import { raiseApplicationFlagDeletedEvent } from '../../event-publisher/index.js'
+import { deleteFlag } from '../../repositories/application-repository.js'
+import { deleteOWFlag } from '../../repositories/ow-application-repository.js'
 
 export const flagHandlers = [
   {
-    method: 'patch',
-    path: '/api/applications/flag/{flagId}/delete',
+    method: 'PATCH',
+    path: '/api/flags/{flagId}/delete',
     options: {
       validate: {
         params: joi.object({
@@ -27,32 +28,40 @@ export const flagHandlers = [
 
         request.logger.setBindings({ flagId, user })
 
-        const [rowsChanged, updatedRecords] = await deleteFlag(
+        let updatedFlag = await deleteFlag(
+          request.db,
           flagId,
           user,
           deletedNote
         )
 
-        if (rowsChanged === 0) {
+        if (!updatedFlag) {
+          updatedFlag = await deleteOWFlag(
+            request.db,
+            flagId,
+            user,
+            deletedNote
+          )
+        }
+
+        if (!updatedFlag) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        const { dataValues } = updatedRecords[0]
-
-        await raiseApplicationFlagDeletedEvent(
-          {
-            application: { id: dataValues.applicationReference },
-            message: 'Application flag removed',
-            flag: {
-              id: dataValues.id,
-              appliesToMh: dataValues.appliesToMh,
-              deletedNote
-            },
-            raisedBy: dataValues.deletedBy,
-            raisedOn: dataValues.deletedAt
-          },
-          dataValues.sbi
-        )
+        // await raiseApplicationFlagDeletedEvent(
+        //   {
+        //     application: { id: dataValues.applicationReference },
+        //     message: 'Application flag removed',
+        //     flag: {
+        //       id: dataValues.id,
+        //       appliesToMh: dataValues.appliesToMh,
+        //       deletedNote
+        //     },
+        //     raisedBy: dataValues.deletedBy,
+        //     raisedOn: dataValues.deletedAt
+        //   },
+        //   dataValues.sbi
+        // )
 
         return h.response().code(HttpStatus.NO_CONTENT)
       }

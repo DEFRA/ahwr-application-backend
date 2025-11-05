@@ -49,3 +49,21 @@ export const createOWFlag = async (db, applicationReference, data) => {
     .collection(OW_APPLICATION_COLLECTION)
     .updateOne({ reference: applicationReference }, { $push: { flags: data } })
 }
+
+export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
+  const result = await db
+    .collection(OW_APPLICATION_COLLECTION)
+    .findOneAndUpdate(
+      { 'flags.id': flagId },
+      {
+        $set: {
+          'flags.$.deletedAt': new Date(),
+          'flags.$.deletedBy': user,
+          'flags.$.deletedNote': deletedNote,
+          'flags.$.deleted': true
+        }
+      },
+      { returnDocument: 'after' }
+    )
+  return result?.flags?.find((f) => f.id === flagId)
+}
