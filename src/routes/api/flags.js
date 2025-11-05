@@ -59,11 +59,11 @@ export const flagHandlers = [
     }
   },
   {
-    method: 'get',
+    method: 'GET',
     path: '/api/flags',
     options: {
-      handler: async (_request, h) => {
-        const flags = await getAllFlags()
+      handler: async (request, h) => {
+        const flags = await getAllFlags(request.db)
 
         return h.response(flags).code(HttpStatus.OK)
       }
