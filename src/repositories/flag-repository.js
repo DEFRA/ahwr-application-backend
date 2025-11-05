@@ -1,4 +1,8 @@
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import {
+  APPLICATION_COLLECTION,
+  OW_APPLICATION_COLLECTION
+} from '../constants/index.js'
 
 export const createFlag = async (data) => {
   // TODO 1182 impl
@@ -42,9 +46,49 @@ export const deleteFlag = async (flagId, user, deletedNote) => {
   // )
 }
 
-export const getAllFlags = async () => {
-  // TODO 1182 impl
-  return []
+export const getAllFlags = async (db) => {
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate([
+      { $unwind: '$flags' },
+      { $match: { 'flags.deleted': { $ne: true } } },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              '$flags',
+              {
+                applicationReference: '$reference',
+                sbi: '$organisation.sbi'
+              }
+            ]
+          }
+        }
+      },
+      {
+        $unionWith: {
+          coll: OW_APPLICATION_COLLECTION,
+          pipeline: [
+            { $unwind: '$flags' },
+            { $match: { 'flags.deleted': { $ne: true } } },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: [
+                    '$flags',
+                    {
+                      applicationReference: '$reference',
+                      sbi: '$organisation.sbi'
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ])
+    .toArray()
 
   // return models.flag.findAll({ where: { deletedAt: null, deletedBy: null } })
 }
