@@ -4,27 +4,6 @@ import {
   OW_APPLICATION_COLLECTION
 } from '../constants/index.js'
 
-export const createFlag = async (data) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.flag.create(data)
-}
-
-export const getFlagByAppRef = async (applicationReference, appliesToMh) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.flag.findOne({
-  //   where: {
-  //     applicationReference,
-  //     deletedAt: null,
-  //     deletedBy: null,
-  //     appliesToMh
-  //   }
-  // })
-}
-
 export const getFlagsForApplication = async (applicationReference) => {
   // TODO 1182 impl
   return []
@@ -89,8 +68,6 @@ export const getAllFlags = async (db) => {
       }
     ])
     .toArray()
-
-  // return models.flag.findAll({ where: { deletedAt: null, deletedBy: null } })
 }
 
 export const getFlagsForApplicationIncludingDeleted = async (

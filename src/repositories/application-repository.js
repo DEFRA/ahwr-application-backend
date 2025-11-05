@@ -271,12 +271,8 @@ export const updateApplicationByReference = async (
   // }
 }
 
-export const findApplication = async (reference) => {
-  // TODO 1182 impl
-  return {}
-  // const application = await models.application.findOne({ where: { reference } })
-
-  // return application === null ? application : application.dataValues
+export const findApplication = async (db, reference) => {
+  return db.collection(APPLICATION_COLLECTION).findOne({ reference })
 }
 
 export const updateApplicationData = async (
@@ -515,4 +511,36 @@ export const getApplicationsBySbi = async (db, sbi) => {
 
 export const createApplication = async (db, application) => {
   return db.collection(APPLICATION_COLLECTION).insertOne(application)
+}
+
+export const getFlagByAppRef = async (
+  db,
+  applicationReference,
+  appliesToMh
+) => {
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate([
+      { $match: { reference: applicationReference } },
+      { $unwind: '$flags' },
+      {
+        $match: {
+          'flags.appliesToMh': appliesToMh,
+          $or: [
+            { 'flags.deleted': false },
+            { 'flags.deleted': null },
+            { 'flags.deleted': { $exists: false } }
+          ]
+        }
+      },
+      { $limit: 1 },
+      { $replaceRoot: { newRoot: '$flags' } }
+    ])
+    .next()
+}
+
+export const createFlag = async (db, applicationReference, data) => {
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .updateOne({ reference: applicationReference }, { $push: { flags: data } })
 }

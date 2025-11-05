@@ -22,3 +22,6 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
   // check for rejected T&Cs flag, if absent then is multiple herds journey
   return !agreementFlags?.some((f) => f.appliesToMh)
 }
+
+export const isOWAppRef = (applicationReference) =>
+  applicationReference.startsWith('AHWR')
