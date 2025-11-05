@@ -1,6 +1,6 @@
-import { isURNUnique, getApplication } from './ow-application-repository.js'
+import { isOWURNUnique, getOWApplication } from './ow-application-repository.js'
 
-describe('isURNUnique', () => {
+describe('isOWURNUnique', () => {
   const mockDb = {
     collection: jest.fn(() => mockCollection)
   }
@@ -13,7 +13,7 @@ describe('isURNUnique', () => {
   it('should return true if no matching document is found', async () => {
     mockCollection.findOne.mockResolvedValue(null)
 
-    const result = await isURNUnique({ db: mockDb, sbi, laboratoryURN })
+    const result = await isOWURNUnique({ db: mockDb, sbi, laboratoryURN })
 
     expect(mockDb.collection).toHaveBeenCalledWith('owapplications')
     expect(mockCollection.findOne).toHaveBeenCalledWith({
@@ -28,13 +28,13 @@ describe('isURNUnique', () => {
       id: '95598de8-c0fa-4ba2-bb8f-17bc746e305d'
     })
 
-    const result = await isURNUnique({ db: mockDb, sbi, laboratoryURN })
+    const result = await isOWURNUnique({ db: mockDb, sbi, laboratoryURN })
 
     expect(result).toBe(false)
   })
 })
 
-describe('getApplication', () => {
+describe('getOWApplication', () => {
   const mockDb = {
     collection: jest.fn()
   }
@@ -96,7 +96,7 @@ describe('getApplication', () => {
     }
     mockCollection.findOne.mockResolvedValue(mockApp)
 
-    const result = await getApplication(mockDb, 'AHWR-B571-6E79')
+    const result = await getOWApplication(mockDb, 'AHWR-B571-6E79')
 
     expect(mockDb.collection).toHaveBeenCalledWith('owapplications')
     expect(mockCollection.findOne).toHaveBeenCalledWith({
@@ -108,7 +108,7 @@ describe('getApplication', () => {
   it('should return null if no application is found', async () => {
     mockCollection.findOne.mockResolvedValue(null)
 
-    const result = await getApplication(mockDb, 'AHWR-B571-6E79')
+    const result = await getOWApplication(mockDb, 'AHWR-B571-6E79')
 
     expect(result).toBeNull()
   })
@@ -117,7 +117,7 @@ describe('getApplication', () => {
     const error = new Error('Database error')
     mockCollection.findOne.mockRejectedValue(error)
 
-    await expect(getApplication(mockDb, 'AHWR-B571-6E79')).rejects.toThrow(
+    await expect(getOWApplication(mockDb, 'AHWR-B571-6E79')).rejects.toThrow(
       'Database error'
     )
   })

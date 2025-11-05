@@ -6,7 +6,7 @@ import {
   getApplication,
   getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
-import { isURNUnique as isOWURNUnique } from '../../../repositories/ow-application-repository.js'
+import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { AHWR_SCHEME, claimType } from 'ffc-ahwr-common-library'

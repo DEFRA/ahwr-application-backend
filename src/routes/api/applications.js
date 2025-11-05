@@ -6,20 +6,24 @@ import {
   updateApplicationByReference,
   findApplication,
   updateApplicationData,
-  updateEligiblePiiRedaction
+  updateEligiblePiiRedaction,
+  getFlagByAppRef,
+  createFlag
 } from '../../repositories/application-repository.js'
 import {
-  createFlag,
-  getFlagByAppRef,
-  getFlagsForApplication
-} from '../../repositories/flag-repository.js'
+  findOWApplication,
+  getOWFlagByAppRef,
+  createOWFlag
+} from '../../repositories/ow-application-repository.js'
+import { getFlagsForApplication } from '../../repositories/flag-repository.js'
 import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
-import { raiseApplicationFlaggedEvent } from '../../event-publisher/index.js'
 import { messageQueueConfig } from '../../config/message-queue.js'
+import { isOWAppRef } from '../../lib/context-helper.js'
+import { randomUUID } from 'node:crypto'
 
 const submitPaymentRequestMsgType = config.get('messageTypes')
 const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
@@ -221,8 +225,8 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'post',
-    path: '/api/applications/{ref}/flag',
+    method: 'POST',
+    path: '/api/applications/{ref}/flags',
     options: {
       validate: {
         params: joi.object({
@@ -241,48 +245,53 @@ export const applicationHandlers = [
       handler: async (request, h) => {
         const { user, note, appliesToMh } = request.payload
         const { ref } = request.params
+        const { db } = request
 
         request.logger.setBindings({ appliesToMh, user, note, ref })
+        const owAppRef = isOWAppRef(ref)
 
-        const application = await findApplication(ref)
-
+        const application = owAppRef
+          ? await findOWApplication(db, ref)
+          : await findApplication(db, ref)
         if (application === null) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        const flag = await getFlagByAppRef(ref, appliesToMh)
-
+        const flag = owAppRef
+          ? await getOWFlagByAppRef(db, ref, appliesToMh)
+          : await getFlagByAppRef(db, ref, appliesToMh)
         // If the flag already exists then we don't create anything
         if (flag) {
           return h.response().code(HttpStatus.NO_CONTENT)
         }
 
-        const sbi = application.data.organisation.sbi
-
         const data = {
-          applicationReference: ref,
-          sbi,
+          id: randomUUID(),
           note,
+          createdAt: new Date(),
           createdBy: user,
-          appliesToMh
+          appliesToMh,
+          deleted: false
         }
 
-        const result = await createFlag(data)
+        owAppRef
+          ? await createOWFlag(db, ref, data)
+          : await createFlag(db, ref, data)
 
-        await raiseApplicationFlaggedEvent(
-          {
-            application: { id: application.reference },
-            message: 'Application flagged',
-            flag: {
-              id: result.dataValues.id,
-              note: result.dataValues.note,
-              appliesToMh: result.dataValues.appliesToMh
-            },
-            raisedBy: result.dataValues.createdBy,
-            raisedOn: result.dataValues.createdAt
-          },
-          sbi
-        )
+        // await raiseApplicationFlaggedEvent(
+        //   {
+        //     application: { id: application.reference },
+        //     message: 'Application flagged',
+        //     flag: {
+        //       id: result.dataValues.id,
+        //       note: result.dataValues.note,
+        //       appliesToMh: result.dataValues.appliesToMh
+        //     },
+        //     raisedBy: result.dataValues.createdBy,
+        //     raisedOn: result.dataValues.createdAt
+        //   },
+        //   sbi
+        // )
 
         return h.response().code(HttpStatus.CREATED)
       }

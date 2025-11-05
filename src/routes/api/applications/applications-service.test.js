@@ -342,7 +342,7 @@ describe('applications-service', () => {
         claimed: false,
         eligiblePiiRedaction: true
       }
-      owAppRepo.getApplication.mockResolvedValue(mockResult)
+      owAppRepo.getOWApplication.mockResolvedValue(mockResult)
 
       const result = await getApplication({
         db,
@@ -353,7 +353,7 @@ describe('applications-service', () => {
       expect(mockLogger.setBindings).toHaveBeenCalledWith({
         applicationReference: 'AHWR-B571-6E79'
       })
-      expect(owAppRepo.getApplication).toHaveBeenCalledWith(
+      expect(owAppRepo.getOWApplication).toHaveBeenCalledWith(
         db,
         'AHWR-B571-6E79'
       )
@@ -403,7 +403,7 @@ describe('applications-service', () => {
     })
 
     it('should throw Boom.notFound when OW application does not exist in db', async () => {
-      owAppRepo.getApplication.mockResolvedValue(null)
+      owAppRepo.getOWApplication.mockResolvedValue(null)
 
       await expect(
         getApplication({
