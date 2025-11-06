@@ -48,7 +48,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
       applicationRequest.offerStatus === 'rejected'
         ? applicationStatus.notAgreed
         : applicationStatus.agreed,
-    contactHistory: applicationRequest.contactHistory,
+    contactHistory: applicationRequest.contactHistory || [],
     statusHistory: [],
     updateHistory: [],
     flags: [],
