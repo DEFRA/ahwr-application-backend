@@ -15,16 +15,6 @@ export const getFlagsForApplication = async (applicationReference) => {
   // return result.map((entry) => entry.dataValues)
 }
 
-export const deleteFlag = async (flagId, user, deletedNote) => {
-  // TODO 1182 impl
-  return {}
-
-  // return models.flag.update(
-  //   { deletedAt: new Date(), deletedBy: user, deletedNote },
-  //   { where: { id: flagId }, returning: true }
-  // )
-}
-
 export const getAllFlags = async (db) => {
   return db
     .collection(APPLICATION_COLLECTION)
