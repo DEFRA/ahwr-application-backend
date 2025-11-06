@@ -42,13 +42,19 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
       confirmCheckDetails: applicationRequest.confirmCheckDetails
     },
     organisation: applicationRequest.organisation,
-    contactHistory: applicationRequest.contactHistory,
     createdBy: 'admin',
     createdAt: new Date(),
     status:
       applicationRequest.offerStatus === 'rejected'
         ? applicationStatus.notAgreed
-        : applicationStatus.agreed
+        : applicationStatus.agreed,
+    contactHistory: applicationRequest.contactHistory || [],
+    statusHistory: [],
+    updateHistory: [],
+    flags: [],
+    redactionHistory: {},
+    eligiblePiiRedaction: true,
+    claimed: false
   }
   await appRepo.createApplication(db, application)
 
