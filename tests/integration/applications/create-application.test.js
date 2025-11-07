@@ -1,6 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 
+jest.mock('../../../src/event-publisher/index.js') //TODO remove mock
+
 describe('Create application', () => {
   let server
 
