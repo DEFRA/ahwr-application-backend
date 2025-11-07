@@ -6,6 +6,7 @@ import * as owAppRepo from '../../../repositories/ow-application-repository.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 import Boom from '@hapi/boom'
+import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -58,6 +59,12 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   }
   await appRepo.createApplication(db, application)
 
+  await raiseApplicationStatusEvent({
+    message: 'New application has been created',
+    application,
+    raisedBy: application.createdBy,
+    raisedOn: application.createdAt
+  })
   // TODO
   // if (application.data.offerStatus === 'accepted') {
   //   try {

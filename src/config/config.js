@@ -187,7 +187,7 @@ const config = convict({
     format: String,
     nullable: true,
     default: null,
-    env: 'HTTP_PROXY'
+    env: 'CDP_HTTPS_PROXY'
   },
   complianceCheckRatio: {
     doc: 'Ratio value used to determine how many claims to check for compliance',
