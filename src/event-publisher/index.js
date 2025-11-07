@@ -13,16 +13,16 @@ export const raiseApplicationStatusEvent = async (event) => {
       name: SEND_SESSION_EVENT,
       properties: {
         id: `${event.application.id}`,
-        sbi: `${event.application.data.organisation.sbi}`,
+        sbi: `${event.application.organisation.sbi}`,
         cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+        checkpoint: process.env.APPINSIGHTS_CLOUDROLE || 'placeholder', //TODO can we delete this?
         status: 'success',
         action: {
-          type: `application:status-updated:${event.application.statusId}`,
+          type: `application:status-updated:${event.application.status}`,
           message: event.message,
           data: {
             reference: event.application.reference,
-            statusId: event.application.statusId
+            status: event.application.status
           },
           raisedBy: event.raisedBy,
           raisedOn: event.raisedOn.toISOString()
