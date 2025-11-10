@@ -119,10 +119,10 @@ const config = convict({
       format: String,
       default: `${msgTypePrefix}.app.response`
     },
-    applicationEmailDocRequestMsgType: {
-      doc: 'Message type for email doc requests',
+    applicationDocRequestMsgType: {
+      doc: 'Message type for document generate requests',
       format: String,
-      default: `${msgTypePrefix}.app.email.doc.request`
+      default: `${msgTypePrefix}.app.doc.request`
     },
     moveClaimToPaidMsgType: {
       doc: 'Message type for claim to paid',
@@ -215,6 +215,41 @@ const config = convict({
       format: String,
       default: '',
       env: 'APPLICATION_BACKEND_QUEUE_URL'
+    }
+  },
+  sns: {
+    documentRequestedTopicArn: {
+      doc: 'ARN of the topic to send document requested events to',
+      format: String,
+      default: '#',
+      env: 'DOCUMENT_REQUEST_TOPIC_ARN'
+    },
+    reminderRequestedTopicArn: {
+      doc: 'ARN of the topic to send document requested events to',
+      format: String,
+      default: '#',
+      env: 'REMINDER_REQUEST_TOPIC_ARN'
+    },
+    statusChangeTopicArn: {
+      doc: 'ARN of the topic to send document requested events to',
+      format: String,
+      default: '#',
+      env: 'STATUS_CHANGE_TOPIC_ARN'
+    }
+  },
+  aws: {
+    region: {
+      doc: 'AWS region',
+      format: String,
+      default: 'eu-west-1',
+      env: 'AWS_REGION'
+    },
+    endpointUrl: {
+      doc: 'AWS endpoint URL',
+      format: String,
+      default: null,
+      nullable: true,
+      env: 'AWS_ENDPOINT_URL'
     }
   },
   azure: {
