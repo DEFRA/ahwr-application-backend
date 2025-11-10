@@ -12,7 +12,11 @@ export async function publishDocumentRequestEvent(logger, messageBody) {
     eventType: applicationDocRequestMsgType
   }
 
-  await publishMessage(messageBody, attributes)
+  await publishMessage(
+    messageBody,
+    attributes,
+    config.get('sns.documentRequestedTopicArn')
+  )
 
   logger.info('Document request event published')
 }

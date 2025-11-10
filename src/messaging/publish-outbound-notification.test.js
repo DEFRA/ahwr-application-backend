@@ -10,6 +10,12 @@ const mockLogger = {
 }
 
 describe('publish outbound notification', () => {
+  beforeAll(() => {
+    config.set(
+      'sns.documentRequestedTopicArn',
+      'arn:aws:sns:eu-west-2:1:document-requested'
+    )
+  })
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -31,9 +37,13 @@ describe('publish outbound notification', () => {
     await publishDocumentRequestEvent(mockLogger, inputMessageBody)
 
     expect(setupClient).toHaveBeenCalledTimes(1)
-    expect(publishMessage).toHaveBeenCalledWith(inputMessageBody, {
-      eventType: config.get('messageTypes.applicationDocRequestMsgType')
-    })
+    expect(publishMessage).toHaveBeenCalledWith(
+      inputMessageBody,
+      {
+        eventType: config.get('messageTypes.applicationDocRequestMsgType')
+      },
+      'arn:aws:sns:eu-west-2:1:document-requested'
+    )
   })
 
   test('skips setting up client and then publishes event on subsequent call', async () => {
@@ -55,8 +65,12 @@ describe('publish outbound notification', () => {
     await publishDocumentRequestEvent(mockLogger, inputMessageBody)
 
     expect(setupClient).toHaveBeenCalledTimes(0)
-    expect(publishMessage).toHaveBeenCalledWith(inputMessageBody, {
-      eventType: config.get('messageTypes.applicationDocRequestMsgType')
-    })
+    expect(publishMessage).toHaveBeenCalledWith(
+      inputMessageBody,
+      {
+        eventType: config.get('messageTypes.applicationDocRequestMsgType')
+      },
+      'arn:aws:sns:eu-west-2:1:document-requested'
+    )
   })
 })
