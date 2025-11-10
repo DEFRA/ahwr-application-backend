@@ -1,6 +1,10 @@
 import { PublishEventBatch } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
 import { randomUUID } from 'node:crypto'
+import { ServiceBusClient } from '@azure/service-bus'
+import WebSocket from 'ws'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import { createMessage } from '../messaging/create-message.js'
 
 export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
@@ -63,7 +67,33 @@ export const raiseApplicationStatusEvent = async (event) => {
   //     }
   //   })
   // }
-  await new PublishEventBatch(eventQueueConfig).sendEvents(eventBatch)
+
+  const messages = eventBatch.map((message) => {
+    message.properties.action.timestamp = new Date().toISOString()
+    return createMessage(
+      message,
+      message.properties.action.type,
+      message.properties.checkpoint
+    )
+  })
+
+  const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY
+  const sbClient = new ServiceBusClient(
+    `Endpoint=sb://${eventQueueConfig.host}/;SharedAccessKeyName=${eventQueueConfig.username};SharedAccessKey=${eventQueueConfig.password}`,
+    {
+      webSocketOptions: {
+        webSocket: WebSocket,
+        webSocketConstructorOptions: { agent: new HttpsProxyAgent(proxyUrl) }
+      }
+    }
+  )
+
+  const sender = sbClient.createSender(eventQueueConfig.address)
+  await sender.sendMessages(messages)
+
+  await sbClient.close()
+
+  // await new PublishEventBatch(eventQueueConfig).sendEvents(eventBatch)
 }
 
 export const raiseClaimEvents = async (event, sbi = 'none') => {
