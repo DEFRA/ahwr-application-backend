@@ -59,13 +59,6 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   }
   await appRepo.createApplication(db, application)
 
-  await raiseApplicationStatusEvent({
-    message: 'New application has been created',
-    application,
-    raisedBy: application.createdBy,
-    raisedOn: application.createdAt
-  })
-
   if (application.data.offerStatus === 'accepted') {
     try {
       await publishDocumentRequestEvent(logger, {
@@ -85,6 +78,13 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
       logger.error(error, 'Failed to request application document generation')
     }
   }
+
+  await raiseApplicationStatusEvent({
+    message: 'New application has been created',
+    application,
+    raisedBy: application.createdBy,
+    raisedOn: application.createdAt
+  })
 
   // TODO
   // appInsights.defaultClient.trackEvent({
