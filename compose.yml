@@ -52,8 +52,12 @@ services:
     environment:
       PORT: 3001
       NODE_ENV: development
-      LOCALSTACK_ENDPOINT: http://localstack:4566
+      AWS_ENDPOINT_URL: http://localstack:4566
       MONGO_URI: mongodb://mongodb:27017/
+      APPLICATION_BACKEND_QUEUE_URL: "http://sqs.eu-west-2.127.0.0.1:4566/000000000000/ahwr_application_backend_queue"
+      DOCUMENT_REQUEST_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_document_request"
+      REMINDER_REQUEST_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_reminder_request"
+      STATUS_CHANGE_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_status_change"
     networks:
       - ahwr-local
     volumes:

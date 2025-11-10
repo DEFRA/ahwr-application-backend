@@ -7,6 +7,7 @@ import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repositor
 import Boom from '@hapi/boom'
 import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
 import { publishDocumentRequestEvent } from '../../../messaging/publish-outbound-notification.js'
+import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -68,11 +69,10 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
         userType: application.organisation.userType,
         email: application.organisation.email,
         farmerName: application.organisation.farmerName,
-        orgData: {
-          orgName: application.organisation.name,
-          orgEmail: application.organisation.orgEmail,
-          crn: application.organisation.crn
-        }
+        name: application.organisation.name,
+        orgEmail: application.organisation.orgEmail,
+        crn: application.organisation.crn,
+        scheme: AHWR_SCHEME
       })
     } catch (error) {
       logger.error(error, 'Failed to request application document generation')
