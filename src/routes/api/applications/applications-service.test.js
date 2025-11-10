@@ -221,15 +221,14 @@ describe('applications-service', () => {
         expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
           email: 'jparkinsong@nosnikrapjz.com.test',
           farmerName: 'J Parkinson',
-          orgData: {
-            crn: '1101489790',
-            orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
-            orgName: 'High Oustley Farm'
-          },
+          crn: '1101489790',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          name: 'High Oustley Farm',
           reference: 'IAHW-8ZPZ-8CLI',
           sbi: '118409263',
           startDate: expect.any(String),
-          userType: 'newUser'
+          userType: 'newUser',
+          scheme: 'ahwr'
         })
       })
 
@@ -276,15 +275,14 @@ describe('applications-service', () => {
         expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
           email: 'jparkinsong@nosnikrapjz.com.test',
           farmerName: 'J Parkinson',
-          orgData: {
-            crn: '1101489790',
-            orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
-            orgName: 'High Oustley Farm'
-          },
+          crn: '1101489790',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          name: 'High Oustley Farm',
           reference: 'IAHW-8ZPZ-8CLI',
           sbi: '118409263',
           startDate: expect.any(String),
-          userType: 'newUser'
+          userType: 'newUser',
+          scheme: 'ahwr'
         })
       })
 
