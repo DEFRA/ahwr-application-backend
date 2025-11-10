@@ -4,15 +4,20 @@ import {
   getApplications,
   getClaims,
   getHerds,
-  getApplication
+  getApplication,
+  createApplication
 } from './applications-service.js'
 import { getByApplicationReference } from '../../../repositories/claim-repository.js'
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
+import { publishDocumentRequestEvent } from '../../../messaging/publish-outbound-notification.js'
+import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/herd-repository.js')
+jest.mock('../../../messaging/publish-outbound-notification.js')
+jest.mock('../../../event-publisher/index.js')
 
 describe('applications-service', () => {
   const mockLogger = {
@@ -100,6 +105,237 @@ describe('applications-service', () => {
       expect(mockLogger.setBindings).toHaveBeenCalledWith({ sbi: '123456789' })
       expect(appRepo.getApplicationsBySbi).toHaveBeenCalledWith({}, '123456789')
       expect(result).toEqual([])
+    })
+  })
+
+  describe('createApplication', () => {
+    it('should not create application when previous open application exists in repo', async () => {
+      const mockResult = [
+        {
+          reference: 'IAHW-8ZPZ-8CLI',
+          data: {
+            reference: 'IAHW-8ZPZ-8CLI',
+            declaration: true,
+            offerStatus: 'accepted',
+            confirmCheckDetails: 'yes'
+          },
+          status: 'AGREED',
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ]
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+
+      await expect(
+        createApplication({
+          applicationRequest: {
+            organisation: {
+              sbi: '123456789'
+            }
+          },
+          logger: mockLogger,
+          db: {}
+        })
+      ).rejects.toThrow(
+        'Recent application already exists: {"reference":"IAHW-8ZPZ-8CLI","createdAt":"2025-01-01T00:00:00Z"}'
+      )
+    })
+
+    describe('successfully create application', () => {
+      const inputRequest = {
+        reference: 'TEMP-8ZPZ-8CLI',
+        declaration: true,
+        offerStatus: 'accepted',
+        confirmCheckDetails: 'yes',
+        organisation: {
+          crn: '1101489790',
+          sbi: '118409263',
+          name: 'High Oustley Farm',
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          address:
+            'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          userType: 'newUser',
+          farmerName: 'J Parkinson'
+        }
+      }
+
+      const expectedApplication = {
+        claimed: false,
+        contactHistory: [],
+        createdAt: expect.any(Date),
+        createdBy: 'admin',
+        data: {
+          confirmCheckDetails: 'yes',
+          declaration: true,
+          offerStatus: 'accepted',
+          reference: 'TEMP-8ZPZ-8CLI'
+        },
+        eligiblePiiRedaction: true,
+        flags: [],
+        organisation: {
+          address:
+            'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+          crn: '1101489790',
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          name: 'High Oustley Farm',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          sbi: '118409263',
+          userType: 'newUser'
+        },
+        redactionHistory: {},
+        reference: 'IAHW-8ZPZ-8CLI',
+        status: 'AGREED',
+        statusHistory: [],
+        updateHistory: []
+      }
+
+      it('should create application when no previous application exists in repo', async () => {
+        const mockResult = []
+        jest
+          .spyOn(appRepo, 'getApplicationsBySbi')
+          .mockResolvedValue(mockResult)
+        jest
+          .spyOn(appRepo, 'createApplication')
+          .mockResolvedValue({ acknowledged: true })
+
+        await createApplication({
+          applicationRequest: inputRequest,
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(mockLogger.setBindings).toHaveBeenCalledWith({
+          sbi: '118409263'
+        })
+        expect(appRepo.createApplication).toHaveBeenCalledWith(
+          expect.anything(),
+          expectedApplication
+        )
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: expectedApplication,
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          orgData: {
+            crn: '1101489790',
+            orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+            orgName: 'High Oustley Farm'
+          },
+          reference: 'IAHW-8ZPZ-8CLI',
+          sbi: '118409263',
+          startDate: expect.any(String),
+          userType: 'newUser'
+        })
+      })
+
+      it('should create application when previous application exists but is not relevant in repo', async () => {
+        const mockResult = [
+          {
+            reference: 'IAHW-8ZPZ-8CLI',
+            data: {
+              reference: 'IAHW-8ZPZ-8CLI',
+              declaration: true,
+              offerStatus: 'accepted',
+              confirmCheckDetails: 'yes'
+            },
+            status: 'WITHDRAWN',
+            createdAt: '2025-01-01T00:00:00Z'
+          }
+        ]
+        jest
+          .spyOn(appRepo, 'getApplicationsBySbi')
+          .mockResolvedValue(mockResult)
+        jest
+          .spyOn(appRepo, 'createApplication')
+          .mockResolvedValue({ acknowledged: true })
+
+        await createApplication({
+          applicationRequest: inputRequest,
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(mockLogger.setBindings).toHaveBeenCalledWith({
+          sbi: '118409263'
+        })
+        expect(appRepo.createApplication).toHaveBeenCalledWith(
+          expect.anything(),
+          expectedApplication
+        )
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: expectedApplication,
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          orgData: {
+            crn: '1101489790',
+            orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+            orgName: 'High Oustley Farm'
+          },
+          reference: 'IAHW-8ZPZ-8CLI',
+          sbi: '118409263',
+          startDate: expect.any(String),
+          userType: 'newUser'
+        })
+      })
+
+      it('should create application in database, but not notify for document generation when not accepted', async () => {
+        const mockResult = []
+        jest
+          .spyOn(appRepo, 'getApplicationsBySbi')
+          .mockResolvedValue(mockResult)
+        jest
+          .spyOn(appRepo, 'createApplication')
+          .mockResolvedValue({ acknowledged: true })
+
+        await createApplication({
+          applicationRequest: { ...inputRequest, offerStatus: 'rejected' },
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(mockLogger.setBindings).toHaveBeenCalledWith({
+          sbi: '118409263'
+        })
+        expect(appRepo.createApplication).toHaveBeenCalledWith(
+          expect.anything(),
+          {
+            ...expectedApplication,
+            data: {
+              confirmCheckDetails: 'yes',
+              declaration: true,
+              offerStatus: 'rejected',
+              reference: 'TEMP-8ZPZ-8CLI'
+            },
+            status: 'NOT_AGREED'
+          }
+        )
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: {
+            ...expectedApplication,
+            data: {
+              confirmCheckDetails: 'yes',
+              declaration: true,
+              offerStatus: 'rejected',
+              reference: 'TEMP-8ZPZ-8CLI'
+            },
+            status: 'NOT_AGREED'
+          },
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledTimes(0)
+      })
     })
   })
 

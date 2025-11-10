@@ -1,5 +1,4 @@
 import { applicationStatus } from '../../../constants/index.js'
-// import { requestApplicationDocumentGenerateAndEmail } from '../../../lib/request-application-document-generate.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as appRepo from '../../../repositories/application-repository.js'
 import * as owAppRepo from '../../../repositories/ow-application-repository.js'
@@ -7,6 +6,7 @@ import { getByApplicationReference } from '../../../repositories/claim-repositor
 import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repository.js'
 import Boom from '@hapi/boom'
 import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
+import { publishDocumentRequestEvent } from '../../../messaging/publish-outbound-notification.js'
 
 const isPreviousApplicationRelevant = (application) => {
   return (
@@ -65,29 +65,26 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     raisedBy: application.createdBy,
     raisedOn: application.createdAt
   })
-  // TODO
-  // if (application.data.offerStatus === 'accepted') {
-  //   try {
-  //     await requestApplicationDocumentGenerateAndEmail({
-  //       reference: application.reference,
-  //       sbi: application.organisation.sbi,
-  //       startDate: application.createdAt,
-  //       userType: application.organisation.userType,
-  //       email: application.organisation.email,
-  //       farmerName: application.organisation.farmerName,
-  //       orgData: {
-  //         orgName: application.organisation.name,
-  //         orgEmail: application.organisation.orgEmail,
-  //         crn: application.organisation.crn
-  //       }
-  //     })
-  //   } catch (error) {
-  //     logger.error(
-  //       error,
-  //       'Failed to request application document generation and email'
-  //     )
-  //   }
-  // }
+
+  if (application.data.offerStatus === 'accepted') {
+    try {
+      await publishDocumentRequestEvent(logger, {
+        reference: application.reference,
+        sbi: application.organisation.sbi,
+        startDate: application.createdAt.toISOString(),
+        userType: application.organisation.userType,
+        email: application.organisation.email,
+        farmerName: application.organisation.farmerName,
+        orgData: {
+          orgName: application.organisation.name,
+          orgEmail: application.organisation.orgEmail,
+          crn: application.organisation.crn
+        }
+      })
+    } catch (error) {
+      logger.error(error, 'Failed to request application document generation')
+    }
+  }
 
   // TODO
   // appInsights.defaultClient.trackEvent({
