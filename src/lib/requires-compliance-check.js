@@ -2,18 +2,14 @@ import { config } from '../config/config.js'
 import { applicationStatus } from '../constants/index.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 
-export const generateClaimStatus = async (
-  visitDateAsString,
-  herdId,
-  previousClaimsForSpecies,
-  logger
-) => {
+export const generateClaimStatus = async (visitDateAsString, logger) => {
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
-    return getClaimStatusBasedOnFeatureAssuranceRules(
-      herdId,
-      previousClaimsForSpecies,
-      logger
+    // feature assurance left here as option but specific implementation has been removed
+    // if we want to bring it back, then call logic here
+    logger.warn(
+      'Feature assurance enabled, but no specific implementation provided'
     )
+    return getClaimStatusBasedOnRatio()
   }
 
   return getClaimStatusBasedOnRatio()
@@ -44,25 +40,4 @@ const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (
   return (
     enabled && startDate && new Date(visitDateAsString) >= new Date(startDate)
   )
-}
-
-const getClaimStatusBasedOnFeatureAssuranceRules = async (
-  herdId,
-  previousClaimsForSpecies,
-  logger
-) => {
-  // previous claims have been updated to include herd info were necessary by this point,
-  // so don't need to differentiate between unnamed herd claims being linked to the claim being processed or not.
-  const hasClaimedForMultipleHerdsForSpecies = previousClaimsForSpecies.some(
-    (c) => c.data.herdId !== herdId
-  )
-
-  if (hasClaimedForMultipleHerdsForSpecies) {
-    logger.info(
-      `Agreement '${previousClaimsForSpecies[0].applicationReference}' had a claim set to inCheck due to feature assurance rules`
-    )
-    return applicationStatus.inCheck
-  }
-
-  return getClaimStatusBasedOnRatio()
 }

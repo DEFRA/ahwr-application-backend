@@ -4,17 +4,6 @@ import {
   OW_APPLICATION_COLLECTION
 } from '../constants/index.js'
 
-export const getFlagsForApplication = async (applicationReference) => {
-  // TODO 1182 impl
-  return []
-
-  // const result = await models.flag.findAll({
-  //   where: { applicationReference, deletedAt: null, deletedBy: null }
-  // })
-
-  // return result.map((entry) => entry.dataValues)
-}
-
 export const getAllFlags = async (db) => {
   return db
     .collection(APPLICATION_COLLECTION)
