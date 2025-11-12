@@ -6,24 +6,14 @@ import {
   updateApplicationByReference,
   findApplication,
   updateApplicationData,
-  updateEligiblePiiRedaction,
-  getFlagByAppRef,
-  createFlag
+  updateEligiblePiiRedaction
 } from '../../repositories/application-repository.js'
-import {
-  findOWApplication,
-  getOWFlagByAppRef,
-  createOWFlag
-} from '../../repositories/ow-application-repository.js'
-import { getFlagsForApplication } from '../../repositories/flag-repository.js'
 import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { messageQueueConfig } from '../../config/message-queue.js'
-import { isOWAppRef } from '../../lib/context-helper.js'
-import { randomUUID } from 'node:crypto'
 
 const submitPaymentRequestMsgType = config.get('messageTypes')
 const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
@@ -221,103 +211,6 @@ export const applicationHandlers = [
         )
 
         return h.response().code(HttpStatus.NO_CONTENT)
-      }
-    }
-  },
-  {
-    method: 'POST',
-    path: '/api/applications/{ref}/flags',
-    options: {
-      validate: {
-        params: joi.object({
-          ref: joi.string().valid()
-        }),
-        payload: joi.object({
-          user: joi.string().required(),
-          note: joi.string().required(),
-          appliesToMh: joi.bool().required()
-        }),
-        failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
-          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
-        }
-      },
-      handler: async (request, h) => {
-        const { user, note, appliesToMh } = request.payload
-        const { ref } = request.params
-        const { db } = request
-
-        request.logger.setBindings({ appliesToMh, user, note, ref })
-        const owAppRef = isOWAppRef(ref)
-
-        const application = owAppRef
-          ? await findOWApplication(db, ref)
-          : await findApplication(db, ref)
-        if (application === null) {
-          return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
-        }
-
-        const flag = owAppRef
-          ? await getOWFlagByAppRef(db, ref, appliesToMh)
-          : await getFlagByAppRef(db, ref, appliesToMh)
-        // If the flag already exists then we don't create anything
-        if (flag) {
-          return h.response().code(HttpStatus.NO_CONTENT)
-        }
-
-        const data = {
-          id: randomUUID(),
-          note,
-          createdAt: new Date(),
-          createdBy: user,
-          appliesToMh,
-          deleted: false
-        }
-
-        owAppRef
-          ? await createOWFlag(db, ref, data)
-          : await createFlag(db, ref, data)
-
-        // await raiseApplicationFlaggedEvent(
-        //   {
-        //     application: { id: application.reference },
-        //     message: 'Application flagged',
-        //     flag: {
-        //       id: result.dataValues.id,
-        //       note: result.dataValues.note,
-        //       appliesToMh: result.dataValues.appliesToMh
-        //     },
-        //     raisedBy: result.dataValues.createdBy,
-        //     raisedOn: result.dataValues.createdAt
-        //   },
-        //   sbi
-        // )
-
-        return h.response().code(HttpStatus.CREATED)
-      }
-    }
-  },
-  {
-    method: 'get',
-    path: '/api/applications/{ref}/flag',
-    options: {
-      validate: {
-        params: joi.object({
-          ref: joi.string().valid()
-        }),
-        failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
-          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
-        }
-      },
-      handler: async (request, h) => {
-        const { ref } = request.params
-
-        request.logger.setBindings({ ref })
-
-        const flags = await getFlagsForApplication(ref)
-
-        return h.response(flags).code(HttpStatus.OK)
       }
     }
   },

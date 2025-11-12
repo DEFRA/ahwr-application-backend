@@ -6,10 +6,10 @@ import { claimHandlers } from '../routes/api/claims/claims-routes.js'
 import { claimsHandlers } from '../routes/api/claims.js'
 import { holidayHandlers } from '../routes/api/holidays.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
-import { flagHandlers } from '../routes/api/flags.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
 import { applicationHandlers } from '../routes/api/applications.js'
+import { flagRoutes } from '../routes/api/flags/flags-routes.js'
 
 const router = {
   plugin: {
@@ -26,7 +26,7 @@ const router = {
           .concat(claimsHandlers)
           .concat(holidayHandlers)
           .concat(contactHistoryHandlers)
-          .concat(flagHandlers)
+          .concat(flagRoutes)
           .concat(redactPiiRequestHandlers)
       )
     }
