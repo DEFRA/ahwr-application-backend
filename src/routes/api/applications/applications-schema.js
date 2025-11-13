@@ -13,6 +13,7 @@ const organisationValidations = () => ({
   farmerName: Joi.string().required(),
   name: Joi.string().required(),
   sbi: Joi.string().required(),
+  id: Joi.number().optional(),
   cph: Joi.string().optional(),
   crn: Joi.string().optional(),
   frn: Joi.string().optional(),
