@@ -30,8 +30,6 @@ describe('Create application', () => {
         farmerName: 'Mr Farmer',
         name: 'My Amazing Farm',
         sbi: '123456789',
-        cph: '123/456/789',
-        crn: '112223',
         address: '1 Example Road',
         email: 'business@email.com',
         userType: 'newUser'
@@ -45,6 +43,40 @@ describe('Create application', () => {
     expect(res.statusCode).toBe(200)
     expect(JSON.parse(res.payload)).toEqual({
       applicationReference: 'IAHW-5C1C-DD6Z'
+    })
+  })
+
+  test('successfully creates a new application with optional fields', async () => {
+    const fullOrganisation = {
+      ...options.payload.organisation,
+      orgEmail: 'org@email.com',
+      cph: '123/456/789',
+      crn: '1122231254',
+      frn: '987654321',
+      id: '1234566'
+    }
+    const res = await server.inject({
+      ...options,
+      payload: { ...options.payload, organisation: fullOrganisation }
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(JSON.parse(res.payload)).toEqual({
+      applicationReference: 'IAHW-5C1C-DD6Z'
+    })
+  })
+
+  test('returns error when validation fails as missing required property', async () => {
+    const res = await server.inject({
+      ...options,
+      payload: { ...options.payload, offerStatus: undefined }
+    })
+
+    expect(res.statusCode).toBe(400)
+    expect(JSON.parse(res.payload)).toEqual({
+      error: 'Bad Request',
+      message: '"offerStatus" is required',
+      statusCode: 400
     })
   })
 

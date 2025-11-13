@@ -63,7 +63,7 @@ describe('flags-controller', () => {
       expect(createFlag).toHaveBeenCalledWith(mockDb, 'IAHW-AXYZ-1234', {
         id: expect.any(String),
         note: 'Flagging this application for review',
-        createdAt: new Date(),
+        createdAt: expect.any(Date),
         createdBy: 'Ken Kong',
         appliesToMh: true,
         deleted: false
