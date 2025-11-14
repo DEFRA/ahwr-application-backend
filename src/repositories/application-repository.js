@@ -2,6 +2,7 @@
 // import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+// import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 
 import {
   APPLICATION_COLLECTION,
@@ -559,4 +560,100 @@ export const deleteFlag = async (db, flagId, user, deletedNote) => {
     { returnDocument: 'after' }
   )
   return result?.flags?.find((f) => f.id === flagId)
+}
+
+// TODO BH impl
+export const getRemindersToSend = async (
+  reminderType,
+  reminderWindowStartDate,
+  reminderWindowEndDate,
+  laterReminders,
+  maxBatchSize,
+  logger
+) => {
+  logger.info(
+    `Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`
+  )
+  // const { notAgreed } = reminderTypes
+
+  // const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
+
+  // const where = {
+  //   type: {
+  //     [Op.eq]: 'EE'
+  //   },
+  //   reference: {
+  //     [Op.notIn]: Sequelize.literal('(SELECT DISTINCT "applicationReference" FROM claim)')
+  //   },
+  //   statusId: {
+  //     [Op.ne]: notAgreed
+  //   },
+  //   createdAt: {
+  //     [Op.lte]: reminderWindowStartDate
+  //   },
+  //   reminders: {
+  //     [Op.notIn]: reminderTypesToExclude
+  //   }
+  // }
+  // if (reminderWindowEndDate) {
+  //   where.createdAt[Op.gte] = reminderWindowEndDate
+  // }
+
+  // return models.application
+  //   .findAll(
+  //     {
+  //       where,
+  //       attributes: [
+  //         'reference',
+  //         [literal(ATTRIBUTES_LOCATION_OF_CRN), 'crn'],
+  //         [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
+  //         [literal(ATTRIBUTES_LOCATION_OF_EMAIL), 'email'],
+  //         [literal(ATTRIBUTES_LOCATION_OF_ORG_EMAIL), 'orgEmail'],
+  //         'reminders',
+  //         [literal(`'${reminderType}'`), 'reminderType'],
+  //         'createdAt'
+  //       ],
+  //       order: [['createdAt', 'ASC']],
+  //       limit: maxBatchSize
+  //     }
+  //   )
+  return []
+}
+
+// TODO BH impl
+export const updateReminders = async (
+  _reference,
+  _newReminder,
+  _oldReminder,
+  logger
+) => {
+  // const [affectedCount] = await models.application.update(
+  //   {
+  //     reminders: newReminder
+  //   },
+  //   {
+  //     where: {
+  //       reference
+  //     },
+  //     returning: true
+  //   }
+  // )
+
+  // if (affectedCount > 0) {
+  //   const updatedProperty = 'reminders'
+  //   const type = `application-${updatedProperty}`
+
+  //   await models.application_update_history.create({
+  //     applicationReference: reference,
+  //     note: 'Reminder sent',
+  //     updatedProperty,
+  //     newValue: newReminder,
+  //     oldValue: oldReminder,
+  //     eventType: type,
+  //     createdBy: 'admin'
+  //   })
+  // }
+
+  const affectedCount = 0
+  logger.info(`Successfully updated reminders, rows affected: ${affectedCount}`)
 }

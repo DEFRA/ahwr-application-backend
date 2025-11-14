@@ -92,7 +92,8 @@ describe('getOWApplication', () => {
       redactionHistory: {},
       flags: [],
       claimed: false,
-      eligiblePiiRedaction: true
+      eligiblePiiRedaction: true,
+      reminders: ''
     }
     mockCollection.findOne.mockResolvedValue(mockApp)
 

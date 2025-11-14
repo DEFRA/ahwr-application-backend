@@ -9,3 +9,12 @@ export const startandEndDate = (date) => {
   endDate.setDate(startDate.getDate() + 1)
   return { startDate, endDate }
 }
+
+export const isAtLeastMonthsOld = (dateToCheck, months) => {
+  const now = new Date()
+  const comparisonDate = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - months, now.getUTCDate())
+  )
+
+  return dateToCheck <= comparisonDate
+}

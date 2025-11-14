@@ -56,6 +56,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     flags: [],
     redactionHistory: {},
     eligiblePiiRedaction: true,
+    reminders: '',
     claimed: false
   }
   await appRepo.createApplication(db, application)
@@ -195,7 +196,8 @@ const getOWApplication = async (db, applicationReference) => {
     statusHistory: result.statusHistory,
     contactHistory: result.contactHistory,
     flags: result.flags,
-    eligiblePiiRedaction: result.eligiblePiiRedaction
+    eligiblePiiRedaction: result.eligiblePiiRedaction,
+    reminders: '' // TODO BH impl
   }
 }
 
@@ -226,6 +228,7 @@ export const getApplication = async ({ db, logger, applicationReference }) => {
     statusHistory: result.statusHistory,
     contactHistory: result.contactHistory,
     flags: result.flags,
-    eligiblePiiRedaction: result.eligiblePiiRedaction
+    eligiblePiiRedaction: result.eligiblePiiRedaction,
+    reminders: '' // TODO BH impl
   }
 }
