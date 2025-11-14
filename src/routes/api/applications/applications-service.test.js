@@ -171,6 +171,7 @@ describe('applications-service', () => {
           reference: 'TEMP-8ZPZ-8CLI'
         },
         eligiblePiiRedaction: true,
+        reminders: '',
         flags: [],
         organisation: {
           address:
@@ -574,7 +575,8 @@ describe('applications-service', () => {
         redactionHistory: {},
         flags: [],
         claimed: false,
-        eligiblePiiRedaction: true
+        eligiblePiiRedaction: true,
+        reminders: ''
       }
       owAppRepo.getOWApplication.mockResolvedValue(mockResult)
 
@@ -632,6 +634,7 @@ describe('applications-service', () => {
         ],
         flags: [],
         eligiblePiiRedaction: true,
+        reminders: '',
         redacted: false
       })
     })
@@ -690,7 +693,8 @@ describe('applications-service', () => {
             deletedNote: "User has changed their mind and accepted the T&C's"
           }
         ],
-        eligiblePiiRedaction: true
+        eligiblePiiRedaction: true,
+        reminders: ''
       }
       appRepo.getApplication.mockResolvedValue(mockResult)
 
@@ -748,7 +752,8 @@ describe('applications-service', () => {
             deletedNote: "User has changed their mind and accepted the T&C's"
           }
         ],
-        eligiblePiiRedaction: true
+        eligiblePiiRedaction: true,
+        reminders: ''
       })
     })
 

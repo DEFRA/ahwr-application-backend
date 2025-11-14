@@ -64,5 +64,6 @@ export const owApplicationReviewClaim = {
   redactionHistory: {},
   flags: [],
   claimed: false,
-  eligiblePiiRedaction: true
+  eligiblePiiRedaction: true,
+  reminders: ''
 }

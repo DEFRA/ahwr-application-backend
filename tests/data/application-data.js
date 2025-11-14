@@ -49,5 +49,6 @@ export const application = {
       deletedNote: 'no they do not'
     }
   ],
-  eligiblePiiRedaction: true
+  eligiblePiiRedaction: true,
+  reminders: ''
 }
