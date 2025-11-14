@@ -9,3 +9,4 @@ coverage
 .cache
 .eslintcache
 test-output
+.env

@@ -27,7 +27,7 @@ export const create = async (applicationsToRedact, redactProgress, logger) => {
 
           await raiseApplicationFlaggedEvent(
             {
-              application: { id: applicationReference },
+              applicationReference,
               message: 'Application flagged',
               flag: {
                 id: result.id,

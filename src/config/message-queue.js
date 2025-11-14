@@ -1,9 +1,7 @@
 import Joi from 'joi'
-import applicationInsights from 'applicationinsights'
 
 export const getMessageQueueConfig = () => {
   const sharedConfigSchema = {
-    appInsights: Joi.object(),
     host: Joi.string().default('localhost'),
     password: Joi.string(),
     username: Joi.string(),
@@ -48,7 +46,6 @@ export const getMessageQueueConfig = () => {
   })
 
   const sharedConfig = {
-    appInsights: applicationInsights,
     host: process.env.MESSAGE_QUEUE_HOST,
     password: process.env.MESSAGE_QUEUE_PASSWORD,
     username: process.env.MESSAGE_QUEUE_USER,
