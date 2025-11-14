@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { PublishEvent } from 'ffc-ahwr-common-library'
-import { config } from '../config/config.js'
+import { sendEvents, SEND_SESSION_EVENT } from './index.js'
 
 export const claimDataUpdateEvent = async (
   data,
@@ -9,10 +8,8 @@ export const claimDataUpdateEvent = async (
   updatedAt,
   sbi
 ) => {
-  const eventPublisher = new PublishEvent(config.get('azure.eventQueue'))
-
   const event = {
-    name: 'send-session-event',
+    name: SEND_SESSION_EVENT,
     properties: {
       id: randomUUID(),
       sbi,
@@ -29,5 +26,5 @@ export const claimDataUpdateEvent = async (
     }
   }
 
-  await eventPublisher.sendEvent(event)
+  await sendEvents([event])
 }

@@ -9,6 +9,7 @@ import {
   getByApplicationReference
 } from '../../../repositories/claim-repository.js'
 import crypto from 'crypto'
+import { raiseHerdEvent } from '../../../event-publisher/index.js'
 
 const hasHerdChanged = (existingHerd, updatedHerd) =>
   existingHerd.cph !== updatedHerd.cph ||
@@ -121,16 +122,25 @@ const addHerdToPreviousClaims = async ({
     (claim) => !claim.herd?.id
   )
   await Promise.all(
-    previousClaimsWithoutHerd.map((claim) =>
-      addHerdToClaimData({
+    previousClaimsWithoutHerd.map(async (claim) => {
+      await addHerdToClaimData({
         claimRef: claim.reference,
         claimHerdData,
         createdBy,
-        applicationReference,
-        sbi,
         db
       })
-    )
+      await raiseHerdEvent({
+        sbi,
+        message: 'Herd associated with claim',
+        type: 'claim-herdAssociated',
+        data: {
+          herdId: claimHerdData.id,
+          herdVersion: claimHerdData.version,
+          reference: claim.reference,
+          applicationReference
+        }
+      })
+    })
   )
 }
 

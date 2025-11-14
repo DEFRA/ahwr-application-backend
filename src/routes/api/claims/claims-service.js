@@ -10,7 +10,10 @@ import { isOWURNUnique } from '../../../repositories/ow-application-repository.j
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { AHWR_SCHEME, claimType } from 'ffc-ahwr-common-library'
-import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
+import {
+  saveClaimAndRelatedData,
+  generateEventsAndComms
+} from '../../../processing/claim/ahwr/processor.js'
 import Boom from '@hapi/boom'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
@@ -22,7 +25,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     reference: tempClaimReference,
     data
   } = payload
-  const { typeOfLivestock, laboratoryURN } = data || {}
+  const { typeOfLivestock, laboratoryURN, herd } = data || {}
 
   const application = await getApplication({
     db,
@@ -70,30 +73,29 @@ export const processClaim = async ({ payload, logger, db }) => {
     }
   }
 
-  const { claim } = await saveClaimAndRelatedData({
-    db,
-    sbi,
-    claimPayload: validatedPayload,
-    claimReference,
-    flags,
-    logger
-  })
+  const { claim, herdGotUpdated, herdData, isMultiHerdsClaim } =
+    await saveClaimAndRelatedData({
+      db,
+      sbi,
+      claimPayload: validatedPayload,
+      claimReference,
+      flags,
+      logger
+    })
   if (!claim) {
     throw new Error('Claim was not created')
   }
 
   // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
   // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
-
-  // TODO
-  // generateEventsAndComms(
-  //     isMultiHerdsClaim,
-  //     claim,
-  //     application,
-  //     herdData,
-  //     herdGotUpdated,
-  //     herd?.herdId
-  // )
+  generateEventsAndComms(
+    isMultiHerdsClaim,
+    claim,
+    application,
+    herdData,
+    herdGotUpdated,
+    herd?.herdId
+  )
 
   return claim
 }
