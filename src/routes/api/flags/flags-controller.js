@@ -12,6 +12,7 @@ import {
 import { getAllFlags } from '../../../repositories/flag-repository.js'
 import { isOWAppRef } from '../../../lib/context-helper.js'
 import { randomUUID } from 'node:crypto'
+import { raiseApplicationFlagDeletedEvent } from '../../../event-publisher/index.js'
 
 export const deleteFlagHandler = async (request, h) => {
   const { user, deletedNote } = request.payload
@@ -20,30 +21,42 @@ export const deleteFlagHandler = async (request, h) => {
   // TODO: find solution using labels perhaps?
   request.logger.setBindings({ flagId, user })
 
-  let updatedFlag = await deleteFlag(request.db, flagId, user, deletedNote)
+  let updatedApplication = await deleteFlag(
+    request.db,
+    flagId,
+    user,
+    deletedNote
+  )
 
-  if (!updatedFlag) {
-    updatedFlag = await deleteOWFlag(request.db, flagId, user, deletedNote)
+  if (!updatedApplication) {
+    updatedApplication = await deleteOWFlag(
+      request.db,
+      flagId,
+      user,
+      deletedNote
+    )
   }
 
-  if (!updatedFlag) {
+  if (!updatedApplication) {
     return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
   }
 
-  // await raiseApplicationFlagDeletedEvent(
-  //   {
-  //     application: { id: dataValues.applicationReference },
-  //     message: 'Application flag removed',
-  //     flag: {
-  //       id: dataValues.id,
-  //       appliesToMh: dataValues.appliesToMh,
-  //       deletedNote
-  //     },
-  //     raisedBy: dataValues.deletedBy,
-  //     raisedOn: dataValues.deletedAt
-  //   },
-  //   dataValues.sbi
-  // )
+  const deletedFlag = updatedApplication.flags.find((f) => f.id === flagId)
+
+  await raiseApplicationFlagDeletedEvent(
+    {
+      applicationReference: updatedApplication.applicationReference,
+      message: 'Application flag removed',
+      flag: {
+        id: deletedFlag.id,
+        appliesToMh: deletedFlag.appliesToMh,
+        deletedNote
+      },
+      raisedBy: deletedFlag.deletedBy,
+      raisedOn: deletedFlag.deletedAt
+    },
+    updatedApplication.organisation.sbi
+  )
 
   return h.response().code(StatusCodes.NO_CONTENT)
 }

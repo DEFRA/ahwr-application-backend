@@ -16,11 +16,13 @@ import {
   deleteOWFlag,
   findOWApplication
 } from '../../../repositories/ow-application-repository.js'
+import { raiseApplicationFlagDeletedEvent } from '../../../event-publisher/index.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../repositories/flag-repository.js')
 jest.mock('../../../lib/context-helper.js')
+jest.mock('../../../event-publisher/index.js')
 
 describe('flags-controller', () => {
   const mockLogger = {
@@ -179,7 +181,19 @@ describe('flags-controller', () => {
     }
 
     it('should return 204 when successful, NW application flag', async () => {
-      deleteFlag.mockReturnValueOnce(true)
+      deleteFlag.mockReturnValueOnce({
+        applicationReference: 'IAHW-G3CL-V59P',
+        flags: [
+          {
+            id: 'ABC-1234',
+            deletedAt: new Date('2025-11-05T16:05:04.156Z'),
+            deletedBy: 'test-user',
+            note: 'test non-tcs',
+            appliesToMh: false
+          }
+        ],
+        organisation: { sbi: '123456789' }
+      })
 
       const result = await deleteFlagHandler(mockRequest, mockH)
 
@@ -193,10 +207,37 @@ describe('flags-controller', () => {
       expect(mockH.response).toHaveBeenCalledWith()
       expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
       expect(result).toBe(mockH)
+      expect(raiseApplicationFlagDeletedEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'IAHW-G3CL-V59P',
+          message: 'Application flag removed',
+          flag: {
+            id: 'ABC-1234',
+            appliesToMh: false,
+            deletedNote: 'No longer applicable'
+          },
+          raisedBy: 'test-user',
+          raisedOn: new Date('2025-11-05T16:05:04.156Z')
+        },
+        '123456789'
+      )
     })
+
     it('should return 204 when successful, OW application flag', async () => {
       deleteFlag.mockReturnValueOnce(false)
-      deleteOWFlag.mockReturnValueOnce(true)
+      deleteOWFlag.mockReturnValueOnce({
+        applicationReference: 'AHWR-B571-6E79',
+        flags: [
+          {
+            id: 'ABC-1234',
+            deletedAt: new Date('2025-11-05T16:05:04.156Z'),
+            deletedBy: 'test-user',
+            note: 'test non-tcs',
+            appliesToMh: false
+          }
+        ],
+        organisation: { sbi: '123456789' }
+      })
 
       const result = await deleteFlagHandler(mockRequest, mockH)
 
@@ -216,7 +257,22 @@ describe('flags-controller', () => {
       expect(mockH.response).toHaveBeenCalledWith()
       expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
       expect(result).toBe(mockH)
+      expect(raiseApplicationFlagDeletedEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'AHWR-B571-6E79',
+          message: 'Application flag removed',
+          flag: {
+            id: 'ABC-1234',
+            appliesToMh: false,
+            deletedNote: 'No longer applicable'
+          },
+          raisedBy: 'test-user',
+          raisedOn: new Date('2025-11-05T16:05:04.156Z')
+        },
+        '123456789'
+      )
     })
+
     it('should return 404 when flag not found', async () => {
       const mockHTakeOver = {
         response: jest.fn().mockReturnThis(),
