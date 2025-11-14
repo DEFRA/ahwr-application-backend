@@ -21,7 +21,8 @@ jest.mock('../../../event-publisher/index.js')
 
 describe('applications-service', () => {
   const mockLogger = {
-    setBindings: jest.fn()
+    setBindings: jest.fn(),
+    error: jest.fn()
   }
 
   beforeEach(() => {
@@ -201,9 +202,10 @@ describe('applications-service', () => {
         jest
           .spyOn(appRepo, 'getApplicationsBySbi')
           .mockResolvedValue(mockResult)
-        jest
-          .spyOn(appRepo, 'createApplication')
-          .mockResolvedValue({ acknowledged: true })
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
 
         await createApplication({
           applicationRequest: inputRequest,
@@ -220,7 +222,10 @@ describe('applications-service', () => {
         )
         expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
           message: 'New application has been created',
-          application: expectedApplication,
+          application: {
+            ...expectedApplication,
+            id: '690e04e10341b23a7d3cb9e5'
+          },
           raisedBy: 'admin',
           raisedOn: expect.any(Date)
         })
@@ -255,9 +260,10 @@ describe('applications-service', () => {
         jest
           .spyOn(appRepo, 'getApplicationsBySbi')
           .mockResolvedValue(mockResult)
-        jest
-          .spyOn(appRepo, 'createApplication')
-          .mockResolvedValue({ acknowledged: true })
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
 
         await createApplication({
           applicationRequest: inputRequest,
@@ -274,7 +280,10 @@ describe('applications-service', () => {
         )
         expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
           message: 'New application has been created',
-          application: expectedApplication,
+          application: {
+            ...expectedApplication,
+            id: '690e04e10341b23a7d3cb9e5'
+          },
           raisedBy: 'admin',
           raisedOn: expect.any(Date)
         })
@@ -297,9 +306,10 @@ describe('applications-service', () => {
         jest
           .spyOn(appRepo, 'getApplicationsBySbi')
           .mockResolvedValue(mockResult)
-        jest
-          .spyOn(appRepo, 'createApplication')
-          .mockResolvedValue({ acknowledged: true })
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
 
         await createApplication({
           applicationRequest: { ...inputRequest, offerStatus: 'rejected' },
@@ -333,7 +343,10 @@ describe('applications-service', () => {
         )
         expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
           message: 'New application has been created',
-          application: expectedApplicationNotAgreed,
+          application: {
+            ...expectedApplicationNotAgreed,
+            id: '690e04e10341b23a7d3cb9e5'
+          },
           raisedBy: 'admin',
           raisedOn: expect.any(Date)
         })

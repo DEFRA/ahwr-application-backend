@@ -1,5 +1,5 @@
 import joi from 'joi'
-import appInsights from 'applicationinsights'
+// import appInsights from 'applicationinsights'
 
 const redactPIISchema = joi.object({
   requestedDate: joi.string().isoDate().required()
@@ -10,7 +10,7 @@ export const validateRedactPIISchema = (event, logger) => {
 
   if (error) {
     logger.error(`Redact PII validation error - ${error}.`)
-    appInsights.defaultClient.trackException({ exception: error })
+    // appInsights.defaultClient.trackException({ exception: error })
     return false
   }
 

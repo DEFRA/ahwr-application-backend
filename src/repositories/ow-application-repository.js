@@ -39,5 +39,5 @@ export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
       },
       { returnDocument: 'after' }
     )
-  return result?.flags?.find((f) => f.id === flagId)
+  return result
 }

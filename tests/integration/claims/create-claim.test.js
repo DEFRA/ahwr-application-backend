@@ -11,7 +11,6 @@ describe('Create claim', () => {
   beforeEach(async () => {
     await server.db.collection('applications').deleteMany({})
     await server.db.collection('claims').deleteMany({})
-
     await server.db.collection('applications').insertOne(application)
   })
 
@@ -53,7 +52,9 @@ describe('Create claim', () => {
 
     expect(res.statusCode).toBe(200)
     expect(JSON.parse(res.payload)).toEqual({
+      _id: expect.any(String),
       applicationReference: 'IAHW-G3CL-V59P',
+      createdAt: expect.any(String),
       createdBy: 'admin',
       createdAt: expect.any(String),
       data: {

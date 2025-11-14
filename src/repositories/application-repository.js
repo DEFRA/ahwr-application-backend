@@ -532,5 +532,5 @@ export const deleteFlag = async (db, flagId, user, deletedNote) => {
     },
     { returnDocument: 'after' }
   )
-  return result?.flags?.find((f) => f.id === flagId)
+  return result
 }
