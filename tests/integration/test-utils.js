@@ -4,6 +4,7 @@ jest.mock('ffc-ahwr-common-library', () => {
   const actual = jest.requireActual('ffc-ahwr-common-library')
   return {
     ...actual,
+    createServiceBusClient: () => ({}),
     createEventPublisher: () => ({
       publishEvent: jest.fn(),
       publishEvents: jest.fn()
