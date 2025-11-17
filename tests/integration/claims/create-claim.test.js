@@ -54,7 +54,6 @@ describe('Create claim', () => {
     expect(JSON.parse(res.payload)).toEqual({
       _id: expect.any(String),
       applicationReference: 'IAHW-G3CL-V59P',
-      createdAt: expect.any(String),
       createdBy: 'admin',
       createdAt: expect.any(String),
       data: {
