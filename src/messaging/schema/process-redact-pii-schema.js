@@ -1,5 +1,4 @@
 import joi from 'joi'
-// import appInsights from 'applicationinsights'
 
 const redactPIISchema = joi.object({
   requestedDate: joi.string().isoDate().required()

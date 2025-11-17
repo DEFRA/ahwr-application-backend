@@ -1,5 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { getEventPublisher } from '../messaging/fcp-messaging-service.js'
+import { config } from '../config/config.js'
+
+const serviceName = config.get('serviceName')
 
 export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
@@ -10,7 +13,7 @@ export const raiseApplicationStatusEvent = async (event) => {
     id: `${event.application.id}`,
     sbi: `${event.application.organisation.sbi}`,
     cph: 'n/a',
-    checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+    checkpoint: serviceName,
     status: 'success',
     type: `application:status-updated:${event.application.status}`,
     message: event.message,
@@ -29,7 +32,7 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
     id: `${event.claim.id}`,
     sbi,
     cph: 'n/a',
-    checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+    checkpoint: serviceName,
     status: 'success',
     type: `application:status-updated:${event.claim.status}`,
     message: event.message,
@@ -49,7 +52,7 @@ export const raiseApplicationFlaggedEvent = async (event, sbi) => {
     id: randomUUID(),
     sbi,
     cph: 'n/a',
-    checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+    checkpoint: serviceName,
     status: 'success',
     type: 'application-flagged',
     message: event.message,
@@ -70,7 +73,7 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
     id: randomUUID(),
     sbi,
     cph: 'n/a',
-    checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+    checkpoint: serviceName,
     status: 'success',
     type: 'application-flag-deleted',
     message: event.message,
@@ -91,7 +94,7 @@ export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
     id: randomUUID(),
     sbi,
     cph: 'n/a',
-    checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+    checkpoint: serviceName,
     status: 'success',
     type,
     message,

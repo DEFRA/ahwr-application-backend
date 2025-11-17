@@ -4,8 +4,6 @@ import {
 } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
 
-// let applicationReceiver
-
 let fcpMessageClient
 let eventPublisher
 
@@ -22,23 +20,12 @@ export const startMessagingService = async (logger) => {
     config.get('azure.eventQueue.address'),
     logger
   )
-
-  // TODO
-  // const applicationAction = (message) =>
-  //   processApplicationMessage(message, applicationReceiver, logger.child({}))
-  // applicationReceiver = new MessageReceiver(
-  //   messageQueueConfig.applicationRequestQueue, // TODO: should be main config
-  //   applicationAction
-  // )
-  // await applicationReceiver.subscribe()
-  // logger.info('Ready to receive messages')
 }
 
 export const stopMessagingService = async () => {
   if (fcpMessageClient) {
     await fcpMessageClient.close()
   }
-  // await applicationReceiver.closeConnection()
 }
 
 export const getEventPublisher = () => {
