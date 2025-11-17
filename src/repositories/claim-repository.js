@@ -29,19 +29,16 @@ export const getByApplicationReference = async ({
     filter['data.typeOfLivestock'] = typeOfLivestock
   }
 
-  const claims = await db
+  return db
     .collection(CLAIMS_COLLECTION)
     .find(filter)
     .sort({ createdAt: -1 })
     .toArray()
-
-  return claims
 }
 
 export const createClaim = async (db, data) => {
   const result = await db.collection(CLAIMS_COLLECTION).insertOne({
-    ...data,
-    createdAt: new Date()
+    data
   })
   // TODO
   // await raiseClaimEvents(

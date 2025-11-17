@@ -35,6 +35,13 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     )
   }
 
+  const status =
+    applicationRequest.offerStatus === 'rejected'
+      ? applicationStatus.notAgreed
+      : applicationStatus.agreed
+  const createdAt = new Date()
+  const createdBy = 'admin'
+
   const application = {
     reference: createApplicationReference(applicationRequest.reference),
     data: {
@@ -44,14 +51,17 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
       confirmCheckDetails: applicationRequest.confirmCheckDetails
     },
     organisation: applicationRequest.organisation,
-    createdBy: 'admin',
-    createdAt: new Date(),
-    status:
-      applicationRequest.offerStatus === 'rejected'
-        ? applicationStatus.notAgreed
-        : applicationStatus.agreed,
+    createdBy,
+    createdAt,
+    status,
     contactHistory: applicationRequest.contactHistory || [],
-    statusHistory: [],
+    statusHistory: [
+      {
+        status,
+        createdBy,
+        createdAt
+      }
+    ],
     updateHistory: [],
     flags: [],
     redactionHistory: {},
