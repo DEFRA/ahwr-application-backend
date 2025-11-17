@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { sendEvents, SEND_SESSION_EVENT } from './index.js'
+import { SEND_SESSION_EVENT } from './index.js'
+import { getEventPublisher } from '../messaging/fcp-messaging-service.js'
 
 export const claimDataUpdateEvent = async (
   data,
@@ -26,5 +27,5 @@ export const claimDataUpdateEvent = async (
     }
   }
 
-  await sendEvents([event])
+  await getEventPublisher().publishEvent(event)
 }
