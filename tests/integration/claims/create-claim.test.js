@@ -55,6 +55,7 @@ describe('Create claim', () => {
     expect(JSON.parse(res.payload)).toEqual({
       applicationReference: 'IAHW-G3CL-V59P',
       createdBy: 'admin',
+      createdAt: expect.any(String),
       data: {
         amount: 4,
         claimType: 'REVIEW',
@@ -77,6 +78,13 @@ describe('Create claim', () => {
       },
       reference: 'RESH-O9UD-0025',
       status: expect.any(String), // TODO: Depending on how/where this runs it's either ON_HOLD or IN_CHECK, sort this out when doing compliance check stuff
+      statusHistory: [
+        {
+          createdAt: expect.any(String),
+          createdBy: 'admin',
+          status: expect.any(String) // TODO: Depending on how/where this runs it's either ON_HOLD or IN_CHECK, sort this out when doing compliance check stuff
+        }
+      ],
       type: 'REVIEW'
     })
   })

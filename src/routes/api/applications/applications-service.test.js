@@ -186,7 +186,13 @@ describe('applications-service', () => {
         redactionHistory: {},
         reference: 'IAHW-8ZPZ-8CLI',
         status: 'AGREED',
-        statusHistory: [],
+        statusHistory: [
+          {
+            status: 'AGREED',
+            createdBy: 'admin',
+            createdAt: expect.any(Date)
+          }
+        ],
         updateHistory: []
       }
 
@@ -304,31 +310,30 @@ describe('applications-service', () => {
         expect(mockLogger.setBindings).toHaveBeenCalledWith({
           sbi: '118409263'
         })
+        const expectedApplicationNotAgreed = {
+          ...expectedApplication,
+          statusHistory: [
+            {
+              status: 'NOT_AGREED',
+              createdBy: 'admin',
+              createdAt: expect.any(Date)
+            }
+          ],
+          data: {
+            confirmCheckDetails: 'yes',
+            declaration: true,
+            offerStatus: 'rejected',
+            reference: 'TEMP-8ZPZ-8CLI'
+          },
+          status: 'NOT_AGREED'
+        }
         expect(appRepo.createApplication).toHaveBeenCalledWith(
           expect.anything(),
-          {
-            ...expectedApplication,
-            data: {
-              confirmCheckDetails: 'yes',
-              declaration: true,
-              offerStatus: 'rejected',
-              reference: 'TEMP-8ZPZ-8CLI'
-            },
-            status: 'NOT_AGREED'
-          }
+          expectedApplicationNotAgreed
         )
         expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
           message: 'New application has been created',
-          application: {
-            ...expectedApplication,
-            data: {
-              confirmCheckDetails: 'yes',
-              declaration: true,
-              offerStatus: 'rejected',
-              reference: 'TEMP-8ZPZ-8CLI'
-            },
-            status: 'NOT_AGREED'
-          },
+          application: expectedApplicationNotAgreed,
           raisedBy: 'admin',
           raisedOn: expect.any(Date)
         })

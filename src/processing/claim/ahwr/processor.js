@@ -73,6 +73,8 @@ const addClaimAndHerdToDatabase = async ({
         logger
       )
 
+      const createdAt = new Date()
+
       claim = {
         ...claimPayload,
         reference: claimReference,
@@ -82,7 +84,11 @@ const addClaimAndHerdToDatabase = async ({
           claimType: claimPayload.type
         },
         status,
-        herd: claimHerdData
+        herd: claimHerdData,
+        createdAt,
+        statusHistory: [
+          { status, createdBy: claimPayload.createdBy, createdAt }
+        ]
       }
       await createClaim(db, claim)
     })

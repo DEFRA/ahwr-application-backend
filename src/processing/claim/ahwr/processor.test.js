@@ -16,7 +16,6 @@ jest.mock('../../../lib/emit-herd-MI-events.js')
 jest.mock('../../../messaging/send-message.js')
 jest.mock('./herd-processor.js')
 jest.mock('uuid')
-jest.mock('applicationinsights')
 
 const mockSession = {
   withTransaction: jest.fn((fn) => fn()),
@@ -96,6 +95,7 @@ describe('saveClaimAndRelatedData', () => {
       claim: {
         applicationReference: 'IAHW-8ZPZ-8CLI',
         createdBy: 'admin',
+        createdAt: expect.any(Date),
         data: {
           amount: 200,
           claimType: 'REVIEW',
@@ -112,6 +112,13 @@ describe('saveClaimAndRelatedData', () => {
         },
         reference: 'RESH-O9UD-0025',
         status: 'PENDING',
+        statusHistory: [
+          {
+            status: 'PENDING',
+            createdBy: 'admin',
+            createdAt: expect.any(Date)
+          }
+        ],
         type: 'REVIEW'
       },
       herdGotUpdated: true,

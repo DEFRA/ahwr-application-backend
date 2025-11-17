@@ -513,32 +513,6 @@ export const createApplication = async (db, application) => {
   return db.collection(APPLICATION_COLLECTION).insertOne(application)
 }
 
-export const getFlagByAppRef = async (
-  db,
-  applicationReference,
-  appliesToMh
-) => {
-  return db
-    .collection(APPLICATION_COLLECTION)
-    .aggregate([
-      { $match: { reference: applicationReference } },
-      { $unwind: '$flags' },
-      {
-        $match: {
-          'flags.appliesToMh': appliesToMh,
-          $or: [
-            { 'flags.deleted': false },
-            { 'flags.deleted': null },
-            { 'flags.deleted': { $exists: false } }
-          ]
-        }
-      },
-      { $limit: 1 },
-      { $replaceRoot: { newRoot: '$flags' } }
-    ])
-    .next()
-}
-
 export const createFlag = async (db, applicationReference, data) => {
   return db
     .collection(APPLICATION_COLLECTION)
