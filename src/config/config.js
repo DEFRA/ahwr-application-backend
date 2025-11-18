@@ -1,6 +1,5 @@
 import convict from 'convict'
 import convictFormatWithValidator from 'convict-format-with-validator'
-
 import { convictValidateMongoUri } from './convict/validate-mongo-uri.js'
 
 convict.addFormat(convictValidateMongoUri)

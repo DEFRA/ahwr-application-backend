@@ -10,11 +10,13 @@ import {
 } from '../../../repositories/claim-repository.js'
 import { arraysAreEqual } from '../../../lib/array-utils.js'
 import { processHerd } from './herd-processor.js'
+import { raiseHerdEvent } from '../../../event-publisher/index.js'
 
 jest.mock('crypto')
 jest.mock('../../../repositories/herd-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../lib/array-utils.js')
+jest.mock('../../../event-publisher/index.js')
 
 describe('processHerd', () => {
   const logger = { info: jest.fn() }
@@ -200,8 +202,6 @@ describe('processHerd', () => {
         expect(addHerdToClaimData).toHaveBeenCalledWith({
           claimRef: 'RESH-O9UD-0025',
           createdBy,
-          applicationReference,
-          sbi,
           db,
           claimHerdData: {
             associatedAt: expect.any(Date),
@@ -210,6 +210,17 @@ describe('processHerd', () => {
             name: 'Herd B',
             reasons: ['separateManagementNeeds'],
             version: 1
+          }
+        })
+        expect(raiseHerdEvent).toHaveBeenCalledWith({
+          sbi,
+          message: 'Herd associated with claim',
+          type: 'claim-herdAssociated',
+          data: {
+            herdId: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
+            herdVersion: 1,
+            reference: 'RESH-O9UD-0025',
+            applicationReference
           }
         })
       })

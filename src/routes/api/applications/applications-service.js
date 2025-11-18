@@ -68,7 +68,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     eligiblePiiRedaction: true,
     claimed: false
   }
-  await appRepo.createApplication(db, application)
+  const result = await appRepo.createApplication(db, application)
 
   if (application.data.offerStatus === 'accepted') {
     try {
@@ -91,7 +91,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 
   await raiseApplicationStatusEvent({
     message: 'New application has been created',
-    application,
+    application: { ...application, id: result.insertedId.toString() },
     raisedBy: application.createdBy,
     raisedOn: application.createdAt
   })
