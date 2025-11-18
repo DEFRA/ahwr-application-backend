@@ -1,4 +1,12 @@
-import { isOWURNUnique, getOWApplication } from './ow-application-repository.js'
+import {
+  isOWURNUnique,
+  getOWApplication,
+  updateOWApplicationData
+} from './ow-application-repository.js'
+
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'mocked-uuid')
+}))
 
 describe('isOWURNUnique', () => {
   const mockDb = {
@@ -119,6 +127,59 @@ describe('getOWApplication', () => {
 
     await expect(getOWApplication(mockDb, 'AHWR-B571-6E79')).rejects.toThrow(
       'Database error'
+    )
+  })
+})
+
+describe('updateOWApplicationData', () => {
+  const mockDb = {
+    collection: jest.fn()
+  }
+  const mockCollection = {
+    findOneAndUpdate: jest.fn()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockDb.collection.mockReturnValue(mockCollection)
+  })
+
+  it('should update application property and history', async () => {
+    const updatedAt = new Date('2024-11-20T13:51:24.291Z')
+
+    await updateOWApplicationData({
+      db: mockDb,
+      reference: 'AHWR-B571-6E79',
+      updatedProperty: 'status',
+      newValue: 'approved',
+      oldValue: 'pending',
+      note: 'Status updated',
+      user: 'test-user',
+      updatedAt
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('owapplications')
+    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+      { reference: 'AHWR-B571-6E79' },
+      {
+        $set: {
+          'data.status': 'approved',
+          updatedAt,
+          updatedBy: 'test-user'
+        },
+        $push: {
+          updateHistory: {
+            id: 'mocked-uuid',
+            note: 'Status updated',
+            newValue: 'approved',
+            oldValue: 'pending',
+            createdAt: updatedAt,
+            createdBy: 'test-user',
+            eventType: `application-status`,
+            updatedProperty: 'status'
+          }
+        }
+      }
     )
   })
 })

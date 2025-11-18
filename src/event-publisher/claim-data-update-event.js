@@ -12,20 +12,16 @@ export const claimDataUpdateEvent = async (
 ) => {
   const event = {
     name: SEND_SESSION_EVENT,
-    properties: {
-      id: randomUUID(),
-      sbi,
-      cph: 'n/a',
-      checkpoint: config.get('serviceName'),
-      status: 'success',
-      action: {
-        type: type.replace('application', 'claim'),
-        message: `${type.startsWith('application') ? 'Application ' : ''}Claim data updated`,
-        data,
-        raisedBy: updatedBy,
-        raisedOn: updatedAt.toISOString()
-      }
-    }
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: config.get('serviceName'),
+    status: 'success',
+    type: type.replace('application', 'claim'),
+    message: `${type.startsWith('application') ? 'Application ' : ''}Claim data updated`,
+    data,
+    raisedBy: updatedBy,
+    raisedOn: updatedAt.toISOString()
   }
 
   await getEventPublisher().publishEvent(event)

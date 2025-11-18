@@ -1,4 +1,5 @@
 import { OW_APPLICATION_COLLECTION } from '../constants/index.js'
+import { v4 as uuid } from 'uuid'
 
 export const isOWURNUnique = async ({ db, sbi, laboratoryURN }) => {
   const result = await db.collection(OW_APPLICATION_COLLECTION).findOne({
@@ -40,4 +41,38 @@ export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
       { returnDocument: 'after' }
     )
   return result
+}
+
+export const updateOWApplicationData = async ({
+  db,
+  reference,
+  updatedProperty,
+  newValue,
+  oldValue,
+  note,
+  user,
+  updatedAt
+}) => {
+  await db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        [`data.${updatedProperty}`]: newValue,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        updateHistory: {
+          id: uuid(),
+          note,
+          newValue,
+          oldValue,
+          createdAt: updatedAt,
+          createdBy: user,
+          eventType: `application-${updatedProperty}`,
+          updatedProperty
+        }
+      }
+    }
+  )
 }
