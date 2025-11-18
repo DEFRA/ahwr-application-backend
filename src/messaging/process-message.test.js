@@ -10,10 +10,6 @@ const {
   reminderEmailRequestMsgType
 } = config.get('messageTypes')
 
-jest.mock('applicationinsights', () => ({
-  defaultClient: { trackException: jest.fn(), trackEvent: jest.fn() },
-  dispose: jest.fn()
-}))
 jest.mock('./application/set-payment-status-to-paid.js')
 jest.mock('./application/process-redact-pii.js')
 jest.mock('./application/process-reminder-email.js')
