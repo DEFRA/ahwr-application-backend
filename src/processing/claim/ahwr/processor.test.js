@@ -1,4 +1,4 @@
-import { saveClaimAndRelatedData } from './processor.js'
+import { saveClaimAndRelatedData, generateEventsAndComms } from './processor.js'
 import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 import {
@@ -7,6 +7,8 @@ import {
 } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { processHerd } from './herd-processor.js'
+import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
+import { raiseClaimEvents } from '../../../event-publisher/index.js'
 
 jest.mock('../../../lib/getAmount.js')
 jest.mock('../../../lib/context-helper.js')
@@ -16,7 +18,7 @@ jest.mock('../../../lib/emit-herd-MI-events.js')
 jest.mock('../../../messaging/send-message.js')
 jest.mock('./herd-processor.js')
 jest.mock('uuid')
-jest.mock('applicationinsights')
+jest.mock('../../../event-publisher/index.js')
 
 const mockSession = {
   withTransaction: jest.fn((fn) => fn()),
@@ -74,7 +76,9 @@ describe('saveClaimAndRelatedData', () => {
     })
     getByApplicationReference.mockResolvedValue([])
     generateClaimStatus.mockResolvedValue('PENDING')
-    createClaim.mockResolvedValue()
+    createClaim.mockResolvedValue({
+      insertedId: '6916f837292fe87d2bac0d5c'
+    })
 
     const result = await saveClaimAndRelatedData({
       db: mockDb,
@@ -91,29 +95,40 @@ describe('saveClaimAndRelatedData', () => {
       []
     )
     expect(processHerd).toHaveBeenCalled()
-    expect(createClaim).toHaveBeenCalled()
-    expect(result).toEqual({
-      claim: {
-        applicationReference: 'IAHW-8ZPZ-8CLI',
-        createdBy: 'admin',
-        data: {
-          amount: 200,
-          claimType: 'REVIEW',
-          dateOfVisit: '2025-01-01T00:00:00Z',
-          typeOfLivestock: 'sheep'
-        },
-        herd: {
-          id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
-          name: 'Herd B',
-          reasons: ['separateManagementNeeds'],
-          version: 1,
-          associatedAt: '2025-10-20T00:00:00.000Z',
-          cph: '81/445/6789'
-        },
-        reference: 'RESH-O9UD-0025',
-        status: 'PENDING',
-        type: 'REVIEW'
+    createClaim.mockResolvedValue({
+      insertedId: '6916f837292fe87d2bac0d5c'
+    })
+    const expectedClaim = {
+      applicationReference: 'IAHW-8ZPZ-8CLI',
+      createdAt: expect.any(Date),
+      createdBy: 'admin',
+      data: {
+        amount: 200,
+        claimType: 'REVIEW',
+        dateOfVisit: '2025-01-01T00:00:00Z',
+        typeOfLivestock: 'sheep'
       },
+      herd: {
+        id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
+        name: 'Herd B',
+        reasons: ['separateManagementNeeds'],
+        version: 1,
+        associatedAt: '2025-10-20T00:00:00.000Z',
+        cph: '81/445/6789'
+      },
+      statusHistory: [
+        {
+          status: 'PENDING',
+          createdBy: 'admin',
+          createdAt: expect.any(Date)
+        }
+      ],
+      reference: 'RESH-O9UD-0025',
+      status: 'PENDING',
+      type: 'REVIEW'
+    }
+    expect(result).toEqual({
+      claim: expectedClaim,
       herdGotUpdated: true,
       herdData: {
         id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
@@ -129,6 +144,15 @@ describe('saveClaimAndRelatedData', () => {
       isMultiHerdsClaim: true
     })
     expect(mockSession.endSession).toHaveBeenCalled()
+    expect(raiseClaimEvents).toHaveBeenCalledWith(
+      {
+        message: 'New claim has been created',
+        claim: { ...expectedClaim, id: '6916f837292fe87d2bac0d5c' },
+        raisedBy: claimPayload.createdBy,
+        raisedOn: expect.any(Date)
+      },
+      '123456789'
+    )
   })
 
   it('should save claim without herd', async () => {
@@ -146,8 +170,9 @@ describe('saveClaimAndRelatedData', () => {
     isMultipleHerdsUserJourney.mockReturnValue(false)
     getByApplicationReference.mockResolvedValue([])
     generateClaimStatus.mockResolvedValue('APPROVED')
-    createClaim.mockResolvedValue()
-
+    createClaim.mockResolvedValue({
+      insertedId: '6916f837292fe87d2bac0d5c'
+    })
     const result = await saveClaimAndRelatedData({
       db: mockDb,
       sbi: '123456789',
@@ -164,77 +189,77 @@ describe('saveClaimAndRelatedData', () => {
   })
 })
 
-// describe('generateEventsAndComms', () => {
-//   const mockApp = {
-//     reference: 'APP-999',
-//     data: { organisation: { sbi: 'SBI-123', crn: 'CRN-999' } }
-//   }
+describe('generateEventsAndComms', () => {
+  const mockApp = {
+    reference: 'APP-999',
+    organisation: { sbi: 'SBI-123', crn: 'CRN-999' }
+  }
 
-//   const claim = {
-//     reference: 'CLM-999',
-//     type: 'REVIEW',
-//     statusId: 'PENDING',
-//     data: {
-//       amount: 100,
-//       typeOfLivestock: TYPE_OF_LIVESTOCK.SHEEP,
-//       dateOfVisit: '2025-01-01',
-//       reviewTestResults: [],
-//       piHuntRecommended: false,
-//       piHuntAllAnimals: false
-//     }
-//   }
+  const claim = {
+    reference: 'CLM-999',
+    type: 'REVIEW',
+    statusId: 'PENDING',
+    data: {
+      amount: 100,
+      typeOfLivestock: 'sheep',
+      dateOfVisit: '2025-01-01',
+      reviewTestResults: [],
+      piHuntRecommended: false,
+      piHuntAllAnimals: false
+    }
+  }
 
-//   beforeEach(() => {
-//     jest.clearAllMocks()
-//     uuid.mockReturnValue('uuid-1234')
-//     appInsights.defaultClient = { trackEvent: jest.fn() }
-//   })
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // uuid.mockReturnValue('uuid-1234')
+    // appInsights.defaultClient = { trackEvent: jest.fn() }
+  })
 
-//   it('should emit herd events and send message for multi-herd claim', async () => {
-//     const herdData = { name: 'My Herd' }
-//     await generateEventsAndComms(true, claim, mockApp, herdData, true, 'HERD-1')
+  it('should emit herd events and send message for multi-herd claim', async () => {
+    const herdData = { name: 'My Herd' }
+    await generateEventsAndComms(true, claim, mockApp, herdData, true, 'HERD-1')
 
-//     expect(emitHerdMIEvents).toHaveBeenCalledWith(
-//       expect.objectContaining({
-//         sbi: 'SBI-123',
-//         herdData,
-//         herdIdSelected: 'HERD-1',
-//         herdGotUpdated: true,
-//         claimReference: 'CLM-999',
-//         applicationReference: 'APP-999'
-//       })
-//     )
-//     expect(sendMessage).toHaveBeenCalledWith(
-//       expect.objectContaining({
-//         claimReference: 'CLM-999',
-//         sbi: 'SBI-123',
-//         claimAmount: 100
-//       }),
-//       config.messageGeneratorMsgType,
-//       config.messageGeneratorQueue,
-//       { sessionId: 'uuid-1234' }
-//     )
-//     expect(appInsights.defaultClient.trackEvent).toHaveBeenCalled()
-//   })
+    expect(emitHerdMIEvents).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sbi: 'SBI-123',
+        herdData,
+        herdIdSelected: 'HERD-1',
+        herdGotUpdated: true,
+        claimReference: 'CLM-999',
+        applicationReference: 'APP-999'
+      })
+    )
+    // expect(sendMessage).toHaveBeenCalledWith(
+    //   expect.objectContaining({
+    //     claimReference: 'CLM-999',
+    //     sbi: 'SBI-123',
+    //     claimAmount: 100
+    //   }),
+    //   config.messageGeneratorMsgType,
+    //   config.messageGeneratorQueue,
+    //   { sessionId: 'uuid-1234' }
+    // )
+    // expect(appInsights.defaultClient.trackEvent).toHaveBeenCalled()
+  })
 
-//   it('should send message with unnamed herd if herd name missing', async () => {
-//     const herdData = {}
-//     await generateEventsAndComms(
-//       false,
-//       claim,
-//       mockApp,
-//       herdData,
-//       false,
-//       'HERD-1'
-//     )
+  // it('should send message with unnamed herd if herd name missing', async () => {
+  //   const herdData = {}
+  //   await generateEventsAndComms(
+  //     false,
+  //     claim,
+  //     mockApp,
+  //     herdData,
+  //     false,
+  //     'HERD-1'
+  //   )
 
-//     expect(sendMessage).toHaveBeenCalledWith(
-//       expect.objectContaining({
-//         herdName: UNNAMED_FLOCK
-//       }),
-//       expect.anything(),
-//       expect.anything(),
-//       expect.anything()
-//     )
-//   })
-// })
+  //   expect(sendMessage).toHaveBeenCalledWith(
+  //     expect.objectContaining({
+  //       herdName: UNNAMED_FLOCK
+  //     }),
+  //     expect.anything(),
+  //     expect.anything(),
+  //     expect.anything()
+  //   )
+  // })
+})

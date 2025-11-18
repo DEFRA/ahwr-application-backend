@@ -4,7 +4,6 @@ import { applicationHistoryHandlers } from '../routes/api/application-history.js
 import { applicationEventsHandlers } from '../routes/api/application-events.js'
 import { claimHandlers } from '../routes/api/claims/claims-routes.js'
 import { claimsHandlers } from '../routes/api/claims.js'
-import { holidayHandlers } from '../routes/api/holidays.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
 import { reminderEmailRequestHandlers } from '../routes/api/reminder-email.js'
@@ -25,7 +24,6 @@ const router = {
           .concat(applicationEventsHandlers)
           .concat(claimHandlers)
           .concat(claimsHandlers)
-          .concat(holidayHandlers)
           .concat(contactHistoryHandlers)
           .concat(flagRoutes)
           .concat(redactPiiRequestHandlers)

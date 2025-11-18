@@ -90,7 +90,13 @@ db.getCollection('claims').insertMany([
       reviewTestResults: 'negative'
     },
     status: 'IN_CHECK',
-    statusHistory: [],
+    statusHistory: [
+      {
+        status: 'IN_CHECK',
+        createdBy: 'admin',
+        createdAt: new Date('2025-08-15T09:00:53.000Z')
+      }
+    ],
     herd: {
       id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
       cph: '12/345/6789',
@@ -123,7 +129,13 @@ db.getCollection('claims').insertMany([
       numberAnimalsTested: '10'
     },
     status: 'IN_CHECK',
-    statusHistory: [],
+    statusHistory: [
+      {
+        status: 'IN_CHECK',
+        createdBy: 'admin',
+        createdAt: new Date('2025-04-28T07:44:03.864Z')
+      }
+    ],
     herd: {},
     updateHistory: [
       {
@@ -157,18 +169,6 @@ db.getCollection('claims').insertMany([
         updatedProperty: 'vetRCVSNumber'
       }
     ]
-  }
-])
-
-db.createCollection('status_history')
-db.getCollection('status_history').insertMany([
-  {
-    id: '9c2a7b8b-139c-46e8-b9e1-92d25a59e201',
-    reference: 'IAHW-AAAA-AAAA',
-    statusId: '1',
-    note: '',
-    createdAt: new Date(),
-    createdBy: 'admin'
   }
 ])
 
@@ -246,7 +246,23 @@ db.getCollection('owapplications').insertMany([
       farmerName: 'Karen Gilbert'
     },
     status: 'READY_TO_PAY',
-    statusHistory: [],
+    statusHistory: [
+      {
+        status: 'IN_CHECK',
+        createdBy: 'admin',
+        createdAt: new Date('2023-09-21T21:11:02.776Z')
+      },
+      {
+        status: 'RECOMMENDED_TO_PAY',
+        createdBy: 'admin',
+        createdAt: new Date('2023-09-22T21:11:02.776Z')
+      },
+      {
+        status: 'READY_TO_PAY',
+        createdBy: 'admin',
+        createdAt: new Date('2023-09-23T21:11:02.776Z')
+      }
+    ],
     updateHistory: [],
     contactHistory: [
       {

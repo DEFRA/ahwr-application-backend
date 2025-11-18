@@ -1,6 +1,7 @@
 import { startServer } from './start-server.js'
 import { createServer } from '../../server.js'
 import { config } from '../../config/config.js'
+import { startMessagingService } from '../../messaging/fcp-messaging-service.js'
 
 const mockLogger = { info: jest.fn(), error: jest.fn() }
 const mockServer = { start: jest.fn(), logger: mockLogger }
@@ -13,6 +14,7 @@ jest.mock('../../config/config.js', () => ({
     get: jest.fn()
   }
 }))
+jest.mock('../../messaging/fcp-messaging-service.js')
 
 describe('startServer', () => {
   beforeEach(() => {
@@ -33,6 +35,7 @@ describe('startServer', () => {
       'Access your backend on http://localhost:3000'
     )
     expect(server).toBe(mockServer)
+    expect(startMessagingService).toHaveBeenCalledWith(mockServer)
   })
 
   it('should throw an error if start fails', async () => {

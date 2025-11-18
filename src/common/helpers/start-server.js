@@ -1,6 +1,6 @@
 import { config } from '../../config/config.js'
-
 import { createServer } from '../../server.js'
+import { startMessagingService } from '../../messaging/fcp-messaging-service.js'
 
 export async function startServer() {
   const server = await createServer()
@@ -11,7 +11,7 @@ export async function startServer() {
     `Access your backend on http://localhost:${config.get('port')}`
   )
 
-  // TODO 1182 await startMessagingService(server)
+  await startMessagingService(server)
 
   return server
 }

@@ -2,7 +2,6 @@
 //   REDACT_PII_VALUES,
 //   APPLICATION_REFERENCE_PREFIX_OLD_WORLD
 // } from 'ffc-ahwr-common-library'
-// import { raiseClaimEvents, raiseHerdEvent } from '../event-publisher/index.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 // import { findApplication } from './application-repository.js'
 
@@ -29,31 +28,15 @@ export const getByApplicationReference = async ({
     filter['data.typeOfLivestock'] = typeOfLivestock
   }
 
-  const claims = await db
+  return db
     .collection(CLAIMS_COLLECTION)
     .find(filter)
     .sort({ createdAt: -1 })
     .toArray()
-
-  return claims
 }
 
 export const createClaim = async (db, data) => {
-  const result = await db.collection(CLAIMS_COLLECTION).insertOne({
-    ...data,
-    createdAt: new Date()
-  })
-  // TODO
-  // await raiseClaimEvents(
-  //   {
-  //     message: 'New claim has been created',
-  //     claim: result.dataValues,
-  //     raisedBy: result.dataValues.createdBy,
-  //     raisedOn: result.dataValues.createdAt
-  //   },
-  //   sbi
-  // )
-  return result
+  return db.collection(CLAIMS_COLLECTION).insertOne(data)
 }
 
 export const updateClaimByReference = async (data, note, logger) => {
@@ -180,8 +163,6 @@ export const addHerdToClaimData = async ({
   claimRef,
   claimHerdData,
   createdBy,
-  applicationReference,
-  sbi,
   db
 }) => {
   const { id, version, associatedAt, name } = claimHerdData
@@ -210,18 +191,6 @@ export const addHerdToClaimData = async ({
       }
     }
   )
-  // TODO
-  // await raiseHerdEvent({
-  //   sbi,
-  //   message: 'Herd associated with claim',
-  //   type: 'claim-herdAssociated',
-  //   data: {
-  //     herdId,
-  //     herdVersion,
-  //     reference: claimRef,
-  //     applicationReference
-  //   }
-  // })
 }
 
 export const redactPII = async (applicationReference, logger) => {

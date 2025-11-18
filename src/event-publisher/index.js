@@ -1,234 +1,105 @@
-import { PublishEventBatch } from 'ffc-ahwr-common-library'
-import { config } from '../config/config.js'
 import { randomUUID } from 'node:crypto'
-import { ServiceBusClient } from '@azure/service-bus'
-import WebSocket from 'ws'
-import { HttpsProxyAgent } from 'https-proxy-agent'
-import { createMessage } from '../messaging/create-message.js'
+import { getEventPublisher } from '../messaging/fcp-messaging-service.js'
+import { config } from '../config/config.js'
+
+const serviceName = config.get('serviceName')
 
 export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
 
-const eventQueueConfig = config.get('azure.eventQueue')
-
 export const raiseApplicationStatusEvent = async (event) => {
-  const eventBatch = [
-    {
-      name: SEND_SESSION_EVENT,
-      properties: {
-        id: `${event.application.id}`,
-        sbi: `${event.application.organisation.sbi}`,
-        cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE || 'placeholder', //TODO can we delete this?
-        status: 'success',
-        action: {
-          type: `application:status-updated:${event.application.status}`,
-          message: event.message,
-          data: {
-            reference: event.application.reference,
-            status: event.application.status
-          },
-          raisedBy: event.raisedBy,
-          raisedOn: event.raisedOn.toISOString()
-        }
-      }
-    }
-  ]
-  // TODO: status history lives with application/claim now so we don;t need to emit anything elsewhere
-  // Tidy this up when ensuring that is saved
-  // if (config.storeHistoryInDb.enabled) {
-  //   await createStatusHistory({
-  //     reference: event.application.reference,
-  //     statusId: event.application.statusId,
-  //     note: event.note,
-  //     createdAt: event.raisedOn.toISOString(),
-  //     createdBy: event.raisedBy
-  //   })
-  // } else {
-  //   eventBatch.unshift({
-  //     name: APPLICATION_STATUS_EVENT,
-  //     properties: {
-  //       id: `${event.application.id}`,
-  //       sbi: `${event.application.data.organisation.sbi}`,
-  //       cph: 'n/a',
-  //       checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-  //       status: 'success',
-  //       action: {
-  //         type: 'status-updated',
-  //         message: event.message,
-  //         data: {
-  //           reference: event.application.reference,
-  //           statusId: event.application.statusId,
-  //           note: event.note
-  //         },
-  //         raisedBy: event.raisedBy,
-  //         raisedOn: event.raisedOn.toISOString()
-  //       }
-  //     }
-  //   })
-  // }
-
-  const messages = eventBatch.map((message) => {
-    message.properties.action.timestamp = new Date().toISOString()
-    return createMessage(
-      message,
-      message.properties.action.type,
-      message.properties.checkpoint
-    )
+  await getEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: `${event.application.id}`,
+    sbi: `${event.application.organisation.sbi}`,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type: `application:status-updated:${event.application.status}`,
+    message: event.message,
+    data: {
+      reference: event.application.reference,
+      status: event.application.status
+    },
+    raisedBy: event.raisedBy,
+    raisedOn: event.raisedOn.toISOString()
   })
-
-  const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY
-  const sbClient = new ServiceBusClient(
-    `Endpoint=sb://${eventQueueConfig.host}/;SharedAccessKeyName=${eventQueueConfig.username};SharedAccessKey=${eventQueueConfig.password}`,
-    {
-      webSocketOptions: {
-        webSocket: WebSocket,
-        webSocketConstructorOptions: { agent: new HttpsProxyAgent(proxyUrl) }
-      }
-    }
-  )
-
-  const sender = sbClient.createSender(eventQueueConfig.address)
-  await sender.sendMessages(messages)
-
-  await sbClient.close()
-
-  // await new PublishEventBatch(eventQueueConfig).sendEvents(eventBatch)
 }
 
 export const raiseClaimEvents = async (event, sbi = 'none') => {
-  const eventBatch = [
-    {
-      name: SEND_SESSION_EVENT,
-      properties: {
-        id: `${event.claim.id}`,
-        sbi,
-        cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-        status: 'success',
-        action: {
-          type: `application:status-updated:${event.claim.statusId}`,
-          message: event.message,
-          data: {
-            reference: event.claim.reference,
-            applicationReference: event.claim.applicationReference,
-            statusId: event.claim.statusId
-          },
-          raisedBy: event.raisedBy,
-          raisedOn: event.raisedOn.toISOString()
-        }
-      }
-    }
-  ]
-
-  // TODO: see above
-  // if (config.storeHistoryInDb.enabled) {
-  //   await createStatusHistory({
-  //     reference: event.claim.reference,
-  //     statusId: event.claim.statusId,
-  //     note: event.note,
-  //     createdAt: event.raisedOn.toISOString(),
-  //     createdBy: event.raisedBy
-  //   })
-  // } else {
-  //   eventBatch.unshift({
-  //     name: APPLICATION_STATUS_EVENT,
-  //     properties: {
-  //       id: `${event.claim.id}`,
-  //       sbi,
-  //       cph: 'n/a',
-  //       checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-  //       status: 'success',
-  //       action: {
-  //         type: 'status-updated',
-  //         message: event.message,
-  //         data: {
-  //           reference: event.claim.reference,
-  //           applicationReference: event.claim.applicationReference,
-  //           statusId: event.claim.statusId,
-  //           note: event.note
-  //         },
-  //         raisedBy: event.raisedBy,
-  //         raisedOn: event.raisedOn.toISOString()
-  //       }
-  //     }
-  //   })
-  // }
-  await new PublishEventBatch(eventQueueConfig).sendEvents(eventBatch)
+  await getEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: `${event.claim.id}`,
+    sbi,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type: `application:status-updated:${event.claim.status}`,
+    message: event.message,
+    data: {
+      reference: event.claim.reference,
+      applicationReference: event.claim.applicationReference,
+      status: event.claim.status
+    },
+    raisedBy: event.raisedBy,
+    raisedOn: event.raisedOn.toISOString()
+  })
 }
 
 export const raiseApplicationFlaggedEvent = async (event, sbi) => {
-  await new PublishEventBatch(eventQueueConfig).sendEvents([
-    {
-      name: SEND_SESSION_EVENT,
-      properties: {
-        id: randomUUID(),
-        sbi,
-        cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-        status: 'success',
-        action: {
-          type: 'application-flagged',
-          message: event.message,
-          data: {
-            flagId: event.flag.id,
-            flagDetail: event.flag.note,
-            flagAppliesToMh: event.flag.appliesToMh,
-            applicationReference: event.application.id
-          },
-          raisedBy: event.raisedBy,
-          raisedOn: event.raisedOn.toISOString()
-        }
-      }
-    }
-  ])
+  await getEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type: 'application-flagged',
+    message: event.message,
+    data: {
+      flagId: event.flag.id,
+      flagDetail: event.flag.note,
+      flagAppliesToMh: event.flag.appliesToMh,
+      applicationReference: event.applicationReference
+    },
+    raisedBy: event.raisedBy,
+    raisedOn: event.raisedOn.toISOString()
+  })
 }
 
 export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
-  await new PublishEventBatch(eventQueueConfig).sendEvents([
-    {
-      name: SEND_SESSION_EVENT,
-      properties: {
-        id: randomUUID(),
-        sbi,
-        cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-        status: 'success',
-        action: {
-          type: 'application-flag-deleted',
-          message: event.message,
-          data: {
-            flagId: event.flag.id,
-            flagAppliesToMh: event.flag.appliesToMh,
-            deletedNote: event.flag.deletedNote,
-            applicationReference: event.application.id
-          },
-          raisedBy: event.raisedBy,
-          raisedOn: event.raisedOn.toISOString()
-        }
-      }
-    }
-  ])
+  await getEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type: 'application-flag-deleted',
+    message: event.message,
+    data: {
+      flagId: event.flag.id,
+      flagAppliesToMh: event.flag.appliesToMh,
+      deletedNote: event.flag.deletedNote,
+      applicationReference: event.applicationReference
+    },
+    raisedBy: event.raisedBy,
+    raisedOn: event.raisedOn.toISOString()
+  })
 }
 
 export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
-  await new PublishEventBatch(eventQueueConfig).sendEvents([
-    {
-      name: SEND_SESSION_EVENT,
-      properties: {
-        id: randomUUID(),
-        sbi,
-        cph: 'n/a',
-        checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
-        status: 'success',
-        action: {
-          type,
-          message,
-          data,
-          raisedBy: 'admin',
-          raisedOn: new Date().toISOString()
-        }
-      }
-    }
-  ])
+  await getEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type,
+    message,
+    data,
+    raisedBy: 'admin',
+    raisedOn: new Date().toISOString()
+  })
 }
