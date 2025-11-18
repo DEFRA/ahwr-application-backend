@@ -171,7 +171,6 @@ describe('applications-service', () => {
           reference: 'TEMP-8ZPZ-8CLI'
         },
         eligiblePiiRedaction: true,
-        reminders: '',
         flags: [],
         organisation: {
           address:
@@ -575,8 +574,7 @@ describe('applications-service', () => {
         redactionHistory: {},
         flags: [],
         claimed: false,
-        eligiblePiiRedaction: true,
-        reminders: ''
+        eligiblePiiRedaction: true
       }
       owAppRepo.getOWApplication.mockResolvedValue(mockResult)
 
@@ -634,7 +632,6 @@ describe('applications-service', () => {
         ],
         flags: [],
         eligiblePiiRedaction: true,
-        reminders: '',
         redacted: false
       })
     })
