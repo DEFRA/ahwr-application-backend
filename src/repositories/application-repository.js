@@ -1,4 +1,4 @@
-// import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { STATUS } from 'ffc-ahwr-common-library'
 // import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
@@ -562,88 +562,86 @@ export const deleteFlag = async (db, flagId, user, deletedNote) => {
   return result?.flags?.find((f) => f.id === flagId)
 }
 
-// TODO BH impl
 export const getRemindersToSend = async (
   reminderType,
   reminderWindowStartDate,
   reminderWindowEndDate,
   laterReminders,
   maxBatchSize,
+  db,
   logger
 ) => {
   logger.info(
     `Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`
   )
-  // const { notAgreed } = reminderTypes
 
-  // const reminderTypesToExclude = laterReminders ? [reminderType, ...laterReminders] : [reminderType]
+  const reminderTypesToExclude = laterReminders
+    ? [reminderType, ...laterReminders]
+    : [reminderType]
 
-  // const where = {
-  //   type: {
-  //     [Op.eq]: 'EE'
-  //   },
-  //   reference: {
-  //     [Op.notIn]: Sequelize.literal('(SELECT DISTINCT "applicationReference" FROM claim)')
-  //   },
-  //   statusId: {
-  //     [Op.ne]: notAgreed
-  //   },
-  //   createdAt: {
-  //     [Op.lte]: reminderWindowStartDate
-  //   },
-  //   reminders: {
-  //     [Op.notIn]: reminderTypesToExclude
-  //   }
-  // }
-  // if (reminderWindowEndDate) {
-  //   where.createdAt[Op.gte] = reminderWindowEndDate
-  // }
+  const baseQuery = {
+    type: 'EE',
+    statusId: { $ne: STATUS.NOT_AGREED },
+    createdAt: { $lte: reminderWindowStartDate },
+    reminders: { $nin: reminderTypesToExclude }
+  }
+  const query = reminderWindowEndDate
+    ? {
+        ...baseQuery,
+        createdAt: {
+          $gte: reminderWindowEndDate,
+          $lte: reminderWindowStartDate
+        }
+      }
+    : baseQuery
 
-  // return models.application
-  //   .findAll(
-  //     {
-  //       where,
-  //       attributes: [
-  //         'reference',
-  //         [literal(ATTRIBUTES_LOCATION_OF_CRN), 'crn'],
-  //         [literal(ATTRIBUTES_LOCATION_OF_SBI), 'sbi'],
-  //         [literal(ATTRIBUTES_LOCATION_OF_EMAIL), 'email'],
-  //         [literal(ATTRIBUTES_LOCATION_OF_ORG_EMAIL), 'orgEmail'],
-  //         'reminders',
-  //         [literal(`'${reminderType}'`), 'reminderType'],
-  //         'createdAt'
-  //       ],
-  //       order: [['createdAt', 'ASC']],
-  //       limit: maxBatchSize
-  //     }
-  //   )
-  return []
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'claims',
+        localField: 'reference',
+        foreignField: 'applicationReference',
+        as: 'claimMatches'
+      }
+    },
+    {
+      $match: { ...query, claimMatches: { $size: 0 } }
+    }
+  ]
+
+  const projection = {
+    reference: 1,
+    crn: { $eq: ['$organisation.crn'] },
+    sbi: { $eq: ['$organisation.sbi'] },
+    email: { $eq: ['$organisation.email'] },
+    orgEmail: { $eq: ['$organisation.orgEmail'] },
+    reminders: 1,
+    reminderType: { $literal: reminderType },
+    createdAt: 1
+  }
+
+  const sort = { createdAt: 1 }
+
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate(pipeline)
+    .sort(sort)
+    .project(projection)
+    .limit(maxBatchSize)
+    .toArray()
 }
 
-// TODO BH impl
 export const updateReminders = async (
-  _reference,
-  _newReminder,
+  reference,
+  newReminder,
   _oldReminder,
+  db,
   logger
 ) => {
-  // const [affectedCount] = await models.application.update(
-  //   {
-  //     reminders: newReminder
-  //   },
-  //   {
-  //     where: {
-  //       reference
-  //     },
-  //     returning: true
-  //   }
-  // )
-
-  // if (affectedCount > 0) {
-  //   const updatedProperty = 'reminders'
-  //   const type = `application-${updatedProperty}`
-
-  //   await models.application_update_history.create({
+  const filter = { reference }
+  const updateDocument = { $set: { reminders: newReminder } }
+  // TODO add updated history to above!
+  // await models.application_update_history.create({
   //     applicationReference: reference,
   //     note: 'Reminder sent',
   //     updatedProperty,
@@ -654,6 +652,11 @@ export const updateReminders = async (
   //   })
   // }
 
-  const affectedCount = 0
-  logger.info(`Successfully updated reminders, rows affected: ${affectedCount}`)
+  const result = db
+    .collection(APPLICATION_COLLECTION)
+    .updateOne(filter, updateDocument)
+
+  logger.info(
+    `Successfully updated reminders, rows affected: ${result.modifiedCount}`
+  )
 }

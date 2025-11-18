@@ -5,9 +5,14 @@ import { messageQueueConfig } from '../config/message-queue.js'
 
 let applicationReceiver
 
-export const startMessagingService = async (logger) => {
+export const startMessagingService = async ({ db, logger }) => {
   const applicationAction = (message) =>
-    processApplicationMessage(message, applicationReceiver, logger.child({}))
+    processApplicationMessage(
+      message,
+      applicationReceiver,
+      db,
+      logger.child({})
+    )
   applicationReceiver = new MessageReceiver(
     messageQueueConfig.applicationRequestQueue, // TODO: should be main config
     applicationAction

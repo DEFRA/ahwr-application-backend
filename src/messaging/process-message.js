@@ -9,7 +9,12 @@ const {
   reminderEmailRequestMsgType
 } = config.get('messageTypes')
 
-export const processApplicationMessage = async (message, receiver, logger) => {
+export const processApplicationMessage = async (
+  message,
+  receiver,
+  db,
+  logger
+) => {
   try {
     const { applicationProperties: properties } = message
 
@@ -21,7 +26,7 @@ export const processApplicationMessage = async (message, receiver, logger) => {
         await processRedactPiiRequest(message, logger)
         break
       case reminderEmailRequestMsgType:
-        await processReminderEmailRequest(message, logger)
+        await processReminderEmailRequest(message, db, logger)
         break
       default:
         logger.warn(`Unknown message type: ${properties.type}`)

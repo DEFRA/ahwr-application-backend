@@ -4,7 +4,7 @@ import {
   updateClaimByReference
 } from '../../repositories/claim-repository.js'
 import {
-  CLAIM_STATUS,
+  STATUS,
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
   UNNAMED_HERD
@@ -29,7 +29,7 @@ export const setPaymentStatusToPaid = async (message, logger) => {
       await updateClaimByReference(
         {
           reference: claimRef,
-          statusId: CLAIM_STATUS.PAID,
+          statusId: STATUS.PAID,
           updatedBy: 'admin',
           sbi
         },

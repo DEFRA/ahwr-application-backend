@@ -1,13 +1,16 @@
-// import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
+import { config } from '../../config/config.js'
+import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { processReminderEmailRequest } from './process-reminder-email.js'
-import { sendMessage } from '../send-message.js' // TODO BH Impl
+import { sendMessageToSNS } from '../send-message.js'
 import {
   getRemindersToSend,
   updateReminders
 } from '../../repositories/application-repository.js'
 
-// TODO BH Impl
-// const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+
+const { messageGeneratorMsgTypeReminder } = config.get('messageTypes')
+const { reminderRequestedTopicArn } = config.get('sns')
 
 const mockSendEvent = jest.fn()
 jest.mock('ffc-ahwr-common-library', () => ({
@@ -16,13 +19,12 @@ jest.mock('ffc-ahwr-common-library', () => ({
     sendEvent: mockSendEvent
   }))
 }))
-jest.mock('../../config/config.js')
-jest.mock('../../repositories/application-repository.js')
 jest.mock('../../messaging/send-message.js', () => ({
-  sendMessage: jest.fn()
+  sendMessageToSNS: jest.fn()
 }))
+jest.mock('../../repositories/application-repository.js')
 
-describe.skip('processReminderEmailRequest', () => {
+describe('processReminderEmailRequest', () => {
   const fakeMaxBatchSize = 5000
 
   const mockLogger = {
@@ -30,6 +32,7 @@ describe.skip('processReminderEmailRequest', () => {
     info: jest.fn(),
     error: jest.fn()
   }
+  const mockDb = {}
   const message = {
     body: {
       requestedDate: '2025-11-05T00:00:00.000Z',
@@ -51,31 +54,34 @@ describe.skip('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(getRemindersToSend).toHaveBeenCalledWith(
-      'notClaimed_nineMonths',
+      nineMonths,
       nineMonthsBeforeRequestedDate,
       undefined,
       [],
       fakeMaxBatchSize,
+      mockDb,
       mockLogger
     )
     expect(getRemindersToSend).toHaveBeenCalledWith(
-      'notClaimed_sixMonths',
+      sixMonths,
       sixMonthsBeforeRequestedDate,
       nineMonthsBeforeRequestedDate,
-      ['notClaimed_nineMonths'],
+      [nineMonths],
       fakeMaxBatchSize,
+      mockDb,
       mockLogger
     )
     expect(getRemindersToSend).toHaveBeenCalledWith(
-      'notClaimed_threeMonths',
+      threeMonths,
       threeMonthsBeforeRequestedDate,
       sixMonthsBeforeRequestedDate,
-      ['notClaimed_sixMonths', 'notClaimed_nineMonths'],
+      [sixMonths, nineMonths],
       fakeMaxBatchSize,
+      mockDb,
       mockLogger
     )
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
@@ -85,7 +91,7 @@ describe.skip('processReminderEmailRequest', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'No new applications due reminders'
     )
-    expect(sendMessage).toHaveBeenCalledTimes(0)
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(0)
     expect(mockSendEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
@@ -101,13 +107,13 @@ describe.skip('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy@example.com',
           orgEmail: undefined,
-          reminderType: 'notClaimed_threeMonths',
+          reminderType: threeMonths,
           createdAt: new Date('2025-08-05T00:00:00.000Z')
         }
       }
     ])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
@@ -117,25 +123,30 @@ describe.skip('processReminderEmailRequest', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Successfully processed reminders request'
     )
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledWith(
+      reminderRequestedTopicArn,
       {
         agreementReference: 'IAHW-BEKR-AWIU',
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy@example.com'],
-        reminderType: 'notClaimed_threeMonths'
+        reminderType: threeMonths
       },
-      'uk.gov.ffc.ahwr.agreement.reminder.email',
-      expect.any(Object),
-      { sessionId: expect.any(String) }
+      {
+        MessageType: {
+          DataType: 'String',
+          StringValue: messageGeneratorMsgTypeReminder
+        }
+      }
     )
     expect(mockSendEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
-      'notClaimed_threeMonths',
+      threeMonths,
       undefined,
+      mockDb,
       mockLogger
     )
   })
@@ -150,15 +161,15 @@ describe.skip('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
-          reminders: 'notClaimed_threeMonths',
-          reminderType: 'notClaimed_sixMonths',
+          reminders: threeMonths,
+          reminderType: sixMonths,
           createdAt: new Date('2025-05-05T00:00:00.000Z')
         }
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
@@ -168,25 +179,30 @@ describe.skip('processReminderEmailRequest', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Successfully processed reminders request'
     )
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledWith(
+      reminderRequestedTopicArn,
       {
         agreementReference: 'IAHW-BEKR-AWIU',
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
-        reminderType: 'notClaimed_sixMonths'
+        reminderType: sixMonths
       },
-      'uk.gov.ffc.ahwr.agreement.reminder.email',
-      expect.any(Object),
-      { sessionId: expect.any(String) }
+      {
+        MessageType: {
+          DataType: 'String',
+          StringValue: messageGeneratorMsgTypeReminder
+        }
+      }
     )
     expect(mockSendEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
-      'notClaimed_sixMonths',
-      'notClaimed_threeMonths',
+      sixMonths,
+      threeMonths,
+      mockDb,
       mockLogger
     )
   })
@@ -202,27 +218,31 @@ describe.skip('processReminderEmailRequest', () => {
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
           reminders: '',
-          reminderType: 'notClaimed_sixMonths',
+          reminderType: sixMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledWith(
+      reminderRequestedTopicArn,
       {
         agreementReference: 'IAHW-BEKR-AWIU',
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
-        reminderType: 'notClaimed_nineMonths'
+        reminderType: nineMonths
       },
-      'uk.gov.ffc.ahwr.agreement.reminder.email',
-      expect.any(Object),
-      { sessionId: expect.any(String) }
+      {
+        MessageType: {
+          DataType: 'String',
+          StringValue: messageGeneratorMsgTypeReminder
+        }
+      }
     )
   })
 
@@ -236,28 +256,32 @@ describe.skip('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
-          reminders: 'notClaimed_threeMonths',
-          reminderType: 'notClaimed_sixMonths',
+          reminders: threeMonths,
+          reminderType: sixMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledWith(
+      reminderRequestedTopicArn,
       {
         agreementReference: 'IAHW-BEKR-AWIU',
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
-        reminderType: 'notClaimed_sixMonths'
+        reminderType: sixMonths
       },
-      'uk.gov.ffc.ahwr.agreement.reminder.email',
-      expect.any(Object),
-      { sessionId: expect.any(String) }
+      {
+        MessageType: {
+          DataType: 'String',
+          StringValue: messageGeneratorMsgTypeReminder
+        }
+      }
     )
   })
 
@@ -271,28 +295,32 @@ describe.skip('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy@example.com',
           orgEmail: 'dummy@example.com',
-          reminders: 'notClaimed_threeMonths',
-          reminderType: 'notClaimed_sixMonths',
+          reminders: threeMonths,
+          reminderType: sixMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    expect(sendMessage).toHaveBeenCalledTimes(1)
-    expect(sendMessage).toHaveBeenCalledWith(
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledWith(
+      reminderRequestedTopicArn,
       {
         agreementReference: 'IAHW-BEKR-AWIU',
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy@example.com'],
-        reminderType: 'notClaimed_sixMonths'
+        reminderType: sixMonths
       },
-      'uk.gov.ffc.ahwr.agreement.reminder.email',
-      expect.any(Object),
-      { sessionId: expect.any(String) }
+      {
+        MessageType: {
+          DataType: 'String',
+          StringValue: messageGeneratorMsgTypeReminder
+        }
+      }
     )
   })
 
@@ -306,7 +334,7 @@ describe.skip('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: 'notClaimed_threeMonths',
+        reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -315,7 +343,7 @@ describe.skip('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: 'notClaimed_threeMonths',
+        reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -324,7 +352,7 @@ describe.skip('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: 'notClaimed_threeMonths',
+        reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -333,7 +361,7 @@ describe.skip('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: 'notClaimed_threeMonths',
+        reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -342,16 +370,16 @@ describe.skip('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: 'notClaimed_threeMonths',
+        reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       }
     ])
 
-    await processReminderEmailRequest(message, mockLogger)
+    await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
-    expect(sendMessage).toHaveBeenCalledTimes(5)
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(5)
     expect(mockSendEvent).toHaveBeenCalledTimes(5)
     expect(updateReminders).toHaveBeenCalledTimes(5)
   })
@@ -369,10 +397,10 @@ describe.skip('processReminderEmailRequest', () => {
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       }
     ])
-    sendMessage.mockRejectedValueOnce(new Error('Faild to send message!'))
+    sendMessageToSNS.mockRejectedValueOnce(new Error('Faild to send message!'))
 
     await expect(
-      processReminderEmailRequest(message, mockLogger)
+      processReminderEmailRequest(message, mockDb, mockLogger)
     ).rejects.toThrow()
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
@@ -380,7 +408,7 @@ describe.skip('processReminderEmailRequest', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Processing reminders request started..'
     )
-    expect(sendMessage).toHaveBeenCalledTimes(1)
+    expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledTimes(1)
     expect(mockLogger.error).toHaveBeenCalledWith(
       expect.any(Object),

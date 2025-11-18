@@ -33,3 +33,7 @@ export async function sendMessageToSQS(queueUrl, messageBody, attributes = {}) {
     throw err
   }
 }
+
+export async function sendMessageToSNS(topicUrl, messageBody, attributes = {}) {
+  // TODO impl for reminder email
+}

@@ -1,20 +1,20 @@
-import { v4 as uuid } from 'uuid'
 import { randomUUID } from 'node:crypto'
 import { config } from '../../config/config.js'
 import {
   PublishEvent,
   reminders as reminderTypes
 } from 'ffc-ahwr-common-library'
-import { sendMessage } from '../send-message.js' // TODO BH Impl
+import { sendMessageToSNS } from '../send-message.js'
 import {
   getRemindersToSend,
   updateReminders
 } from '../../repositories/application-repository.js'
 import { isAtLeastMonthsOld } from '../../lib/date-utils.js'
 
-const { messageGeneratorMsgReminderType, messageGeneratorQueue } = config
+const { messageGeneratorMsgTypeReminder } = config.get('messageTypes')
+const { reminderRequestedTopicArn } = config.get('sns')
 
-export const processReminderEmailRequest = async (message, logger) => {
+export const processReminderEmailRequest = async (message, db, logger) => {
   const { requestedDate, maxBatchSize } = message.body
 
   logger.setBindings({ requestedDate })
@@ -23,6 +23,7 @@ export const processReminderEmailRequest = async (message, logger) => {
   const applicationsDueReminder = await getApplicationsDueReminderEmail(
     requestedDate,
     maxBatchSize,
+    db,
     logger
   )
 
@@ -36,7 +37,7 @@ export const processReminderEmailRequest = async (message, logger) => {
     try {
       await sendToMessageGenerator(payload)
       await sendApplicationSessionEvent(application)
-      await saveLastReminderSent(application, logger)
+      await saveLastReminderSent(application, db, logger)
     } catch (error) {
       logger.error(error, 'Failed to processed reminders request')
       throw error
@@ -48,22 +49,26 @@ export const processReminderEmailRequest = async (message, logger) => {
 const getApplicationsDueReminderEmail = async (
   requestedDate,
   maxBatchSize,
+  db,
   logger
 ) => {
   const notClaimedNineMonths = await getApplicationsWithoutClaimAfterNineMonths(
     requestedDate,
     maxBatchSize,
+    db,
     logger
   )
   const notClaimedSixMonths = await getApplicationsWithoutClaimAfterSixMonths(
     requestedDate,
     maxBatchSize,
+    db,
     logger
   )
   const notClaimedThreeMonths =
     await getApplicationsWithoutClaimAfterThreeMonths(
       requestedDate,
       maxBatchSize,
+      db,
       logger
     )
 
@@ -83,6 +88,7 @@ const getApplicationsDueReminderEmail = async (
 const getApplicationsWithoutClaimAfterNineMonths = async (
   requestedDate,
   maxBatchSize,
+  db,
   logger
 ) => {
   const { nineMonths } = reminderTypes.notClaimed
@@ -99,6 +105,7 @@ const getApplicationsWithoutClaimAfterNineMonths = async (
     undefined,
     [],
     maxBatchSize,
+    db,
     logger
   )
 }
@@ -106,6 +113,7 @@ const getApplicationsWithoutClaimAfterNineMonths = async (
 const getApplicationsWithoutClaimAfterSixMonths = async (
   requestedDate,
   maxBatchSize,
+  db,
   logger
 ) => {
   const { sixMonths, nineMonths } = reminderTypes.notClaimed
@@ -127,6 +135,7 @@ const getApplicationsWithoutClaimAfterSixMonths = async (
     sixMonthReminderWindowEnd,
     [nineMonths],
     maxBatchSize,
+    db,
     logger
   )
 }
@@ -134,6 +143,7 @@ const getApplicationsWithoutClaimAfterSixMonths = async (
 const getApplicationsWithoutClaimAfterThreeMonths = async (
   requestedDate,
   maxBatchSize,
+  db,
   logger
 ) => {
   const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
@@ -155,6 +165,7 @@ const getApplicationsWithoutClaimAfterThreeMonths = async (
     threeMonthReminderWindowEnd,
     [sixMonths, nineMonths],
     maxBatchSize,
+    db,
     logger
   )
 }
@@ -214,12 +225,12 @@ const constructMessage = ({
 }
 
 const sendToMessageGenerator = async (reminder) => {
-  await sendMessage(
-    reminder,
-    messageGeneratorMsgReminderType,
-    messageGeneratorQueue,
-    { sessionId: uuid() }
-  )
+  await sendMessageToSNS(reminderRequestedTopicArn, reminder, {
+    MessageType: {
+      DataType: 'String',
+      StringValue: messageGeneratorMsgTypeReminder
+    }
+  })
 }
 
 const sendApplicationSessionEvent = async ({
@@ -253,7 +264,8 @@ const sendApplicationSessionEvent = async ({
 
 const saveLastReminderSent = async (
   { reference, reminderType, reminders },
+  db,
   logger
 ) => {
-  await updateReminders(reference, reminderType, reminders, logger)
+  await updateReminders(reference, reminderType, reminders, db, logger)
 }

@@ -1,10 +1,10 @@
+import { STATUS, reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import {
   getApplicationsBySbi,
   createApplication,
   getRemindersToSend,
   updateReminders
 } from './application-repository'
-// import { applicationStatus } from '../../../../app/constants/index.js'
 
 describe('application-repository', () => {
   const dbMock = {
@@ -15,9 +15,11 @@ describe('application-repository', () => {
     toArray: jest.fn(),
     find: jest.fn().mockReturnThis(),
     sort: jest.fn().mockReturnThis(),
+    project: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     next: jest.fn(),
-    insertOne: jest.fn()
+    insertOne: jest.fn(),
+    updateOne: jest.fn(() => ({ modifiedCount: 1 }))
   }
 
   describe('getApplicationsBySbi', () => {
@@ -76,7 +78,6 @@ describe('application-repository', () => {
     })
   })
 
-  // TODO BH impl
   describe('getRemindersToSend', () => {
     const mockLogger = {
       info: jest.fn()
@@ -88,65 +89,73 @@ describe('application-repository', () => {
 
     it('get applications due notClaimed_threeMonths reminders, documents input, expected query structure and expected output', async () => {
       const fakeMaxBatchSize = 5000
-      // const { notAgreed } = applicationStatus
-      // models.application.findAll.mockResolvedValueOnce([
-      //   { dataValues: { reference: 'IAHW-BEKR-TEST', crn: '1000000000', sbi: '100000000', email: 'dummy@example.com', orgEmail: undefined, reminders: undefined, reminderType: 'notClaimed_threeMonths' } }
-      // ])
+      const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
+      const { NOT_AGREED } = STATUS
 
       const reminders = await getRemindersToSend(
-        'notClaimed_threeMonths',
+        threeMonths,
         '2025-08-05T00:00:00.000Z',
         '2024-05-05T00:00:00.000Z',
-        ['notClaimed_sixMonths', 'notClaimed_nineMonths'],
+        [sixMonths, nineMonths],
         fakeMaxBatchSize,
+        dbMock,
         mockLogger
       )
 
-      // expect(models.application.findAll).toHaveBeenCalledWith(
-      //   {
-      //     where: {
-      //       type: {
-      //         [Op.eq]: 'EE'
-      //       },
-      //       reference: {
-      //         [Op.notIn]: {
-      //           val: '(SELECT DISTINCT "applicationReference" FROM claim)'
-      //         }
-      //       },
-      //       statusId: {
-      //         [Op.ne]: notAgreed
-      //       },
-      //       createdAt: {
-      //         [Op.lte]: '2025-08-05T00:00:00.000Z',
-      //         [Op.gte]: '2024-05-05T00:00:00.000Z'
-      //       },
-      //       reminders: {
-      //         [Op.notIn]: ['notClaimed_threeMonths', 'notClaimed_sixMonths', 'notClaimed_nineMonths']
-      //       }
-      //     },
-      //     attributes: [
-      //       'reference',
-      //       [{ val: "data->'organisation'->>'crn'" }, 'crn'],
-      //       [{ val: "data->'organisation'->>'sbi'" }, 'sbi'],
-      //       [{ val: "data->'organisation'->>'email'" }, 'email'],
-      //       [{ val: "data->'organisation'->>'orgEmail'" }, 'orgEmail'],
-      //       'reminders',
-      //       [{ val: "'notClaimed_threeMonths'" }, 'reminderType'],
-      //       'createdAt'
-      //     ],
-      //     order: [['createdAt', 'ASC']],
-      //     limit: fakeMaxBatchSize
-      //   }
-      // )
+      expect(
+        dbMock.collection().aggregate().sort().project().limit
+      ).toHaveBeenCalledTimes(1)
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
+      expect(dbMock.collection().aggregate).toHaveBeenCalledWith([
+        {
+          $lookup: {
+            from: 'claims',
+            localField: 'reference',
+            foreignField: 'applicationReference',
+            as: 'claimMatches'
+          }
+        },
+        {
+          $match: {
+            type: 'EE',
+            statusId: { $ne: NOT_AGREED },
+            createdAt: {
+              $gte: '2024-05-05T00:00:00.000Z',
+              $lte: '2025-08-05T00:00:00.000Z'
+            },
+            reminders: {
+              $nin: [threeMonths, sixMonths, nineMonths]
+            },
+            claimMatches: { $size: 0 }
+          }
+        }
+      ])
+      expect(dbMock.collection().aggregate().sort).toHaveBeenCalledWith({
+        createdAt: 1
+      })
+      expect(
+        dbMock.collection().aggregate().sort().project
+      ).toHaveBeenCalledWith({
+        reference: 1,
+        crn: { $eq: ['$organisation.crn'] },
+        sbi: { $eq: ['$organisation.sbi'] },
+        email: { $eq: ['$organisation.email'] },
+        orgEmail: { $eq: ['$organisation.orgEmail'] },
+        reminders: 1,
+        reminderType: { $literal: threeMonths },
+        createdAt: 1
+      })
+      expect(
+        dbMock.collection().aggregate().sort().project().limit
+      ).toHaveBeenCalledWith(5000)
       expect(mockLogger.info).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledWith(
         "Getting reminders due, reminder type 'notClaimed_threeMonths', window start '2025-08-05T00:00:00.000Z', end '2024-05-05T00:00:00.000Z' and haven't already received later reminders 'notClaimed_sixMonths,notClaimed_nineMonths'"
       )
-      expect(reminders).toHaveLength(0) // TODO BH switch back to 1
+      expect(reminders).toHaveLength(1)
     })
   })
 
-  // TODO BH impl
   describe('updateReminders', () => {
     const mockLogger = {
       info: jest.fn()
@@ -157,24 +166,19 @@ describe('application-repository', () => {
     })
 
     it('updates reminders on application', async () => {
-      // models.application.update.mockResolvedValueOnce([1])
-
       await updateReminders(
         'IAHW-5BA2-6DFD',
         'notClaimed_nineMonths',
         undefined,
+        dbMock,
         mockLogger
       )
 
-      // expect(models.application.update).toHaveBeenCalledWith(
-      //   { reminders: 'notClaimed_nineMonths' },
-      //   {
-      //     where: {
-      //       reference: 'IAHW-5BA2-6DFD'
-      //     },
-      //     returning: true
-      //   }
-      // )
+      expect(dbMock.collection().updateOne).toHaveBeenCalledTimes(1)
+      expect(dbMock.collection().updateOne).toHaveBeenCalledWith(
+        { reference: 'IAHW-5BA2-6DFD' },
+        { $set: { reminders: 'notClaimed_nineMonths' } }
+      )
       // expect(models.application_update_history.create).toHaveBeenCalledWith({
       //   eventType: 'application-reminders',
       //   updatedProperty: 'reminders',
@@ -186,7 +190,7 @@ describe('application-repository', () => {
       // })
       expect(mockLogger.info).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Successfully updated reminders, rows affected: 0' // TODO BH switch back to 1
+        'Successfully updated reminders, rows affected: 1'
       )
     })
   })

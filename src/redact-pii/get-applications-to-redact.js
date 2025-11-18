@@ -1,6 +1,6 @@
 import {
   APPLICATION_REFERENCE_PREFIX_OLD_WORLD,
-  CLAIM_STATUS,
+  STATUS,
   REDACT_PII_PROGRESS_STATUS
 } from 'ffc-ahwr-common-library'
 import {
@@ -21,7 +21,7 @@ const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 const THREE_YEARS = 3
 const SEVEN_YEARS = 7
 
-const CLAIM_STATUS_PAID = [CLAIM_STATUS.PAID, CLAIM_STATUS.READY_TO_PAY]
+const CLAIM_STATUS_PAID = [STATUS.PAID, STATUS.READY_TO_PAY]
 
 export const getApplicationsToRedact = async (requestedDate) => {
   let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
