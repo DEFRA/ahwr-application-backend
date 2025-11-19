@@ -1,7 +1,8 @@
-// import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
+import { STATUS } from 'ffc-ahwr-common-library'
 // import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
+// import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 
 import {
   APPLICATION_COLLECTION,
@@ -481,4 +482,106 @@ export const deleteFlag = async (db, flagId, user, deletedNote) => {
     { returnDocument: 'after' }
   )
   return result
+}
+
+export const getRemindersToSend = async (
+  reminderType,
+  reminderWindowStartDate,
+  reminderWindowEndDate,
+  laterReminders,
+  maxBatchSize,
+  db,
+  logger
+) => {
+  logger.info(
+    `Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`
+  )
+
+  // const reminderTypesToExclude = laterReminders
+  //   ? [reminderType, ...laterReminders]
+  //   : [reminderType]
+
+  const baseQuery = {
+    type: 'EE',
+    statusId: { $ne: STATUS.NOT_AGREED },
+    createdAt: { $lte: reminderWindowStartDate }
+    // TODO replace this is condition that checks application history
+    // reminders: { $nin: reminderTypesToExclude }
+  }
+  const query = reminderWindowEndDate
+    ? {
+        ...baseQuery,
+        createdAt: {
+          $gte: reminderWindowEndDate,
+          $lte: reminderWindowStartDate
+        }
+      }
+    : baseQuery
+
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'claims',
+        localField: 'reference',
+        foreignField: 'applicationReference',
+        as: 'claimMatches'
+      }
+    },
+    {
+      $match: { ...query, claimMatches: { $size: 0 } }
+    }
+  ]
+
+  const projection = {
+    reference: 1,
+    crn: { $eq: ['$organisation.crn'] },
+    sbi: { $eq: ['$organisation.sbi'] },
+    email: { $eq: ['$organisation.email'] },
+    orgEmail: { $eq: ['$organisation.orgEmail'] },
+    // TODO replace this is condition that checks application history
+    // reminders: 1,
+    reminderType: { $literal: reminderType },
+    createdAt: 1
+  }
+
+  const sort = { createdAt: 1 }
+
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate(pipeline)
+    .sort(sort)
+    .project(projection)
+    .limit(maxBatchSize)
+    .toArray()
+}
+
+export const updateReminders = async (
+  reference,
+  newReminder,
+  _oldReminder,
+  db,
+  logger
+) => {
+  const filter = { reference }
+  // TODO replace this is condition that checks application history
+  const updateDocument = {} // { $set: { reminders: newReminder } }
+  // TODO add updated history to above!
+  // await models.application_update_history.create({
+  //     applicationReference: reference,
+  //     note: 'Reminder sent',
+  //     updatedProperty,
+  //     newValue: newReminder,
+  //     oldValue: oldReminder,
+  //     eventType: type,
+  //     createdBy: 'admin'
+  //   })
+  // }
+
+  const result = db
+    .collection(APPLICATION_COLLECTION)
+    .updateOne(filter, updateDocument)
+
+  logger.info(
+    `Successfully updated reminders, rows affected: ${result.modifiedCount}`
+  )
 }

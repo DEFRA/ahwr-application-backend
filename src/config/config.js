@@ -133,6 +133,11 @@ const config = convict({
       format: String,
       default: `${msgTypePrefix}.redact.pii.request`
     },
+    reminderEmailRequestMsgType: {
+      doc: 'Application message type for reminder email requests',
+      format: String,
+      default: `${msgTypePrefix}.reminder.email.request`
+    },
     submitPaymentRequestMsgType: {
       doc: 'Message type for payment requests',
       format: String,
@@ -147,6 +152,11 @@ const config = convict({
       doc: 'Message type for claim status update requests',
       format: String,
       default: `${msgTypePrefix}.claim.status.update`
+    },
+    messageGeneratorMsgTypeReminder: {
+      doc: 'Message-Generator message type for reminder email requests',
+      format: String,
+      default: `${msgTypePrefix}.agreement.reminder.email`
     }
   },
   mongo: {
@@ -332,6 +342,12 @@ const config = convict({
       nullable: true,
       env: 'FEATURE_ASSURANCE_START'
     }
+  },
+  reminderEmailMaxBatchSize: {
+    doc: 'Reminder email, maximum number of agreements processed in single run.',
+    format: Number,
+    default: 5000,
+    env: 'REMINDER_EMAIL_MAX_BATCH_SIZE'
   }
 })
 

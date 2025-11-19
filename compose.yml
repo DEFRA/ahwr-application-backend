@@ -58,6 +58,7 @@ services:
       DOCUMENT_REQUEST_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_document_request"
       REMINDER_REQUEST_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_reminder_request"
       STATUS_CHANGE_TOPIC_ARN: "arn:aws:sns:eu-west-2:000000000000:ahwr_status_change"
+      REMINDER_EMAIL_MAX_BATCH_SIZE: ${REMINDER_EMAIL_MAX_BATCH_SIZE:-5000}
     networks:
       - ahwr-local
     volumes:
