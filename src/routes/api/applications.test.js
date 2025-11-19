@@ -2,7 +2,7 @@
 import {
   // searchApplications,
   getApplication,
-  updateApplicationByReference
+  updateApplicationStatus
   // findApplication,
   // updateApplicationData,
   // updateEligiblePiiRedaction
@@ -220,7 +220,7 @@ describe('Applications test', () => {
         flags: [],
         status: 'AGREED'
       })
-      updateApplicationByReference.mockResolvedValue({
+      updateApplicationStatus.mockResolvedValue({
         _id: new ObjectId('507f191e810c19729de860ea'),
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
@@ -242,10 +242,11 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(updateApplicationByReference).toHaveBeenCalledWith(mockDb, {
+      expect(updateApplicationStatus).toHaveBeenCalledWith({
+        db: mockDb,
         reference: 'IAHW-U6ZE-5R5E',
         status: 'WITHDRAWN',
-        updatedBy: 'test',
+        user: 'test',
         updatedAt: expect.any(Date)
       })
       expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
@@ -281,7 +282,7 @@ describe('Applications test', () => {
         flags: [],
         status: 'AGREED'
       })
-      updateApplicationByReference.mockResolvedValue({
+      updateApplicationStatus.mockResolvedValue({
         _id: new ObjectId('507f191e810c19729de860ea'),
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
@@ -303,10 +304,11 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(updateApplicationByReference).toHaveBeenCalledWith(mockDb, {
+      expect(updateApplicationStatus).toHaveBeenCalledWith({
+        db: mockDb,
         reference: 'IAHW-U6ZE-5R5E',
         status: 'IN_CHECK',
-        updatedBy: 'test',
+        user: 'test',
         updatedAt: expect.any(Date)
       })
       expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({

@@ -4,7 +4,8 @@ import {
   getApplication,
   searchApplications,
   updateApplicationByReference,
-  updateEligiblePiiRedaction
+  updateEligiblePiiRedaction,
+  updateApplicationStatus
 } from '../../repositories/application-repository.js'
 import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
@@ -97,10 +98,11 @@ export const applicationHandlers = [
           return h.response().code(HttpStatus.NO_CONTENT)
         }
 
-        const result = await updateApplicationByReference(db, {
+        const result = await updateApplicationStatus({
+          db,
           reference: ref,
           status,
-          updatedBy: user,
+          user,
           updatedAt: new Date()
         })
 

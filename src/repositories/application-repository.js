@@ -8,6 +8,7 @@ import {
   APPLICATION_COLLECTION,
   OW_APPLICATION_COLLECTION
 } from '../constants/index.js'
+import { v4 as uuid } from 'uuid'
 
 export const getApplication = async ({
   db,
@@ -222,14 +223,66 @@ export const getAllApplications = async () => {
   // return models.application.findAll(query)
 }
 
-export const updateApplicationByReference = async (db, data) => {
-  return db
-    .collection(APPLICATION_COLLECTION)
-    .findOneAndUpdate(
-      { reference: data.reference },
-      { $set: data },
-      { returnDocument: 'after' }
-    )
+export const updateApplicationByReference = async ({
+  db,
+  reference,
+  updatedProperty,
+  newValue,
+  oldValue,
+  note,
+  user,
+  updatedAt
+}) => {
+  return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        [updatedProperty]: newValue,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        updateHistory: {
+          id: uuid(),
+          note,
+          newValue,
+          oldValue,
+          createdAt: updatedAt,
+          createdBy: user,
+          eventType: `application-${updatedProperty}`,
+          updatedProperty
+        }
+      }
+    },
+    { returnDocument: 'after' }
+  )
+}
+
+export const updateApplicationStatus = async ({
+  db,
+  reference,
+  status,
+  user,
+  updatedAt
+}) => {
+  return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        status,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        statusHistory: {
+          status,
+          createdAt: updatedAt,
+          createdBy: user
+        }
+      }
+    },
+    { returnDocument: 'after' }
+  )
 }
 
 export const findApplication = async (db, reference) => {
