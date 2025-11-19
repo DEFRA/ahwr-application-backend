@@ -27,7 +27,7 @@ const router = {
           .concat(contactHistoryHandlers)
           .concat(flagRoutes)
           .concat(redactPiiRequestHandlers)
-          .concat(reminderEmailRequestHandlers)
+          .concat(reminderEmailRequestHandlers) // TODO won't be needed once scheduler added to this service.
       )
     }
   }
