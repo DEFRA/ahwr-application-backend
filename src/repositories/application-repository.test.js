@@ -3,7 +3,8 @@ import {
   getApplicationsBySbi,
   createApplication,
   getRemindersToSend,
-  updateReminders
+  updateReminders,
+  updateApplicationByReference
 } from './application-repository'
 
 describe('application-repository', () => {
@@ -19,7 +20,8 @@ describe('application-repository', () => {
     limit: jest.fn().mockReturnThis(),
     next: jest.fn(),
     insertOne: jest.fn(),
-    updateOne: jest.fn(() => ({ modifiedCount: 1 }))
+    updateOne: jest.fn(() => ({ modifiedCount: 1 })),
+    findOneAndUpdate: jest.fn()
   }
 
   describe('getApplicationsBySbi', () => {
@@ -196,6 +198,34 @@ describe('application-repository', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Successfully updated reminders, rows affected: 1'
       )
+    })
+  })
+  
+  describe('updateApplicationByReference', () => {
+    it('should call findOneAndUpdate with correct parameters and return result', async () => {
+      const data = {
+        reference: 'IAHW-8ZPZ-8CLI',
+        status: 'WITHDRAWN',
+        updatedBy: 'test-user',
+        updatedAt: new Date('2025-10-22T16:21:46.091Z')
+      }
+      const updatedApplication = {
+        reference: 'IAHW-8ZPZ-8CLI',
+        status: 'WITHDRAWN',
+        updatedBy: 'test-user',
+        updatedAt: new Date('2025-10-22T16:21:46.091Z')
+      }
+      collectionMock.findOneAndUpdate.mockResolvedValue(updatedApplication)
+
+      const result = await updateApplicationByReference(dbMock, data)
+
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
+      expect(collectionMock.findOneAndUpdate).toHaveBeenCalledWith(
+        { reference: 'IAHW-8ZPZ-8CLI' },
+        { $set: data },
+        { returnDocument: 'after' }
+      )
+      expect(result).toBe(updatedApplication)
     })
   })
 })
