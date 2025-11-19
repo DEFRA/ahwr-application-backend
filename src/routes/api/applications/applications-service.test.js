@@ -708,8 +708,7 @@ describe('applications-service', () => {
             deletedNote: "User has changed their mind and accepted the T&C's"
           }
         ],
-        eligiblePiiRedaction: true,
-        reminders: ''
+        eligiblePiiRedaction: true
       }
       appRepo.getApplication.mockResolvedValue(mockResult)
 
@@ -767,8 +766,7 @@ describe('applications-service', () => {
             deletedNote: "User has changed their mind and accepted the T&C's"
           }
         ],
-        eligiblePiiRedaction: true,
-        reminders: ''
+        eligiblePiiRedaction: true
       })
     })
 

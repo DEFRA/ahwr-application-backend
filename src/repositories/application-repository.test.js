@@ -123,9 +123,10 @@ describe('application-repository', () => {
               $gte: '2024-05-05T00:00:00.000Z',
               $lte: '2025-08-05T00:00:00.000Z'
             },
-            reminders: {
-              $nin: [threeMonths, sixMonths, nineMonths]
-            },
+            // TODO replace this is condition that checks application history
+            // reminders: {
+            //   $nin: [threeMonths, sixMonths, nineMonths]
+            // },
             claimMatches: { $size: 0 }
           }
         }
@@ -141,7 +142,8 @@ describe('application-repository', () => {
         sbi: { $eq: ['$organisation.sbi'] },
         email: { $eq: ['$organisation.email'] },
         orgEmail: { $eq: ['$organisation.orgEmail'] },
-        reminders: 1,
+        // TODO replace this is condition that checks application history
+        // reminders: 1,
         reminderType: { $literal: threeMonths },
         createdAt: 1
       })
@@ -177,7 +179,9 @@ describe('application-repository', () => {
       expect(dbMock.collection().updateOne).toHaveBeenCalledTimes(1)
       expect(dbMock.collection().updateOne).toHaveBeenCalledWith(
         { reference: 'IAHW-5BA2-6DFD' },
-        { $set: { reminders: 'notClaimed_nineMonths' } }
+        // TODO replace this is condition that checks application history
+        // { $set: { reminders: 'notClaimed_nineMonths' } }
+        {}
       )
       // expect(models.application_update_history.create).toHaveBeenCalledWith({
       //   eventType: 'application-reminders',

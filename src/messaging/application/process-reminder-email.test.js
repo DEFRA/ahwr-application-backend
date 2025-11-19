@@ -161,7 +161,8 @@ describe('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
-          reminders: threeMonths,
+          // TODO replace this is condition that checks application history
+          // reminders: threeMonths,
           reminderType: sixMonths,
           createdAt: new Date('2025-05-05T00:00:00.000Z')
         }
@@ -201,7 +202,9 @@ describe('processReminderEmailRequest', () => {
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
       sixMonths,
-      threeMonths,
+      // TODO replace this is condition that checks application history
+      // threeMonths,
+      undefined,
       mockDb,
       mockLogger
     )
@@ -217,7 +220,6 @@ describe('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
-          reminders: '',
           reminderType: sixMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
@@ -246,7 +248,8 @@ describe('processReminderEmailRequest', () => {
     )
   })
 
-  it('should not promote to notClaimed_nineMonths when 8months old but has reminders previously sent', async () => {
+  // TODO replace this is condition that checks application history
+  it.skip('should not promote to notClaimed_nineMonths when 8months old but has reminders previously sent', async () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
@@ -256,7 +259,8 @@ describe('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy1@example.com',
           orgEmail: 'dummy2@example.com',
-          reminders: threeMonths,
+          // TODO replace this is condition that checks application history
+          // reminders: threeMonths,
           reminderType: sixMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
@@ -295,8 +299,9 @@ describe('processReminderEmailRequest', () => {
           sbi: '106282723',
           email: 'dummy@example.com',
           orgEmail: 'dummy@example.com',
-          reminders: threeMonths,
-          reminderType: sixMonths,
+          // TODO replace this is condition that checks application history
+          // reminders: threeMonths,
+          reminderType: nineMonths,
           createdAt: new Date('2025-03-05T00:00:00.000Z')
         }
       }
@@ -313,7 +318,7 @@ describe('processReminderEmailRequest', () => {
         crn: '1100407200',
         sbi: '106282723',
         emailAddresses: ['dummy@example.com'],
-        reminderType: sixMonths
+        reminderType: nineMonths
       },
       {
         MessageType: {
@@ -334,7 +339,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: threeMonths,
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -343,7 +349,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: threeMonths,
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -352,7 +359,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: threeMonths,
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -361,7 +369,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: threeMonths,
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       },
       {
@@ -370,7 +379,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        reminders: threeMonths,
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
         createdAt: new Date('2025-08-05T00:00:00.000Z')
       }
     ])

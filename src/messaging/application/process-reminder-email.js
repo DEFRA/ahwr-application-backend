@@ -184,6 +184,7 @@ const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
 
 // prevents contacting users too often
 const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
+  // TODO replace this is condition that checks application history
   if (!reminder.reminders) {
     const FIVE_MONTHS = 5
     const EIGHT_MONTHS = 8

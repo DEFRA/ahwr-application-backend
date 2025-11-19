@@ -57,8 +57,7 @@ db.getCollection('applications').insertMany([
         deletedNote: 'no they do not'
       }
     ],
-    eligiblePiiRedaction: true,
-    reminders: ''
+    eligiblePiiRedaction: true
   }
 ])
 
@@ -298,8 +297,7 @@ db.getCollection('owapplications').insertMany([
     redactionHistory: {},
     flags: [],
     claimed: false,
-    eligiblePiiRedaction: true,
-    reminders: ''
+    eligiblePiiRedaction: true
   },
   {
     reference: 'AHWR-B571-6E85',
@@ -405,7 +403,6 @@ db.getCollection('owapplications').insertMany([
       }
     ],
     claimed: false,
-    eligiblePiiRedaction: true,
-    reminders: ''
+    eligiblePiiRedaction: true
   }
 ])

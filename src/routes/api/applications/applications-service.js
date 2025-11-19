@@ -236,7 +236,6 @@ export const getApplication = async ({ db, logger, applicationReference }) => {
     statusHistory: result.statusHistory,
     contactHistory: result.contactHistory,
     flags: result.flags,
-    eligiblePiiRedaction: result.eligiblePiiRedaction,
-    reminders: '' // TODO impl for reminder email, get from history instead
+    eligiblePiiRedaction: result.eligiblePiiRedaction
   }
 }

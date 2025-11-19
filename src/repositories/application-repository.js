@@ -549,15 +549,16 @@ export const getRemindersToSend = async (
     `Getting reminders due, reminder type '${reminderType}', window start '${reminderWindowStartDate}', end '${reminderWindowEndDate}' and haven't already received later reminders '${laterReminders?.join(',')}'`
   )
 
-  const reminderTypesToExclude = laterReminders
-    ? [reminderType, ...laterReminders]
-    : [reminderType]
+  // const reminderTypesToExclude = laterReminders
+  //   ? [reminderType, ...laterReminders]
+  //   : [reminderType]
 
   const baseQuery = {
     type: 'EE',
     statusId: { $ne: STATUS.NOT_AGREED },
-    createdAt: { $lte: reminderWindowStartDate },
-    reminders: { $nin: reminderTypesToExclude }
+    createdAt: { $lte: reminderWindowStartDate }
+    // TODO replace this is condition that checks application history
+    // reminders: { $nin: reminderTypesToExclude }
   }
   const query = reminderWindowEndDate
     ? {
@@ -589,7 +590,8 @@ export const getRemindersToSend = async (
     sbi: { $eq: ['$organisation.sbi'] },
     email: { $eq: ['$organisation.email'] },
     orgEmail: { $eq: ['$organisation.orgEmail'] },
-    reminders: 1,
+    // TODO replace this is condition that checks application history
+    // reminders: 1,
     reminderType: { $literal: reminderType },
     createdAt: 1
   }
@@ -613,7 +615,8 @@ export const updateReminders = async (
   logger
 ) => {
   const filter = { reference }
-  const updateDocument = { $set: { reminders: newReminder } }
+  // TODO replace this is condition that checks application history
+  const updateDocument = {} // { $set: { reminders: newReminder } }
   // TODO add updated history to above!
   // await models.application_update_history.create({
   //     applicationReference: reference,
