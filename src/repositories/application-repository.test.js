@@ -201,7 +201,7 @@ describe('application-repository', () => {
       )
     })
   })
-  
+
   describe('updateApplicationByReference', () => {
     it('should call findOneAndUpdate with correct parameters and return result', async () => {
       const updatedApplication = {
