@@ -122,7 +122,10 @@ const buildSearchQuery = (searchText, searchType, filter) => {
       }
 
       case 'status':
-        query.status = { $regex: searchText, $options: 'i' }
+        query.status = {
+          $regex: searchText.toUpperCase().replace(/ /g, '_'),
+          $options: 'i'
+        }
         break
 
       default:
