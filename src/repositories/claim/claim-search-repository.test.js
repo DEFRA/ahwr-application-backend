@@ -108,46 +108,46 @@ describe('claim-search-repository', () => {
     })
 
     it('returns total and claims if there a filter is provided', async () => {
-        const dbMock = {
-          collection: jest.fn(() => collectionMock)
-        }
-        const collectionMock = {
-          aggregate: jest
-            .fn()
-            .mockReturnValueOnce({
-              toArray: jest.fn().mockReturnValue([{ total: 50 }])
-            })
-            .mockReturnValueOnce({
-              toArray: jest
-                .fn()
-                .mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
-            })
-        }
-  
-        const search = null
-        const filter = { field: "updatedAt", op: "lte", value: "2025-01-17" }
-        const offset = 0
-        const limit = 30
-        const sort = { field: 'createdAt', direction: 'DESC' }
-  
-        const result = await searchClaims(
-          search,
-          filter,
-          offset,
-          limit,
-          sort,
-          dbMock
-        )
-  
-        expect(result).toEqual({
-          claims: [{ reference: 'IAHW-ABCD-1234' }],
-          total: 50
-        })
-        expect(collectionMock.aggregate.mock.calls[0][0][4]).toEqual({
-          $match: {
-            [filter.field]: { [`$${filter.op}`]: filter.value }
-          }
-        })
+      const dbMock = {
+        collection: jest.fn(() => collectionMock)
+      }
+      const collectionMock = {
+        aggregate: jest
+          .fn()
+          .mockReturnValueOnce({
+            toArray: jest.fn().mockReturnValue([{ total: 50 }])
+          })
+          .mockReturnValueOnce({
+            toArray: jest
+              .fn()
+              .mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+          })
+      }
+
+      const search = null
+      const filter = { field: 'updatedAt', op: 'lte', value: '2025-01-17' }
+      const offset = 0
+      const limit = 30
+      const sort = { field: 'createdAt', direction: 'DESC' }
+
+      const result = await searchClaims(
+        search,
+        filter,
+        offset,
+        limit,
+        sort,
+        dbMock
+      )
+
+      expect(result).toEqual({
+        claims: [{ reference: 'IAHW-ABCD-1234' }],
+        total: 50
       })
+      expect(collectionMock.aggregate.mock.calls[0][0][4]).toEqual({
+        $match: {
+          [filter.field]: { [`$${filter.op}`]: filter.value }
+        }
+      })
+    })
   })
 })
