@@ -7,7 +7,7 @@ import { config } from '../config/config.js'
 let fcpMessageClient
 let eventPublisher
 
-export const startMessagingService = async ({ _db, logger }) => {
+export const startMessagingService = async (logger) => {
   fcpMessageClient = createServiceBusClient({
     host: config.get('azure.eventQueue.host'),
     username: config.get('azure.eventQueue.username'),

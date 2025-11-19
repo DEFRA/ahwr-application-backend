@@ -35,7 +35,7 @@ describe('startServer', () => {
       'Access your backend on http://localhost:3000'
     )
     expect(server).toBe(mockServer)
-    expect(startMessagingService).toHaveBeenCalledWith(mockServer)
+    expect(startMessagingService).toHaveBeenCalledWith(mockLogger)
   })
 
   it('should throw an error if start fails', async () => {

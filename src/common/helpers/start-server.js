@@ -11,7 +11,7 @@ export async function startServer() {
     `Access your backend on http://localhost:${config.get('port')}`
   )
 
-  await startMessagingService(server)
+  await startMessagingService(server.logger)
 
   return server
 }
