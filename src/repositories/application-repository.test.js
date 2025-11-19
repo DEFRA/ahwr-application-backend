@@ -257,7 +257,14 @@ describe('application-repository', () => {
         reference: 'IAHW-8ZPZ-8CLI',
         status: 'WITHDRAWN',
         updatedBy: 'test-user',
-        updatedAt: new Date('2025-10-22T16:21:46.091Z')
+        updatedAt: new Date('2025-10-22T16:21:46.091Z'),
+        statusHistory: [
+          {
+            status: 'AGREED',
+            createdBy: 'admin',
+            createdAt: new Date('2025-10-22T16:21:46.091Z')
+          }
+        ]
       }
       collectionMock.findOneAndUpdate.mockResolvedValue(updatedApplication)
 
