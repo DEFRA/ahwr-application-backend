@@ -130,12 +130,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy@example.com'],
         reminderType: threeMonths
       },
-      {
-        MessageType: {
-          DataType: 'String',
-          StringValue: messageGeneratorMsgTypeReminder
-        }
-      }
+      { messageType: messageGeneratorMsgTypeReminder }
     )
     expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
@@ -185,12 +180,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
         reminderType: sixMonths
       },
-      {
-        MessageType: {
-          DataType: 'String',
-          StringValue: messageGeneratorMsgTypeReminder
-        }
-      }
+      { messageType: messageGeneratorMsgTypeReminder }
     )
     expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
@@ -232,12 +222,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
         reminderType: nineMonths
       },
-      {
-        MessageType: {
-          DataType: 'String',
-          StringValue: messageGeneratorMsgTypeReminder
-        }
-      }
+      { messageType: messageGeneratorMsgTypeReminder }
     )
   })
 
@@ -271,12 +256,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
         reminderType: sixMonths
       },
-      {
-        MessageType: {
-          DataType: 'String',
-          StringValue: messageGeneratorMsgTypeReminder
-        }
-      }
+      { messageType: messageGeneratorMsgTypeReminder }
     )
   })
 
@@ -309,12 +289,7 @@ describe('processReminderEmailRequest', () => {
         emailAddresses: ['dummy@example.com'],
         reminderType: nineMonths
       },
-      {
-        MessageType: {
-          DataType: 'String',
-          StringValue: messageGeneratorMsgTypeReminder
-        }
-      }
+      { messageType: messageGeneratorMsgTypeReminder }
     )
   })
 

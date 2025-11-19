@@ -223,10 +223,7 @@ const constructMessage = ({
 
 const sendToMessageGenerator = async (reminder) => {
   await sendMessageToSNS(reminderRequestedTopicArn, reminder, {
-    MessageType: {
-      DataType: 'String',
-      StringValue: messageGeneratorMsgTypeReminder
-    }
+    messageType: messageGeneratorMsgTypeReminder
   })
 }
 
