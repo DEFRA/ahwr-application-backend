@@ -17,6 +17,7 @@ const { reminderRequestedTopicArn } = config.get('sns')
 export const processReminderEmailRequest = async (message, db, logger) => {
   const { requestedDate, maxBatchSize } = message.body
 
+  // TODO setBindings values aren't appearing in CDP logging
   logger.setBindings({ requestedDate })
   logger.info('Processing reminders request started..')
 
