@@ -1,18 +1,18 @@
 import { randomUUID } from 'node:crypto'
 import { config } from '../../config/config.js'
-import {
-  PublishEvent,
-  reminders as reminderTypes
-} from 'ffc-ahwr-common-library'
+import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { sendMessageToSNS } from '../send-message.js'
 import {
   getRemindersToSend,
   updateReminders
 } from '../../repositories/application-repository.js'
 import { isAtLeastMonthsOld } from '../../lib/date-utils.js'
+import { getEventPublisher } from '../../messaging/fcp-messaging-service.js'
+import { SEND_SESSION_EVENT } from '../../event-publisher/index.js'
 
 const { messageGeneratorMsgTypeReminder } = config.get('messageTypes')
 const { reminderRequestedTopicArn } = config.get('sns')
+const serviceName = config.get('serviceName')
 
 export const processReminderEmailRequest = async (message, db, logger) => {
   const { requestedDate, maxBatchSize } = message.body
@@ -79,7 +79,6 @@ const getApplicationsDueReminderEmail = async (
     ...notClaimedThreeMonths
   ]
     .slice(0, maxBatchSize)
-    .map(unwrapDatabaseQueryDataValues)
     .map(removeOrgEmailIfSameAddressAsEmail)
     .map(promoteToNextReminderIfNoRemindersAndWithinOneMonth)
 
@@ -171,10 +170,6 @@ const getApplicationsWithoutClaimAfterThreeMonths = async (
   )
 }
 
-const unwrapDatabaseQueryDataValues = (reminder) => {
-  return { ...reminder.dataValues }
-}
-
 // prevents send two email to same address
 const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
   if (reminder.email === reminder.orgEmail) {
@@ -240,16 +235,16 @@ const sendApplicationSessionEvent = async ({
   reference,
   reminderType
 }) => {
-  const eventPublisher = new PublishEvent(config.eventQueue)
   const data = { applicationReference: reference, reminderType }
 
+  // TODO move this to reusable application event fuction, see claim-data-update-event.js
   const event = {
-    name: 'send-session-event',
+    name: SEND_SESSION_EVENT,
     properties: {
       id: randomUUID(),
       sbi,
       cph: 'n/a',
-      checkpoint: process.env.APPINSIGHTS_CLOUDROLE,
+      checkpoint: serviceName,
       status: 'success',
       action: {
         type: 'application-reminders',
@@ -261,7 +256,7 @@ const sendApplicationSessionEvent = async ({
     }
   }
 
-  await eventPublisher.sendEvent(event)
+  await getEventPublisher().publishEvent(event)
 }
 
 const saveLastReminderSent = async (

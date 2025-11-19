@@ -12,17 +12,16 @@ const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
 const { messageGeneratorMsgTypeReminder } = config.get('messageTypes')
 const { reminderRequestedTopicArn } = config.get('sns')
 
-const mockSendEvent = jest.fn()
-jest.mock('ffc-ahwr-common-library', () => ({
-  ...jest.requireActual('ffc-ahwr-common-library'),
-  PublishEvent: jest.fn().mockImplementation(() => ({
-    sendEvent: mockSendEvent
-  }))
-}))
+const mockPublishEvent = jest.fn()
 jest.mock('../../messaging/send-message.js', () => ({
   sendMessageToSNS: jest.fn()
 }))
 jest.mock('../../repositories/application-repository.js')
+jest.mock('../../messaging/fcp-messaging-service.js', () => ({
+  getEventPublisher: jest.fn().mockImplementation(() => ({
+    publishEvent: mockPublishEvent
+  }))
+}))
 
 describe('processReminderEmailRequest', () => {
   const fakeMaxBatchSize = 5000
@@ -92,7 +91,7 @@ describe('processReminderEmailRequest', () => {
       'No new applications due reminders'
     )
     expect(sendMessageToSNS).toHaveBeenCalledTimes(0)
-    expect(mockSendEvent).toHaveBeenCalledTimes(0)
+    expect(mockPublishEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
 
@@ -101,15 +100,13 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
-        dataValues: {
-          reference: 'IAHW-BEKR-AWIU',
-          crn: '1100407200',
-          sbi: '106282723',
-          email: 'dummy@example.com',
-          orgEmail: undefined,
-          reminderType: threeMonths,
-          createdAt: new Date('2025-08-05T00:00:00.000Z')
-        }
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy@example.com',
+        orgEmail: undefined,
+        reminderType: threeMonths,
+        createdAt: new Date('2025-08-05T00:00:00.000Z')
       }
     ])
 
@@ -140,7 +137,7 @@ describe('processReminderEmailRequest', () => {
         }
       }
     )
-    expect(mockSendEvent).toHaveBeenCalledTimes(1)
+    expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
@@ -155,17 +152,15 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
-        dataValues: {
-          reference: 'IAHW-BEKR-AWIU',
-          crn: '1100407200',
-          sbi: '106282723',
-          email: 'dummy1@example.com',
-          orgEmail: 'dummy2@example.com',
-          // TODO replace this is condition that checks application history
-          // reminders: threeMonths,
-          reminderType: sixMonths,
-          createdAt: new Date('2025-05-05T00:00:00.000Z')
-        }
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy1@example.com',
+        orgEmail: 'dummy2@example.com',
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
+        reminderType: sixMonths,
+        createdAt: new Date('2025-05-05T00:00:00.000Z')
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -197,7 +192,7 @@ describe('processReminderEmailRequest', () => {
         }
       }
     )
-    expect(mockSendEvent).toHaveBeenCalledTimes(1)
+    expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
@@ -214,15 +209,13 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
-        dataValues: {
-          reference: 'IAHW-BEKR-AWIU',
-          crn: '1100407200',
-          sbi: '106282723',
-          email: 'dummy1@example.com',
-          orgEmail: 'dummy2@example.com',
-          reminderType: sixMonths,
-          createdAt: new Date('2025-03-05T00:00:00.000Z')
-        }
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy1@example.com',
+        orgEmail: 'dummy2@example.com',
+        reminderType: sixMonths,
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -253,17 +246,15 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
-        dataValues: {
-          reference: 'IAHW-BEKR-AWIU',
-          crn: '1100407200',
-          sbi: '106282723',
-          email: 'dummy1@example.com',
-          orgEmail: 'dummy2@example.com',
-          // TODO replace this is condition that checks application history
-          // reminders: threeMonths,
-          reminderType: sixMonths,
-          createdAt: new Date('2025-03-05T00:00:00.000Z')
-        }
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy1@example.com',
+        orgEmail: 'dummy2@example.com',
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
+        reminderType: sixMonths,
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -293,17 +284,15 @@ describe('processReminderEmailRequest', () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
       {
-        dataValues: {
-          reference: 'IAHW-BEKR-AWIU',
-          crn: '1100407200',
-          sbi: '106282723',
-          email: 'dummy@example.com',
-          orgEmail: 'dummy@example.com',
-          // TODO replace this is condition that checks application history
-          // reminders: threeMonths,
-          reminderType: nineMonths,
-          createdAt: new Date('2025-03-05T00:00:00.000Z')
-        }
+        reference: 'IAHW-BEKR-AWIU',
+        crn: '1100407200',
+        sbi: '106282723',
+        email: 'dummy@example.com',
+        orgEmail: 'dummy@example.com',
+        // TODO replace this is condition that checks application history
+        // reminders: threeMonths,
+        reminderType: nineMonths,
+        createdAt: new Date('2025-03-05T00:00:00.000Z')
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -390,7 +379,7 @@ describe('processReminderEmailRequest', () => {
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(sendMessageToSNS).toHaveBeenCalledTimes(5)
-    expect(mockSendEvent).toHaveBeenCalledTimes(5)
+    expect(mockPublishEvent).toHaveBeenCalledTimes(5)
     expect(updateReminders).toHaveBeenCalledTimes(5)
   })
 
@@ -424,7 +413,7 @@ describe('processReminderEmailRequest', () => {
       expect.any(Object),
       'Failed to processed reminders request'
     )
-    expect(mockSendEvent).toHaveBeenCalledTimes(0)
+    expect(mockPublishEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
 })
