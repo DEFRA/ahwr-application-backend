@@ -6,7 +6,6 @@ import { claimHandlers } from '../routes/api/claims/claims-routes.js'
 import { claimsHandlers } from '../routes/api/claims.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
-import { reminderEmailRequestHandlers } from '../routes/api/reminder-email.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
 import { applicationHandlers } from '../routes/api/applications.js'
 import { flagRoutes } from '../routes/api/flags/flags-routes.js'
@@ -27,7 +26,6 @@ const router = {
           .concat(contactHistoryHandlers)
           .concat(flagRoutes)
           .concat(redactPiiRequestHandlers)
-          .concat(reminderEmailRequestHandlers) // TODO won't be needed once scheduler added to this service.
       )
     }
   }
