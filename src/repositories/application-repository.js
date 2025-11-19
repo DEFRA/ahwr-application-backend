@@ -275,58 +275,6 @@ export const findApplication = async (db, reference) => {
   return db.collection(APPLICATION_COLLECTION).findOne({ reference })
 }
 
-export const updateApplicationData = async (
-  reference,
-  updatedProperty,
-  newValue,
-  oldValue,
-  note,
-  user
-) => {
-  // TODO 1182 impl
-  // const data = Sequelize.fn(
-  //   'jsonb_set',
-  //   Sequelize.col('data'),
-  //   Sequelize.literal(`'{${updatedProperty}}'`),
-  //   Sequelize.literal(`'${JSON.stringify(newValue)}'`)
-  // )
-  // // eslint-disable-next-line no-unused-vars
-  // const [_, updates] = await models.application.update(
-  //   { data },
-  //   {
-  //     where: { reference },
-  //     returning: true
-  //   }
-  // )
-  // const [updatedRecord] = updates
-  // const {
-  //   updatedAt,
-  //   data: {
-  //     organisation: { sbi }
-  //   }
-  // } = updatedRecord.dataValues
-  // const eventData = {
-  //   applicationReference: reference,
-  //   reference,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   note
-  // }
-  // const type = `application-${updatedProperty}`
-  // await claimDataUpdateEvent(eventData, type, user, updatedAt, sbi)
-  // await models.claim_update_history.create({
-  //   applicationReference: reference,
-  //   reference,
-  //   note,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   eventType: type,
-  //   createdBy: user
-  // })
-}
-
 export const getApplicationsToRedactOlderThan = async (years) => {
   // TODO 1182 impl
   return []

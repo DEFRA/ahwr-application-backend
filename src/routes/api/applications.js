@@ -4,8 +4,6 @@ import {
   getApplication,
   searchApplications,
   updateApplicationByReference,
-  findApplication,
-  updateApplicationData,
   updateEligiblePiiRedaction
 } from '../../repositories/application-repository.js'
 import { config } from '../../config/config.js'
@@ -14,6 +12,11 @@ import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.j
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { messageQueueConfig } from '../../config/message-queue.js'
+import {
+  findOWApplication,
+  updateOWApplicationData
+} from '../../repositories/ow-application-repository.js'
+import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 
 const submitPaymentRequestMsgType = config.get('messageTypes')
 const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
@@ -186,7 +189,7 @@ export const applicationHandlers = [
 
         request.logger.setBindings({ reference, dataPayload })
 
-        const application = await findApplication(reference)
+        const application = await findOWApplication(request.db, reference)
         if (application === null) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
@@ -200,14 +203,33 @@ export const applicationHandlers = [
         }
 
         const oldValue = application.data[updatedProperty] ?? ''
+        const updatedAt = new Date()
 
-        await updateApplicationData(
+        await updateOWApplicationData({
+          db: request.db,
           reference,
           updatedProperty,
           newValue,
           oldValue,
           note,
-          user
+          user,
+          updatedAt
+        })
+
+        const eventData = {
+          applicationReference: reference,
+          reference,
+          updatedProperty,
+          newValue,
+          oldValue,
+          note
+        }
+        await claimDataUpdateEvent(
+          eventData,
+          `application-${updatedProperty}`,
+          user,
+          updatedAt,
+          application.organisation.sbi
         )
 
         return h.response().code(HttpStatus.NO_CONTENT)

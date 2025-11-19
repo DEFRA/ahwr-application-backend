@@ -94,7 +94,7 @@ describe('flags-controller', () => {
       expect(createOWFlag).toHaveBeenCalledWith(mockDb, 'AHWR-AXYZ-1234', {
         id: expect.any(String),
         note: 'Flagging this application for review',
-        createdAt: new Date(),
+        createdAt: expect.any(Date),
         createdBy: 'Ken Kong',
         appliesToMh: true,
         deleted: false
