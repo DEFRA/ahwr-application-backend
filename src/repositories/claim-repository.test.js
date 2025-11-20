@@ -204,10 +204,10 @@ describe('updateClaimData', () => {
     await updateClaimData({
       db: mockDb,
       reference: 'FUBC-JTTU-SDQ7',
-      updatedProperty: 'status',
-      newValue: 'approved',
-      oldValue: 'pending',
-      note: 'Status updated',
+      updatedProperty: 'vetsName',
+      newValue: 'Jane',
+      oldValue: 'John',
+      note: 'Vets name updated',
       user: 'test-user',
       updatedAt
     })
@@ -217,20 +217,20 @@ describe('updateClaimData', () => {
       { reference: 'FUBC-JTTU-SDQ7' },
       {
         $set: {
-          'data.status': 'approved',
+          'data.vetsName': 'Jane',
           updatedAt,
           updatedBy: 'test-user'
         },
         $push: {
           updateHistory: {
             id: 'mocked-uuid',
-            note: 'Status updated',
-            newValue: 'approved',
-            oldValue: 'pending',
+            note: 'Vets name updated',
+            newValue: 'Jane',
+            oldValue: 'John',
             createdAt: updatedAt,
             createdBy: 'test-user',
-            eventType: `claim-status`,
-            updatedProperty: 'status'
+            eventType: 'claim-vetsName',
+            updatedProperty: 'vetsName'
           }
         }
       }
