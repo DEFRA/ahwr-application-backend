@@ -8,6 +8,7 @@ import {
   APPLICATION_COLLECTION,
   OW_APPLICATION_COLLECTION
 } from '../constants/index.js'
+import { v4 as uuid } from 'uuid'
 
 export const getApplication = async ({
   db,
@@ -225,54 +226,39 @@ export const getAllApplications = async () => {
   // return models.application.findAll(query)
 }
 
-export const updateApplicationByReference = async (
-  dataWithNote,
-  publishEvent = true
-) => {
-  // TODO 1182 impl
-  return {}
-  // const { note, ...data } = dataWithNote
-
-  // try {
-  //   const application = await models.application.findOne({
-  //     where: {
-  //       reference: data.reference
-  //     },
-  //     returning: true
-  //   })
-
-  //   if (application?.dataValues?.statusId === data?.statusId) {
-  //     return application
-  //   }
-
-  //   const result = await models.application.update(data, {
-  //     where: {
-  //       reference: data.reference
-  //     },
-  //     returning: true
-  //   })
-
-  //   const updatedRows = result[0] // Number of affected rows
-  //   const updatedRecords = result[1] // Assuming this is the array of updated records
-
-  //   if (publishEvent) {
-  //     for (let i = 0; i < updatedRows; i++) {
-  //       const updatedRecord = updatedRecords[i]
-  //       await raiseApplicationStatusEvent({
-  //         message: 'Application has been updated',
-  //         application: updatedRecord.dataValues,
-  //         raisedBy: updatedRecord.dataValues.updatedBy,
-  //         raisedOn: updatedRecord.dataValues.updatedAt,
-  //         note
-  //       })
-  //     }
-  //   }
-
-  //   return result
-  // } catch (error) {
-  //   console.error('Error updating application by reference:', error)
-  //   throw error
-  // }
+export const updateApplicationByReference = async ({
+  db,
+  reference,
+  updatedProperty,
+  newValue,
+  oldValue,
+  note,
+  user,
+  updatedAt
+}) => {
+  return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        [updatedProperty]: newValue,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        updateHistory: {
+          id: uuid(),
+          note,
+          newValue,
+          oldValue,
+          createdAt: updatedAt,
+          createdBy: user,
+          eventType: `application-${updatedProperty}`,
+          updatedProperty
+        }
+      }
+    },
+    { returnDocument: 'after' }
+  )
 }
 
 export const findApplication = async (db, reference) => {

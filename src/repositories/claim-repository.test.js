@@ -1,6 +1,7 @@
 import {
   getByApplicationReference,
-  getClaimByReference
+  getClaimByReference,
+  updateClaimStatus
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 
@@ -129,5 +130,56 @@ describe('claim-repository', () => {
         getClaimByReference(mockDb, 'RESH-O9UD-0025')
       ).rejects.toThrow('Database error')
     })
+  })
+})
+
+describe('updateClaimStatus', () => {
+  const mockCollection = { findOneAndUpdate: jest.fn() }
+  const mockDb = { collection: jest.fn(() => mockCollection) }
+
+  it('should call findOneAndUpdate with correct parameters and return result', async () => {
+    const updatedClaim = {
+      reference: 'REBC-VA4R-TRL7',
+      status: 'WITHDRAWN',
+      updatedBy: 'test-user',
+      updatedAt: new Date('2025-10-22T16:21:46.091Z'),
+      statusHistory: [
+        {
+          status: 'AGREED',
+          createdBy: 'admin',
+          createdAt: new Date('2025-10-22T16:21:46.091Z')
+        }
+      ]
+    }
+    mockCollection.findOneAndUpdate.mockResolvedValue(updatedClaim)
+
+    const result = await updateClaimStatus({
+      db: mockDb,
+      reference: 'REBC-VA4R-TRL7',
+      status: 'WITHDRAWN',
+      user: 'test-user',
+      updatedAt: new Date('2025-10-22T16:21:46.091Z')
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('claims')
+    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+      { reference: 'REBC-VA4R-TRL7' },
+      {
+        $set: {
+          status: 'WITHDRAWN',
+          updatedBy: 'test-user',
+          updatedAt: new Date('2025-10-22T16:21:46.091Z')
+        },
+        $push: {
+          statusHistory: {
+            status: 'WITHDRAWN',
+            createdAt: new Date('2025-10-22T16:21:46.091Z'),
+            createdBy: 'test-user'
+          }
+        }
+      },
+      { returnDocument: 'after' }
+    )
+    expect(result).toBe(updatedClaim)
   })
 })

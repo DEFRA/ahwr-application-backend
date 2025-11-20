@@ -2,24 +2,28 @@
 // import {
 // searchApplications,
 // getApplication,
-// updateApplicationByReference,
+// updateApplicationStatus
 // findApplication,
 // updateApplicationData,
 // updateEligiblePiiRedaction
-// } from '../../../../../app/repositories/application-repository'
+// } from '../../repositories/application-repository'
 // import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 // import { sendMessage } from '../../../../../app/messaging/send-message'
 // import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
 // import { getHerdsByAppRefAndSpecies } from '../../../../../app/repositories/herd-repository'
 import {
   findOWApplication,
-  updateOWApplicationData
+  updateOWApplicationData,
+  getOWApplication,
+  updateOWApplicationStatus
 } from '../../repositories/ow-application-repository'
 import { applicationHandlers } from './applications'
 import Hapi from '@hapi/hapi'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event'
+import { raiseApplicationStatusEvent } from '../../event-publisher'
+import { ObjectId } from 'mongodb'
 
-// jest.mock('../../../../../app/repositories/application-repository')
+jest.mock('../../repositories/application-repository')
 jest.mock('../../repositories/ow-application-repository')
 // jest.mock('../../../../../app/repositories/flag-repository')
 // jest.mock('../../../../../app/repositories/herd-repository')
@@ -28,6 +32,7 @@ jest.mock('../../repositories/ow-application-repository')
 // jest.mock('uuid', () => ({ v4: () => '123456789' }))
 jest.mock('../../event-publisher/claim-data-update-event')
 // const data = { organisation: { sbi: '1231' }, whichReview: 'sheep' }
+jest.mock('../../event-publisher')
 
 const mockLogger = {
   info: jest.fn(() => {}),
@@ -205,87 +210,163 @@ describe('Applications test', () => {
   //   )
   // })
 
-  // describe('PUT /api/applications/{ref} route', () => {
-  //   const method = 'PUT'
+  describe('PUT /api/applications/{ref} route', () => {
+    test('returns 200 when new status is Withdrawn (2)', async () => {
+      getOWApplication.mockResolvedValue({
+        reference: 'IAHW-U6ZE-5R5E',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: {
+          declaration: true
+        },
+        flags: [],
+        status: 'AGREED'
+      })
+      updateOWApplicationStatus.mockResolvedValue({
+        _id: new ObjectId('507f191e810c19729de860ea'),
+        reference: 'IAHW-U6ZE-5R5E',
+        createdBy: 'admin',
+        createdAt: new Date('2025-03-02T08:46:19.637Z'),
+        data: {
+          declaration: true
+        },
+        flags: [],
+        status: 'AGREED',
+        updatedBy: 'test',
+        updatedAt: new Date('2025-04-02T08:46:19.637Z')
+      })
 
-  //   test('returns 200 when new status is Withdrawn (2)', async () => {
-  //     getApplication.mockResolvedValue({
-  //       dataValues: {
-  //         reference,
-  //         createdBy: 'admin',
-  //         createdAt: new Date(),
-  //         data,
-  //         flags: []
-  //       }
-  //     })
+      const options = {
+        method: 'PUT',
+        url: '/api/applications/IAHW-U6ZE-5R5E',
+        payload: { status: 'WITHDRAWN', user: 'test', note: 'reason' }
+      }
+      const res = await server.inject(options)
 
-  //     const options = {
-  //       method,
-  //       url: '/api/application/ABC-1234',
-  //       payload: { status: applicationStatus.withdrawn, user: 'test' }
-  //     }
-  //     const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(updateOWApplicationStatus).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'IAHW-U6ZE-5R5E',
+        status: 'WITHDRAWN',
+        user: 'test',
+        updatedAt: expect.any(Date)
+      })
+      expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+        message: 'Application has been updated',
+        application: {
+          _id: new ObjectId('507f191e810c19729de860ea'),
+          id: '507f191e810c19729de860ea',
+          reference: 'IAHW-U6ZE-5R5E',
+          createdBy: 'admin',
+          createdAt: new Date('2025-03-02T08:46:19.637Z'),
+          data: {
+            declaration: true
+          },
+          flags: [],
+          status: 'AGREED',
+          updatedBy: 'test',
+          updatedAt: new Date('2025-04-02T08:46:19.637Z')
+        },
+        raisedBy: 'test',
+        raisedOn: new Date('2025-04-02T08:46:19.637Z'),
+        note: 'reason'
+      })
+    })
 
-  //     expect(res.statusCode).toBe(200)
-  //     expect(getApplication).toHaveBeenCalledTimes(1)
-  //     expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
-  //   })
+    test('returns 200 when new status is In Check (5)', async () => {
+      getOWApplication.mockResolvedValue({
+        reference: 'IAHW-U6ZE-5R5E',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: {
+          declaration: true
+        },
+        flags: [],
+        status: 'AGREED'
+      })
+      updateOWApplicationStatus.mockResolvedValue({
+        _id: new ObjectId('507f191e810c19729de860ea'),
+        reference: 'IAHW-U6ZE-5R5E',
+        createdBy: 'admin',
+        createdAt: new Date('2025-03-02T08:46:19.637Z'),
+        data: {
+          declaration: true
+        },
+        flags: [],
+        status: 'IN_CHECK',
+        updatedBy: 'test',
+        updatedAt: new Date('2025-04-02T08:46:19.637Z')
+      })
 
-  //   test('returns 200 when new status is In Check (5)', async () => {
-  //     getApplication.mockResolvedValue({
-  //       dataValues: {
-  //         reference,
-  //         createdBy: 'admin',
-  //         createdAt: new Date(),
-  //         data,
-  //         flags: []
-  //       }
-  //     })
+      const options = {
+        method: 'PUT',
+        url: '/api/applications/IAHW-U6ZE-5R5E',
+        payload: { status: 'IN_CHECK', user: 'test', note: 'reason' }
+      }
+      const res = await server.inject(options)
 
-  //     const options = {
-  //       method,
-  //       url: '/api/application/ABC-1234',
-  //       payload: { status: applicationStatus.inCheck, user: 'test' }
-  //     }
-  //     const res = await server.inject(options)
+      expect(res.statusCode).toBe(200)
+      expect(updateOWApplicationStatus).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'IAHW-U6ZE-5R5E',
+        status: 'IN_CHECK',
+        user: 'test',
+        updatedAt: expect.any(Date)
+      })
+      expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+        message: 'Application has been updated',
+        application: {
+          _id: new ObjectId('507f191e810c19729de860ea'),
+          id: '507f191e810c19729de860ea',
+          reference: 'IAHW-U6ZE-5R5E',
+          createdBy: 'admin',
+          createdAt: new Date('2025-03-02T08:46:19.637Z'),
+          data: {
+            declaration: true
+          },
+          flags: [],
+          status: 'IN_CHECK',
+          updatedBy: 'test',
+          updatedAt: new Date('2025-04-02T08:46:19.637Z')
+        },
+        raisedBy: 'test',
+        raisedOn: new Date('2025-04-02T08:46:19.637Z'),
+        note: 'reason'
+      })
+    })
 
-  //     expect(res.statusCode).toBe(200)
-  //     expect(getApplication).toHaveBeenCalledTimes(1)
-  //     expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
-  //   })
+    test('returns 404 if application doesnt exist', async () => {
+      getOWApplication.mockResolvedValue(undefined)
 
-  //   test('returns 404 if application doesnt exist', async () => {
-  //     getApplication.mockResolvedValue({ dataValues: null })
+      const options = {
+        method: 'PUT',
+        url: '/api/applications/ABC-1234',
+        payload: { status: 'IN_CHECK', user: 'test' }
+      }
+      const res = await server.inject(options)
 
-  //     const options = {
-  //       method,
-  //       url: '/api/application/ABC-1234',
-  //       payload: { status: applicationStatus.inCheck, user: 'test' }
-  //     }
-  //     const res = await server.inject(options)
+      expect(res.statusCode).toBe(404)
+      expect(getOWApplication).toHaveBeenCalledTimes(1)
+    })
 
-  //     expect(res.statusCode).toBe(404)
-  //     expect(getApplication).toHaveBeenCalledTimes(1)
-  //   })
+    test.each([
+      { status: 'abc', user: null },
+      { status: 'abc', user: 0 },
+      { status: 5000, user: 'test' }
+    ])(
+      'returns 400 with error message for invalid input',
+      async ({ status, user }) => {
+        const options = {
+          method: 'PUT',
+          url: '/api/applications/ABC-1234',
+          payload: { status, user }
+        }
+        const res = await server.inject(options)
 
-  //   test.each([
-  //     { status: 'abc', user: null },
-  //     { status: 'abc', user: 0 },
-  //     { status: 5000, user: 'test' }
-  //   ])(
-  //     'returns 400 with error message for invalid input',
-  //     async ({ status, user }) => {
-  //       const options = {
-  //         method,
-  //         url: '/api/application/ABC-1234',
-  //         payload: { status, user }
-  //       }
-  //       const res = await server.inject(options)
-
-  //       expect(res.statusCode).toBe(400)
-  //     }
-  //   )
-  // })
+        expect(res.statusCode).toBe(400)
+      }
+    )
+  })
 
   // describe('POST /api/applications/claim route', () => {
   //   const method = 'POST'
@@ -571,7 +652,7 @@ describe('Applications test', () => {
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
         updatedProperty: 'visitDate',
-        newValue: '2025-06-21',
+        newValue: new Date('2025-06-21T00:00:00.000Z'),
         oldValue: '2021-01-01',
         note: 'updated note',
         user: 'Admin',
@@ -603,7 +684,7 @@ describe('Applications test', () => {
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
         updatedProperty: 'visitDate',
-        newValue: '2025-06-21',
+        newValue: new Date('2025-06-21T00:00:00.000Z'),
         oldValue: '',
         note: 'updated note',
         user: 'Admin',

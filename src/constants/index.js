@@ -18,8 +18,8 @@ export const applicationStatus = {
   withdrawn: 'WITHDRAWN',
   onHold: 'ON_HOLD',
   paid: 'PAID',
-  recommendToPay: 'RECOMMEND_TO_PAY',
-  recommendToReject: 'RECOMMEND_TO_REJECT'
+  recommendedToPay: 'RECOMMENDED_TO_PAY',
+  recommendedToReject: 'RECOMMENDED_TO_REJECT'
 }
 
 export const livestockTypes = {

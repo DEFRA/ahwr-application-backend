@@ -39,41 +39,31 @@ export const createClaim = async (db, data) => {
   return db.collection(CLAIMS_COLLECTION).insertOne(data)
 }
 
-export const updateClaimByReference = async (data, note, logger) => {
-  // TODO 1182 impl
-  // try {
-  //   const claim = await models.claim.findOne({
-  //     where: {
-  //       reference: data.reference
-  //     }
-  //   })
-  //   if (claim?.dataValues?.statusId === data.statusId) {
-  //     logger.info(
-  //       `Claim ${data.reference} already has status ${data.statusId}, no update needed.`
-  //     )
-  //     return
-  //   }
-  //   const result = await models.claim.update(data, {
-  //     where: {
-  //       reference: data.reference
-  //     },
-  //     returning: true
-  //   })
-  //   const updatedRecord = result[1][0]
-  //   await raiseClaimEvents(
-  //     {
-  //       message: 'Claim has been updated',
-  //       claim: updatedRecord.dataValues,
-  //       note,
-  //       raisedBy: updatedRecord.dataValues.updatedBy,
-  //       raisedOn: updatedRecord.dataValues.updatedAt
-  //     },
-  //     data.sbi
-  //   )
-  // } catch (err) {
-  //   logger.setBindings({ error: err})
-  //   throw err
-  // }
+export const updateClaimStatus = async ({
+  db,
+  reference,
+  status,
+  user,
+  updatedAt
+}) => {
+  return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        status,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        statusHistory: {
+          status,
+          createdAt: updatedAt,
+          createdBy: user
+        }
+      }
+    },
+    { returnDocument: 'after' }
+  )
 }
 
 export const getAllClaimedClaims = async (claimStatusIds) => {

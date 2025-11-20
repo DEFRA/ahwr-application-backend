@@ -14,9 +14,12 @@ import HttpStatus from 'http-status-codes'
 import { messageQueueConfig } from '../../config/message-queue.js'
 import {
   findOWApplication,
-  updateOWApplicationData
+  updateOWApplicationData,
+  getOWApplication,
+  updateOWApplicationStatus
 } from '../../repositories/ow-application-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
+import { raiseApplicationStatusEvent } from '../../event-publisher/index.js'
 
 const submitPaymentRequestMsgType = config.get('messageTypes')
 const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
@@ -63,7 +66,7 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'put',
+    method: 'PUT',
     path: '/api/applications/{ref}',
     options: {
       validate: {
@@ -71,7 +74,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         payload: joi.object({
-          status: joi.number().valid(...Object.values(APPLICATION_STATUS)),
+          status: joi.string().valid(...Object.values(APPLICATION_STATUS)),
           user: joi.string(),
           note: joi.string()
         }),
@@ -83,18 +86,36 @@ export const applicationHandlers = [
       handler: async (request, h) => {
         const { status, user, note } = request.payload
         const { ref } = request.params
+        const { db } = request
+
         request.logger.setBindings({ status })
-        const application = await getApplication(ref)
-        if (!application.dataValues) {
+
+        const application = await getOWApplication(db, ref)
+        if (!application) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        await updateApplicationByReference({
+        if (application.status === status) {
+          return h.response().code(HttpStatus.NO_CONTENT)
+        }
+
+        const result = await updateOWApplicationStatus({
+          db,
           reference: ref,
-          statusId: status,
-          updatedBy: user,
-          note
+          status,
+          user,
+          updatedAt: new Date()
         })
+
+        if (result) {
+          await raiseApplicationStatusEvent({
+            message: 'Application has been updated',
+            application: { ...result, id: result._id.toString() },
+            raisedBy: result.updatedBy,
+            raisedOn: result.updatedAt,
+            note
+          })
+        }
 
         return h.response().code(HttpStatus.OK)
       }
@@ -171,7 +192,7 @@ export const applicationHandlers = [
         payload: joi
           .object({
             vetName: joi.string(),
-            visitDate: joi.string(),
+            visitDate: joi.date(),
             vetRcvs: joi.string().pattern(/^\d{6}[\dX]$/i),
             note: joi.string().required(),
             user: joi.string().required()
