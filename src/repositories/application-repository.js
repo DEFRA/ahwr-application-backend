@@ -258,33 +258,6 @@ export const updateApplicationByReference = async ({
   )
 }
 
-export const updateApplicationStatus = async ({
-  db,
-  reference,
-  status,
-  user,
-  updatedAt
-}) => {
-  return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
-    { reference },
-    {
-      $set: {
-        status,
-        updatedAt,
-        updatedBy: user
-      },
-      $push: {
-        statusHistory: {
-          status,
-          createdAt: updatedAt,
-          createdBy: user
-        }
-      }
-    },
-    { returnDocument: 'after' }
-  )
-}
-
 export const findApplication = async (db, reference) => {
   return db.collection(APPLICATION_COLLECTION).findOne({ reference })
 }

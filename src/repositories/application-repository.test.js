@@ -4,8 +4,7 @@ import {
   createApplication,
   getRemindersToSend,
   updateReminders,
-  updateApplicationByReference,
-  updateApplicationStatus
+  updateApplicationByReference
 } from './application-repository'
 
 describe('application-repository', () => {
@@ -242,54 +241,6 @@ describe('application-repository', () => {
               createdBy: 'test-user',
               eventType: 'application-status',
               updatedProperty: 'status'
-            }
-          }
-        },
-        { returnDocument: 'after' }
-      )
-      expect(result).toBe(updatedApplication)
-    })
-  })
-
-  describe('updateApplicationStatus', () => {
-    it('should call findOneAndUpdate with correct parameters and return result', async () => {
-      const updatedApplication = {
-        reference: 'IAHW-8ZPZ-8CLI',
-        status: 'WITHDRAWN',
-        updatedBy: 'test-user',
-        updatedAt: new Date('2025-10-22T16:21:46.091Z'),
-        statusHistory: [
-          {
-            status: 'AGREED',
-            createdBy: 'admin',
-            createdAt: new Date('2025-10-22T16:21:46.091Z')
-          }
-        ]
-      }
-      collectionMock.findOneAndUpdate.mockResolvedValue(updatedApplication)
-
-      const result = await updateApplicationStatus({
-        db: dbMock,
-        reference: 'IAHW-8ZPZ-8CLI',
-        status: 'WITHDRAWN',
-        user: 'test-user',
-        updatedAt: new Date('2025-10-22T16:21:46.091Z')
-      })
-
-      expect(dbMock.collection).toHaveBeenCalledWith('applications')
-      expect(collectionMock.findOneAndUpdate).toHaveBeenCalledWith(
-        { reference: 'IAHW-8ZPZ-8CLI' },
-        {
-          $set: {
-            status: 'WITHDRAWN',
-            updatedBy: 'test-user',
-            updatedAt: new Date('2025-10-22T16:21:46.091Z')
-          },
-          $push: {
-            statusHistory: {
-              status: 'WITHDRAWN',
-              createdAt: new Date('2025-10-22T16:21:46.091Z'),
-              createdBy: 'test-user'
             }
           }
         },

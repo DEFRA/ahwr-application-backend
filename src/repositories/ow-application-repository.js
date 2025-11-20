@@ -76,3 +76,30 @@ export const updateOWApplicationData = async ({
     }
   )
 }
+
+export const updateOWApplicationStatus = async ({
+  db,
+  reference,
+  status,
+  user,
+  updatedAt
+}) => {
+  return db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        status,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        statusHistory: {
+          status,
+          createdAt: updatedAt,
+          createdBy: user
+        }
+      }
+    },
+    { returnDocument: 'after' }
+  )
+}

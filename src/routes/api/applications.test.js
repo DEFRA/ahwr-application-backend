@@ -1,19 +1,21 @@
 // import { applicationStatus } from '../../../../../app/constants'
-import {
-  // searchApplications,
-  getApplication,
-  updateApplicationStatus
-  // findApplication,
-  // updateApplicationData,
-  // updateEligiblePiiRedaction
-} from '../../repositories/application-repository'
+// import {
+// searchApplications,
+// getApplication,
+// updateApplicationStatus
+// findApplication,
+// updateApplicationData,
+// updateEligiblePiiRedaction
+// } from '../../repositories/application-repository'
 // import { getAllFlags, getFlagsForApplication } from '../../../../../app/repositories/flag-repository'
 // import { sendMessage } from '../../../../../app/messaging/send-message'
 // import { processApplicationApi } from '../../../../../app/messaging/application/process-application'
 // import { getHerdsByAppRefAndSpecies } from '../../../../../app/repositories/herd-repository'
 import {
   findOWApplication,
-  updateOWApplicationData
+  updateOWApplicationData,
+  getOWApplication,
+  updateOWApplicationStatus
 } from '../../repositories/ow-application-repository'
 import { applicationHandlers } from './applications'
 import Hapi from '@hapi/hapi'
@@ -210,7 +212,7 @@ describe('Applications test', () => {
 
   describe('PUT /api/applications/{ref} route', () => {
     test('returns 200 when new status is Withdrawn (2)', async () => {
-      getApplication.mockResolvedValue({
+      getOWApplication.mockResolvedValue({
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
         createdAt: new Date(),
@@ -220,7 +222,7 @@ describe('Applications test', () => {
         flags: [],
         status: 'AGREED'
       })
-      updateApplicationStatus.mockResolvedValue({
+      updateOWApplicationStatus.mockResolvedValue({
         _id: new ObjectId('507f191e810c19729de860ea'),
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
@@ -242,7 +244,7 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(updateApplicationStatus).toHaveBeenCalledWith({
+      expect(updateOWApplicationStatus).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'IAHW-U6ZE-5R5E',
         status: 'WITHDRAWN',
@@ -272,7 +274,7 @@ describe('Applications test', () => {
     })
 
     test('returns 200 when new status is In Check (5)', async () => {
-      getApplication.mockResolvedValue({
+      getOWApplication.mockResolvedValue({
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
         createdAt: new Date(),
@@ -282,7 +284,7 @@ describe('Applications test', () => {
         flags: [],
         status: 'AGREED'
       })
-      updateApplicationStatus.mockResolvedValue({
+      updateOWApplicationStatus.mockResolvedValue({
         _id: new ObjectId('507f191e810c19729de860ea'),
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
@@ -304,7 +306,7 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(200)
-      expect(updateApplicationStatus).toHaveBeenCalledWith({
+      expect(updateOWApplicationStatus).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'IAHW-U6ZE-5R5E',
         status: 'IN_CHECK',
@@ -334,7 +336,7 @@ describe('Applications test', () => {
     })
 
     test('returns 404 if application doesnt exist', async () => {
-      getApplication.mockResolvedValue(undefined)
+      getOWApplication.mockResolvedValue(undefined)
 
       const options = {
         method: 'PUT',
@@ -344,7 +346,7 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(404)
-      expect(getApplication).toHaveBeenCalledTimes(1)
+      expect(getOWApplication).toHaveBeenCalledTimes(1)
     })
 
     test.each([
@@ -650,7 +652,7 @@ describe('Applications test', () => {
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
         updatedProperty: 'visitDate',
-        newValue: '2025-06-21',
+        newValue: new Date('2025-06-21T00:00:00.000Z'),
         oldValue: '2021-01-01',
         note: 'updated note',
         user: 'Admin',
@@ -682,7 +684,7 @@ describe('Applications test', () => {
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
         updatedProperty: 'visitDate',
-        newValue: '2025-06-21',
+        newValue: new Date('2025-06-21T00:00:00.000Z'),
         oldValue: '',
         note: 'updated note',
         user: 'Admin',

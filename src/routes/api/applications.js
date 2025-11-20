@@ -4,8 +4,7 @@ import {
   getApplication,
   searchApplications,
   updateApplicationByReference,
-  updateEligiblePiiRedaction,
-  updateApplicationStatus
+  updateEligiblePiiRedaction
 } from '../../repositories/application-repository.js'
 import { config } from '../../config/config.js'
 import { sendMessage } from '../../messaging/send-message.js'
@@ -15,7 +14,9 @@ import HttpStatus from 'http-status-codes'
 import { messageQueueConfig } from '../../config/message-queue.js'
 import {
   findOWApplication,
-  updateOWApplicationData
+  updateOWApplicationData,
+  getOWApplication,
+  updateOWApplicationStatus
 } from '../../repositories/ow-application-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import { raiseApplicationStatusEvent } from '../../event-publisher/index.js'
@@ -73,7 +74,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         payload: joi.object({
-          status: joi.number().valid(...Object.values(APPLICATION_STATUS)),
+          status: joi.string().valid(...Object.values(APPLICATION_STATUS)),
           user: joi.string(),
           note: joi.string()
         }),
@@ -89,7 +90,7 @@ export const applicationHandlers = [
 
         request.logger.setBindings({ status })
 
-        const application = await getApplication({ db, reference: ref })
+        const application = await getOWApplication(db, ref)
         if (!application) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
@@ -98,7 +99,7 @@ export const applicationHandlers = [
           return h.response().code(HttpStatus.NO_CONTENT)
         }
 
-        const result = await updateApplicationStatus({
+        const result = await updateOWApplicationStatus({
           db,
           reference: ref,
           status,
@@ -191,7 +192,7 @@ export const applicationHandlers = [
         payload: joi
           .object({
             vetName: joi.string(),
-            visitDate: joi.string(),
+            visitDate: joi.date(),
             vetRcvs: joi.string().pattern(/^\d{6}[\dX]$/i),
             note: joi.string().required(),
             user: joi.string().required()

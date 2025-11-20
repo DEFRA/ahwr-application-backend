@@ -1,10 +1,6 @@
 import { validateClaimStatusToPaidEvent } from '../schema/set-payment-status-to-paid-schema.js'
+import { getClaimByReference } from '../../repositories/claim-repository.js'
 import {
-  getClaimByReference,
-  updateClaimByReference
-} from '../../repositories/claim-repository.js'
-import {
-  STATUS,
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
   UNNAMED_HERD
@@ -26,16 +22,27 @@ export const setPaymentStatusToPaid = async (message, logger) => {
     if (validateClaimStatusToPaidEvent(msgBody, logger)) {
       const { claimRef, sbi } = msgBody
       logger.info(`Setting payment status to paid for claim ${claimRef}...`)
-      await updateClaimByReference(
-        {
-          reference: claimRef,
-          statusId: STATUS.PAID,
-          updatedBy: 'admin',
-          sbi
-        },
-        undefined,
-        logger
-      )
+      //TODO use updateClaimStatus
+      // await updateClaimByReference(
+      //   {
+      //     reference: claimRef,
+      //     statusId: STATUS.PAID,
+      //     updatedBy: 'admin',
+      //     sbi
+      //   },
+      //   undefined,
+      //   logger
+      // )
+      // await raiseClaimEvents(
+      //   {
+      //     message: 'Claim has been updated',
+      //     claim: updatedRecord.dataValues,
+      //     note,
+      //     raisedBy: updatedRecord.dataValues.updatedBy,
+      //     raisedOn: updatedRecord.dataValues.updatedAt
+      //   },
+      //   data.sbi
+      // )
       const { dataValues: claimDataValues } =
         await getClaimByReference(claimRef)
 
