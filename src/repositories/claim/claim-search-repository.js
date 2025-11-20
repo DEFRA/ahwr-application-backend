@@ -59,10 +59,10 @@ const applyClaimSearchConditions = (matchStage, search) => {
       matchStage.applicationReference = { $regex: text, $options: 'i' }
       break
     case 'status':
-      matchStage.status = { $regex: text, $options: 'i' }
-      break
-    case 'type':
-      matchStage.type = text
+      matchStage.status = {
+        $regex: text.toUpperCase().replace(/ /g, '_'),
+        $options: 'i'
+      }
       break
     case 'species':
       matchStage['data.typeOfLivestock'] = { $regex: text, $options: 'i' }
