@@ -8,6 +8,7 @@
 // const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'crypto'
+import { v4 as uuid } from 'uuid'
 
 export const getClaimByReference = async (db, reference) => {
   return db
@@ -89,64 +90,38 @@ export const isURNUnique = async ({
   return !result
 }
 
-export const findClaim = async (reference) => {
-  // TODO 1182 impl
-  return {}
-  // const claim = await models.claim.findOne({ where: { reference } })
-  // return claim === null ? claim : claim.dataValues
-}
-
-export const updateClaimData = async (
+export const updateClaimData = async ({
+  db,
   reference,
   updatedProperty,
   newValue,
   oldValue,
   note,
-  user
-) => {
-  // TODO 1182 impl
-  // const data = Sequelize.fn(
-  //   'jsonb_set',
-  //   Sequelize.col('data'),
-  //   Sequelize.literal(`'{${updatedProperty}}'`),
-  //   Sequelize.literal(`'${JSON.stringify(newValue)}'`)
-  // )
-  // // eslint-disable-next-line no-unused-vars
-  // const [_, updates] = await models.claim.update(
-  //   { data },
-  //   {
-  //     where: { reference },
-  //     returning: true
-  //   }
-  // )
-  // const [updatedRecord] = updates
-  // const { applicationReference, updatedAt } = updatedRecord.dataValues
-  // const application = await findApplication(applicationReference)
-  // const eventData = {
-  //   applicationReference,
-  //   reference,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   note
-  // }
-  // await claimDataUpdateEvent(
-  //   eventData,
-  //   `claim-${convertUpdatedPropertyToStandardType(updatedProperty)}`,
-  //   user,
-  //   updatedAt,
-  //   application.data.organisation.sbi
-  // )
-  // await models.claim_update_history.create({
-  //   applicationReference,
-  //   reference,
-  //   note,
-  //   updatedProperty,
-  //   newValue,
-  //   oldValue,
-  //   eventType: `claim-${updatedProperty}`,
-  //   createdBy: user
-  // })
+  user,
+  updatedAt
+}) => {
+  return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $set: {
+        [`data.${updatedProperty}`]: newValue,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        updateHistory: {
+          id: uuid(),
+          note,
+          newValue,
+          oldValue,
+          createdAt: updatedAt,
+          createdBy: user,
+          eventType: `claim-${updatedProperty}`,
+          updatedProperty
+        }
+      }
+    }
+  )
 }
 
 export const addHerdToClaimData = async ({
@@ -276,19 +251,6 @@ export const redactPII = async (applicationReference, logger) => {
 //   logger.info(
 //     `Redacted ${totalAffectedCount} ow application records for applicationReference: ${applicationReference}`
 //   )
-// }
-
-// const convertUpdatedPropertyToStandardType = (updatedProperty) => {
-//   switch (updatedProperty) {
-//     case 'vetsName':
-//       return 'vetName'
-//     case 'vetRCVSNumber':
-//       return 'vetRcvs'
-//     case 'dateOfVisit':
-//       return 'visitDate'
-//     default:
-//       return updatedProperty
-//   }
 // }
 
 export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {

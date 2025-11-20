@@ -1,9 +1,14 @@
 import {
   getByApplicationReference,
   getClaimByReference,
-  updateClaimStatus
+  updateClaimStatus,
+  updateClaimData
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
+
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'mocked-uuid')
+}))
 
 describe('claim-repository', () => {
   describe('getByApplicationReference', () => {
@@ -181,5 +186,54 @@ describe('updateClaimStatus', () => {
       { returnDocument: 'after' }
     )
     expect(result).toBe(updatedClaim)
+  })
+})
+
+describe('updateClaimData', () => {
+  const mockDb = { collection: jest.fn() }
+  const mockCollection = { findOneAndUpdate: jest.fn() }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockDb.collection.mockReturnValue(mockCollection)
+  })
+
+  it('should update claim data property and history', async () => {
+    const updatedAt = new Date('2024-11-20T13:51:24.291Z')
+
+    await updateClaimData({
+      db: mockDb,
+      reference: 'FUBC-JTTU-SDQ7',
+      updatedProperty: 'status',
+      newValue: 'approved',
+      oldValue: 'pending',
+      note: 'Status updated',
+      user: 'test-user',
+      updatedAt
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('claims')
+    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+      { reference: 'FUBC-JTTU-SDQ7' },
+      {
+        $set: {
+          'data.status': 'approved',
+          updatedAt,
+          updatedBy: 'test-user'
+        },
+        $push: {
+          updateHistory: {
+            id: 'mocked-uuid',
+            note: 'Status updated',
+            newValue: 'approved',
+            oldValue: 'pending',
+            createdAt: updatedAt,
+            createdBy: 'test-user',
+            eventType: `claim-status`,
+            updatedProperty: 'status'
+          }
+        }
+      }
+    )
   })
 })
