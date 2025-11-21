@@ -9,6 +9,7 @@ import { redactPiiRequestHandlers } from '../routes/api/redact-pii.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
 import { applicationHandlers } from '../routes/api/applications.js'
 import { flagRoutes } from '../routes/api/flags/flags-routes.js'
+import { claimHistoryHandlers } from '../routes/api/claim-history.js'
 
 const router = {
   plugin: {
@@ -20,6 +21,7 @@ const router = {
           .concat(applicationRoutes)
           .concat(latestContactDetailsHandlers)
           .concat(applicationHistoryHandlers)
+          .concat(claimHistoryHandlers)
           .concat(applicationEventsHandlers)
           .concat(claimHandlers)
           .concat(claimsHandlers)

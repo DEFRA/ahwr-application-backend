@@ -50,12 +50,56 @@ export const getAllFlags = async (db) => {
 }
 
 export const getFlagsForApplicationIncludingDeleted = async (
+  db,
   applicationReference
 ) => {
-  // TODO 1182 impl
-  return []
-
-  // return models.flag.findAll({ where: { applicationReference } })
+  return db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate([
+      { $unwind: '$flags' },
+      {
+        $match: {
+          reference: applicationReference.toUpperCase()
+        }
+      },
+      { $match: { 'flags.deleted': { $ne: true } } },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              '$flags',
+              {
+                applicationReference: '$reference',
+                sbi: '$organisation.sbi'
+              }
+            ]
+          }
+        }
+      },
+      {
+        $unionWith: {
+          coll: OW_APPLICATION_COLLECTION,
+          pipeline: [
+            { $unwind: '$flags' },
+            { $match: { 'flags.deleted': { $ne: true } } },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: [
+                    '$flags',
+                    {
+                      applicationReference: '$reference',
+                      sbi: '$organisation.sbi'
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ])
+    .toArray()
 }
 
 export const redactPII = async (applicationReference) => {
