@@ -49,15 +49,6 @@ export const getAllFlags = async (db) => {
     .toArray()
 }
 
-export const getFlagsForApplicationIncludingDeleted = async (
-  applicationReference
-) => {
-  // TODO 1182 impl
-  return []
-
-  // return models.flag.findAll({ where: { applicationReference } })
-}
-
 export const redactPII = async (applicationReference) => {
   // TODO 1182 impl
   // await models.flag.update(

@@ -1,7 +1,5 @@
 import Joi from 'joi'
-import { getClaimByReference } from '../../repositories/claim-repository.js'
 import { StatusCodes } from 'http-status-codes'
-import { getApplication } from '../../repositories/application-repository.js'
 import { getOWApplication } from '../../repositories/ow-application-repository.js'
 
 export const buildFlagEvents = (flags) => {
@@ -70,7 +68,7 @@ export const buildFlagEvents = (flags) => {
   })
 }
 
-const normaliseUpdateHistory = (update) => ({
+export const normaliseUpdateHistory = (update) => ({
   eventType: update.eventType,
   updatedProperty: update.updatedProperty,
   newValue: update.newValue,
@@ -80,7 +78,12 @@ const normaliseUpdateHistory = (update) => ({
   updatedAt: update.createdAt
 })
 
-const normaliseStatusHistory = ({ status, note, createdBy, createdAt }) => ({
+export const normaliseStatusHistory = ({
+  status,
+  note,
+  createdBy,
+  createdAt
+}) => ({
   eventType: 'status-updated',
   updatedProperty: 'status',
   newValue: status,
@@ -92,40 +95,22 @@ const normaliseStatusHistory = ({ status, note, createdBy, createdAt }) => ({
 export const applicationHistoryHandlers = [
   {
     method: 'GET',
-    path: '/api/applications/{claimOrOWAppRef}/history',
+    path: '/api/applications/{oldWorldAppRef}/history',
     options: {
       validate: {
         params: Joi.object({
-          claimOrOWAppRef: Joi.string().valid()
+          oldWorldAppRef: Joi.string().valid()
         })
       },
       handler: async (request, h) => {
-        const db = request.db
-        const claimOrOWAppRef = request.params.claimOrOWAppRef
-        const isOWAppRef = claimOrOWAppRef.includes('AHWR')
+        const {
+          params: { oldWorldAppRef },
+          db
+        } = request
 
-        let statusHistory
-        let updateHistory
-        let flags
-
-        if (isOWAppRef) {
-          const application = await getOWApplication(db, claimOrOWAppRef)
-
-          statusHistory = application.statusHistory
-          updateHistory = application.updateHistory
-          flags = application.flags
-        } else {
-          const claim = await getClaimByReference(db, claimOrOWAppRef)
-          const application = await getApplication({
-            db,
-            reference: claim.applicationReference,
-            includeDeletedFlags: true
-          })
-
-          statusHistory = claim.statusHistory
-          updateHistory = claim.updateHistory
-          flags = application.flags
-        }
+        const application = await getOWApplication(db, oldWorldAppRef)
+        const { statusHistory, updateHistory } = application
+        const flags = application.flags
 
         const normalisedStatusHistory = statusHistory.map(
           normaliseStatusHistory
