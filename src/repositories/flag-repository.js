@@ -62,7 +62,6 @@ export const getFlagsForApplicationIncludingDeleted = async (
           reference: applicationReference.toUpperCase()
         }
       },
-      { $match: { 'flags.deleted': { $ne: true } } },
       {
         $replaceRoot: {
           newRoot: {
