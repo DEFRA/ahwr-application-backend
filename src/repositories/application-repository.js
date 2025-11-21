@@ -53,7 +53,8 @@ export const getApplication = async ({
           },
           redacted: {
             $eq: [{ $ifNull: ['$redactionHistory.success', 'N'] }, 'Y']
-          }
+          },
+          eligiblePiiRedaction: 1
         }
       },
       {
@@ -230,16 +231,17 @@ export const getAllApplications = async () => {
   // return models.application.findAll(query)
 }
 
-export const updateApplicationByReference = async ({
+export const updateApplication = async ({
   db,
   reference,
-  updatedProperty,
+  updatedPropertyPath,
   newValue,
   oldValue,
   note,
   user,
   updatedAt
 }) => {
+  const updatedProperty = updatedPropertyPath.split('.').pop()
   return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
     { reference },
     {
@@ -374,38 +376,6 @@ export const redactPII = async (agreementReference, logger) => {
   //   logger.info(
   //     `No records updated for agreementReference: ${agreementReference}`
   //   )
-  // }
-}
-
-export const updateEligiblePiiRedaction = async (
-  reference,
-  newValue,
-  user,
-  note
-) => {
-  // TODO 1182 impl
-  // const [affectedCount] = await models.application.update(
-  //   { eligiblePiiRedaction: newValue },
-  //   {
-  //     where: {
-  //       reference,
-  //       eligiblePiiRedaction: { [Op.ne]: newValue } // only update if value has changed
-  //     },
-  //     returning: true
-  //   }
-  // )
-  // if (affectedCount > 0) {
-  //   const updatedProperty = 'eligiblePiiRedaction'
-  //   const type = `application-${updatedProperty}`
-  //   await models.application_update_history.create({
-  //     applicationReference: reference,
-  //     note,
-  //     updatedProperty,
-  //     newValue,
-  //     oldValue: !newValue,
-  //     eventType: type,
-  //     createdBy: user
-  //   })
   // }
 }
 

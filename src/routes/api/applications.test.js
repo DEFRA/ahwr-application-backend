@@ -13,7 +13,7 @@
 // import { getHerdsByAppRefAndSpecies } from '../../../../../app/repositories/herd-repository'
 import {
   findOWApplication,
-  updateOWApplicationData,
+  updateOWApplication,
   getOWApplication,
   updateOWApplicationStatus
 } from '../../repositories/ow-application-repository'
@@ -549,7 +549,7 @@ describe('Applications test', () => {
       })
 
       expect(res.statusCode).toBe(400)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(0)
+      expect(updateOWApplication).toHaveBeenCalledTimes(0)
     })
 
     test('when application not found, return 404', async () => {
@@ -559,7 +559,7 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(404)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(0)
+      expect(updateOWApplication).toHaveBeenCalledTimes(0)
     })
 
     test('successfully update vetName in application', async () => {
@@ -582,11 +582,11 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'vetName',
+        updatedPropertyPath: 'data.vetName',
         newValue: 'updated person',
         oldValue: 'old person',
         note: 'updated note',
@@ -614,11 +614,11 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'vetName',
+        updatedPropertyPath: 'data.vetName',
         newValue: 'updated person',
         oldValue: '',
         note: 'updated note',
@@ -630,7 +630,7 @@ describe('Applications test', () => {
     test('successfully update visitDate in application', async () => {
       const existingData = {
         vetName: 'old person',
-        visitDate: '2021-01-01',
+        visitDate: new Date('2021-01-01'),
         vetRcvs: '123456'
       }
       findOWApplication.mockResolvedValueOnce({
@@ -647,13 +647,13 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'visitDate',
+        updatedPropertyPath: 'data.visitDate',
         newValue: new Date('2025-06-21T00:00:00.000Z'),
-        oldValue: '2021-01-01',
+        oldValue: new Date('2021-01-01'),
         note: 'updated note',
         user: 'Admin',
         updatedAt: expect.any(Date)
@@ -679,11 +679,11 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'visitDate',
+        updatedPropertyPath: 'data.visitDate',
         newValue: new Date('2025-06-21T00:00:00.000Z'),
         oldValue: '',
         note: 'updated note',
@@ -712,11 +712,11 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'vetRcvs',
+        updatedPropertyPath: 'data.vetRcvs',
         newValue: '7654321',
         oldValue: '1234567',
         note: 'updated note',
@@ -758,11 +758,11 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(1)
-      expect(updateOWApplicationData).toHaveBeenCalledWith({
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
         db: mockDb,
         reference: 'AHWR-OLDS-KOOL',
-        updatedProperty: 'vetRcvs',
+        updatedPropertyPath: 'data.vetRcvs',
         newValue: '7654321',
         oldValue: '',
         note: 'updated note',
@@ -789,7 +789,7 @@ describe('Applications test', () => {
       )
 
       expect(res.statusCode).toBe(204)
-      expect(updateOWApplicationData).toHaveBeenCalledTimes(0)
+      expect(updateOWApplication).toHaveBeenCalledTimes(0)
     })
   })
 

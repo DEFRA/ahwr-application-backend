@@ -43,21 +43,22 @@ export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
   return result
 }
 
-export const updateOWApplicationData = async ({
+export const updateOWApplication = async ({
   db,
   reference,
-  updatedProperty,
+  updatedPropertyPath,
   newValue,
   oldValue,
   note,
   user,
   updatedAt
 }) => {
+  const updatedProperty = updatedPropertyPath.split('.').pop()
   await db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
     { reference },
     {
       $set: {
-        [`data.${updatedProperty}`]: newValue,
+        [updatedPropertyPath]: newValue,
         updatedAt,
         updatedBy: user
       },

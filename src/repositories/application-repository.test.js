@@ -4,7 +4,7 @@ import {
   createApplication,
   getRemindersToSend,
   updateReminders,
-  updateApplicationByReference
+  updateApplication
 } from './application-repository'
 
 describe('application-repository', () => {
@@ -201,7 +201,7 @@ describe('application-repository', () => {
     })
   })
 
-  describe('updateApplicationByReference', () => {
+  describe('updateApplication', () => {
     it('should call findOneAndUpdate with correct parameters and return result', async () => {
       const updatedApplication = {
         reference: 'IAHW-8ZPZ-8CLI',
@@ -211,10 +211,10 @@ describe('application-repository', () => {
       }
       collectionMock.findOneAndUpdate.mockResolvedValue(updatedApplication)
 
-      const result = await updateApplicationByReference({
+      const result = await updateApplication({
         db: dbMock,
         reference: 'IAHW-8ZPZ-8CLI',
-        updatedProperty: 'status',
+        updatedPropertyPath: 'status',
         newValue: 'WITHDRAWN',
         oldValue: 'AGREED',
         note: 'updating status',

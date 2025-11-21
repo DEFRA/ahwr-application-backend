@@ -1,7 +1,7 @@
 import {
   isOWURNUnique,
   getOWApplication,
-  updateOWApplicationData,
+  updateOWApplication,
   updateOWApplicationStatus
 } from './ow-application-repository.js'
 
@@ -132,7 +132,7 @@ describe('getOWApplication', () => {
   })
 })
 
-describe('updateOWApplicationData', () => {
+describe('updateOWApplication', () => {
   const mockDb = {
     collection: jest.fn()
   }
@@ -148,12 +148,12 @@ describe('updateOWApplicationData', () => {
   it('should update application property and history', async () => {
     const updatedAt = new Date('2024-11-20T13:51:24.291Z')
 
-    await updateOWApplicationData({
+    await updateOWApplication({
       db: mockDb,
       reference: 'AHWR-B571-6E79',
-      updatedProperty: 'status',
-      newValue: 'approved',
-      oldValue: 'pending',
+      updatedPropertyPath: 'data.vetsName',
+      newValue: 'Jane',
+      oldValue: 'John',
       note: 'Status updated',
       user: 'test-user',
       updatedAt
@@ -164,7 +164,7 @@ describe('updateOWApplicationData', () => {
       { reference: 'AHWR-B571-6E79' },
       {
         $set: {
-          'data.status': 'approved',
+          'data.vetsName': 'Jane',
           updatedAt,
           updatedBy: 'test-user'
         },
@@ -172,12 +172,12 @@ describe('updateOWApplicationData', () => {
           updateHistory: {
             id: 'mocked-uuid',
             note: 'Status updated',
-            newValue: 'approved',
-            oldValue: 'pending',
+            newValue: 'Jane',
+            oldValue: 'John',
             createdAt: updatedAt,
             createdBy: 'test-user',
-            eventType: `application-status`,
-            updatedProperty: 'status'
+            eventType: `application-vetsName`,
+            updatedProperty: 'vetsName'
           }
         }
       }

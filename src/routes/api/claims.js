@@ -58,7 +58,11 @@ export const claimsHandlers = [
       }
 
       const [updatedProperty, newValue] = Object.entries(dataPayload)
-        .filter(([key, value]) => value !== claim.data[key])
+        .filter(([key, value]) =>
+          key === 'dateOfVisit'
+            ? value.getTime() !== claim.data.dateOfVisit?.getTime()
+            : value !== claim.data[key]
+        )
         .flat()
 
       if (updatedProperty === undefined && newValue === undefined) {
