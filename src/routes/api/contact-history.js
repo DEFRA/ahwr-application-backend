@@ -1,5 +1,5 @@
 import Joi from 'joi'
-import { updateApplicationByReference } from '../../repositories/application-repository.js'
+import { updateApplication } from '../../repositories/application-repository.js'
 import {
   getAllByApplicationReference,
   set
@@ -98,7 +98,8 @@ export const contactHistoryHandlers = [
             }
 
             if (contactHistory.length > 0) {
-              await updateApplicationByReference(
+              //TODO fix
+              await updateApplication(
                 {
                   reference: application.reference,
                   contactHistory,
