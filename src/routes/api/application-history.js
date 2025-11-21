@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import { getOWApplication } from '../../repositories/ow-application-repository.js'
+import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
 
 export const buildFlagEvents = (flags) => {
   const getText = (appliesToMh, state) => {
@@ -103,14 +104,17 @@ export const applicationHistoryHandlers = [
         })
       },
       handler: async (request, h) => {
-        const db = request.db
-        const { oldWorldAppRef } = request.params
+        const {
+          params: { oldWorldAppRef },
+          db
+        } = request
 
         const application = await getOWApplication(db, oldWorldAppRef)
-
-        const statusHistory = application.statusHistory
-        const updateHistory = application.updateHistory
-        const flags = application.flags
+        const { statusHistory, updateHistory } = application
+        const flags = await getFlagsForApplicationIncludingDeleted(
+          db,
+          application.reference
+        )
 
         const normalisedStatusHistory = statusHistory.map(
           normaliseStatusHistory
