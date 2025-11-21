@@ -63,6 +63,10 @@ export const getApplication = async ({
     .next()
 }
 
+export const getApplicationWithFullFlags = async ({ db, reference }) => {
+  return db.collection(APPLICATION_COLLECTION).findOne({ reference })
+}
+
 export const getByEmail = async (email) => {
   // TODO 1182 impl
   return {}

@@ -6,7 +6,7 @@ import {
   normaliseUpdateHistory,
   buildFlagEvents
 } from './application-history.js'
-import { getFlagsForApplicationIncludingDeleted } from '../../repositories/flag-repository.js'
+import { getApplicationWithFullFlags } from '../../repositories/application-repository.js'
 
 export const claimHistoryHandlers = [
   {
@@ -23,10 +23,13 @@ export const claimHistoryHandlers = [
         const { claimRef } = request.params
 
         const claim = await getClaimByReference(db, claimRef)
-        const flags = await getFlagsForApplicationIncludingDeleted(
+        const application = await getApplicationWithFullFlags({
           db,
-          claim.applicationReference
-        )
+          reference: claim.applicationReference
+        })
+        const flags = application.flags
+
+        console.log(flags)
 
         const { statusHistory, updateHistory } = claim
 
