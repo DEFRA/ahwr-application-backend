@@ -1,28 +1,28 @@
 import joi from 'joi'
-import { v4 as uuid } from 'uuid'
+// import { v4 as uuid } from 'uuid'
 import {
   getApplication,
   searchApplications,
-  updateApplicationByReference,
-  updateEligiblePiiRedaction
+  updateApplication
 } from '../../repositories/application-repository.js'
-import { config } from '../../config/config.js'
-import { sendMessage } from '../../messaging/send-message.js'
+// import { config } from '../../config/config.js'
+// import { sendMessage } from '../../messaging/send-message.js'
 import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
-import { messageQueueConfig } from '../../config/message-queue.js'
+// import { messageQueueConfig } from '../../config/message-queue.js'
 import {
   findOWApplication,
-  updateOWApplicationData,
+  updateOWApplication,
   getOWApplication,
   updateOWApplicationStatus
 } from '../../repositories/ow-application-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import { raiseApplicationStatusEvent } from '../../event-publisher/index.js'
+import { isOWAppRef } from '../../lib/context-helper.js'
 
-const submitPaymentRequestMsgType = config.get('messageTypes')
-const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
+// const submitPaymentRequestMsgType = config.get('messageTypes')
+// const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
 
 export const applicationHandlers = [
   {
@@ -122,7 +122,7 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'post',
+    method: 'POST',
     path: '/api/applications/claim',
     options: {
       validate: {
@@ -138,42 +138,54 @@ export const applicationHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { note, reference } = request.payload
+        const { approved, reference, user, note } = request.payload
+        const { db } = request
 
         request.logger.setBindings({ reference })
 
-        const application = await getApplication(reference)
-
-        if (!application.dataValues) {
+        const application = await getOWApplication(db, reference)
+        if (!application) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
         try {
-          let statusId = APPLICATION_STATUS.rejected
+          let status = APPLICATION_STATUS.rejected
 
-          if (request.payload.approved) {
-            statusId = APPLICATION_STATUS.readyToPay
+          if (approved) {
+            status = APPLICATION_STATUS.readyToPay
 
-            await sendMessage(
-              {
-                reference,
-                sbi: application.dataValues.data.organisation.sbi,
-                whichReview: application.dataValues.data.whichReview
-              },
-              submitPaymentRequestMsgType,
-              submitRequestQueue,
-              { sessionId: uuid() }
-            )
+            // TODO
+            // await sendMessage(
+            //   {
+            //     reference,
+            //     sbi: application.organisation.sbi,
+            //     whichReview: application.data.whichReview
+            //   },
+            //   submitPaymentRequestMsgType,
+            //   submitRequestQueue,
+            //   { sessionId: uuid() }
+            // )
           }
 
-          request.logger.setBindings({ statusId })
+          request.logger.setBindings({ status })
 
-          await updateApplicationByReference({
+          const result = await updateOWApplicationStatus({
+            db,
             reference,
-            statusId,
-            updatedBy: request.payload.user,
-            note
+            status,
+            user,
+            updatedAt: new Date()
           })
+
+          if (result) {
+            await raiseApplicationStatusEvent({
+              message: 'Application has been updated',
+              application: { ...result, id: result._id.toString() },
+              raisedBy: result.updatedBy,
+              raisedOn: result.updatedAt,
+              note
+            })
+          }
         } catch (err) {
           request.logger.setBindings({ error: err })
         }
@@ -182,7 +194,7 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'put',
+    method: 'PUT',
     path: '/api/applications/{reference}/data',
     options: {
       validate: {
@@ -216,7 +228,11 @@ export const applicationHandlers = [
         }
 
         const [updatedProperty, newValue] = Object.entries(dataPayload)
-          .filter(([key, value]) => value !== application.data[key])
+          .filter(([key, value]) =>
+            key === 'visitDate'
+              ? value.getTime() !== application.data.visitDate?.getTime()
+              : value !== application.data[key]
+          )
           .flat()
 
         if (updatedProperty === undefined && newValue === undefined) {
@@ -226,10 +242,10 @@ export const applicationHandlers = [
         const oldValue = application.data[updatedProperty] ?? ''
         const updatedAt = new Date()
 
-        await updateOWApplicationData({
+        await updateOWApplication({
           db: request.db,
           reference,
-          updatedProperty,
+          updatedPropertyPath: `data.${updatedProperty}`,
           newValue,
           oldValue,
           note,
@@ -258,7 +274,7 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'put',
+    method: 'PUT',
     path: '/api/applications/{ref}/eligible-pii-redaction',
     options: {
       validate: {
@@ -278,20 +294,42 @@ export const applicationHandlers = [
       handler: async (request, h) => {
         const { ref } = request.params
         const { eligiblePiiRedaction, user, note } = request.payload
+        const { db } = request
 
         request.logger.setBindings({
           applicationReference: ref,
           eligiblePiiRedaction
         })
 
-        const application = await getApplication(ref)
-        if (!application.dataValues) {
+        const isOwAppRef = isOWAppRef(ref)
+
+        const application = isOwAppRef
+          ? await getOWApplication(db, ref)
+          : await getApplication({ db, reference: ref })
+        if (!application) {
           return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
         }
 
-        await updateEligiblePiiRedaction(ref, eligiblePiiRedaction, user, note)
+        if (application.eligiblePiiRedaction === eligiblePiiRedaction) {
+          return h.response().code(HttpStatus.NO_CONTENT)
+        }
 
-        return h.response().code(HttpStatus.OK)
+        const updateData = {
+          db: request.db,
+          reference: ref,
+          updatedPropertyPath: 'eligiblePiiRedaction',
+          newValue: eligiblePiiRedaction,
+          oldValue: application.eligiblePiiRedaction,
+          note,
+          user,
+          updatedAt: new Date()
+        }
+
+        isOwAppRef
+          ? await updateOWApplication(updateData)
+          : await updateApplication(updateData)
+
+        return h.response().code(HttpStatus.NO_CONTENT)
       }
     }
   }
