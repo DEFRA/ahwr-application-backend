@@ -98,7 +98,7 @@ export const contactHistoryHandlers = [
             }
 
             if (contactHistory.length > 0) {
-              //TODO fix
+              //TODO fix - needs to use new/updated parameters in updateApplication
               await updateApplication(
                 {
                   reference: application.reference,

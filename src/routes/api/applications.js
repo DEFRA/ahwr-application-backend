@@ -301,9 +301,9 @@ export const applicationHandlers = [
           eligiblePiiRedaction
         })
 
-        const owAppRef = isOWAppRef(ref)
+        const isOwAppRef = isOWAppRef(ref)
 
-        const application = owAppRef
+        const application = isOwAppRef
           ? await getOWApplication(db, ref)
           : await getApplication({ db, reference: ref })
         if (!application) {
@@ -325,7 +325,7 @@ export const applicationHandlers = [
           updatedAt: new Date()
         }
 
-        owAppRef
+        isOwAppRef
           ? await updateOWApplication(updateData)
           : await updateApplication(updateData)
 
