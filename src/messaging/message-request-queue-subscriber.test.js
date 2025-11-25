@@ -19,6 +19,7 @@ describe('MessageRequestQueueSubscriber', () => {
     config.set('aws.region', 'eu-west-2')
     config.set('aws.endpointUrl', 'http://localhost:4576')
   })
+
   describe('configureAndStart', () => {
     it('should configure and start the SQS subscriber', async () => {
       const mockLogger = jest.fn()
@@ -38,6 +39,7 @@ describe('MessageRequestQueueSubscriber', () => {
       expect(SqsSubscriber.mock.instances[0].start).toHaveBeenCalledTimes(1)
     })
   })
+
   describe('stopSubscriber', () => {
     it('should stop the SQS subscriber', async () => {
       const mockLogger = jest.fn()
