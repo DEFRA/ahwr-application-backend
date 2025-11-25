@@ -20,7 +20,7 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
 
       const claim = await getClaimByReference(db, claimRef)
       if (!claim || claim.status === STATUS.PAID) {
-        logger.error(
+        logger.warn(
           { status: claim?.status, claimRef },
           'Claim does not exist or status is paid'
         )
