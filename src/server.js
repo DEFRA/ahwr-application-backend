@@ -1,7 +1,5 @@
 import Hapi from '@hapi/hapi'
-
 import { secureContext } from '@defra/hapi-secure-context'
-
 import { config } from './config/config.js'
 import { router } from './plugins/router.js'
 import { requestLogger } from './logging/request-logger.js'
@@ -10,6 +8,14 @@ import { failAction } from './common/helpers/fail-action.js'
 import { pulse } from './common/helpers/pulse.js'
 import { requestTracing } from './common/helpers/request-tracing.js'
 import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
+import {
+  configureAndStart,
+  stopSubscriber
+} from './messaging/message-request-queue-subscriber.js'
+import {
+  startMessagingService,
+  stopMessagingService
+} from './messaging/fcp-messaging-service.js'
 
 async function createServer() {
   setupProxy()
@@ -57,6 +63,16 @@ async function createServer() {
     },
     router
   ])
+
+  server.events.on('start', async () => {
+    await startMessagingService()
+    await configureAndStart(server.db)
+  })
+
+  server.events.on('stop', async () => {
+    await stopSubscriber()
+    await stopMessagingService()
+  })
 
   return server
 }

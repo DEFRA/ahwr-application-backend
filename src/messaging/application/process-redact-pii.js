@@ -19,10 +19,10 @@ const {
 } = REDACT_PII_PROGRESS_STATUS
 
 export const processRedactPiiRequest = async (message, logger) => {
-  if (!validateRedactPIISchema(message?.body, logger)) {
+  if (!validateRedactPIISchema(message, logger)) {
     throw new Error('Redact PII validation error')
   }
-  const redactRequestedDate = message.body.requestedDate
+  const redactRequestedDate = message.requestedDate
   logger.setBindings({ redactRequestedDate })
 
   const { applicationsToRedact, status } =
