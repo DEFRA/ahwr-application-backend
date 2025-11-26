@@ -1,3 +1,5 @@
+// TODO - is this to delete?
+
 export const queryEntitiesByPartitionKey = async (
   tableName,
   partitionKey,

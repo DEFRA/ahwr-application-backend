@@ -2,6 +2,8 @@
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 // import { updateEntitiesByPartitionKey } from './update-entities.js'
 
+// TODO - is this to delete?
+
 export const getApplicationEvents = async (sbi) => {
   // TODO 1182 impl
   return []

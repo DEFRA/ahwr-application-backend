@@ -3,6 +3,8 @@
 // import { config } from '../config/index.js'
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 
+// TODO - is this to delete?
+
 export const redactPII = async (reference, logger) => {
   // TODO 1182 impl
   // const propertiesToMerge = {
