@@ -128,16 +128,6 @@ const config = convict({
       format: String,
       default: `${msgTypePrefix}.set.paid.status`
     },
-    redactPiiRequestMsgType: {
-      doc: 'Message type for pii redaction requests',
-      format: String,
-      default: `${msgTypePrefix}.redact.pii.request`
-    },
-    reminderEmailRequestMsgType: {
-      doc: 'Application message type for reminder email requests',
-      format: String,
-      default: `${msgTypePrefix}.reminder.email.request`
-    },
     submitPaymentRequestMsgType: {
       doc: 'Message type for payment requests',
       format: String,
@@ -218,14 +208,6 @@ const config = convict({
       env: 'TRACING_HEADER'
     }
   },
-  application: {
-    queueUrl: {
-      doc: 'Application backend queue url',
-      format: String,
-      default: '',
-      env: 'APPLICATION_BACKEND_QUEUE_URL'
-    }
-  },
   sns: {
     documentRequestedTopicArn: {
       doc: 'ARN of the topic to send document requested events to',
@@ -259,6 +241,14 @@ const config = convict({
       default: null,
       nullable: true,
       env: 'AWS_ENDPOINT_URL'
+    }
+  },
+  sqs: {
+    applicationRequestQueueUrl: {
+      doc: 'URL of the SQS queue to receive application requests from',
+      format: String,
+      default: '#',
+      env: 'APPLICATION_BACKEND_QUEUE_URL'
     }
   },
   azure: {

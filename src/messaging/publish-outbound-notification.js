@@ -2,7 +2,8 @@ import { publishMessage, setupClient } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
 import { getLogger } from '../logging/logger.js'
 
-const { applicationDocRequestMsgType } = config.get('messageTypes')
+const { applicationDocRequestMsgType, messageGeneratorMsgType } =
+  config.get('messageTypes')
 let clientConfigured
 
 export async function publishDocumentRequestEvent(logger, messageBody) {
@@ -19,6 +20,22 @@ export async function publishDocumentRequestEvent(logger, messageBody) {
   )
 
   logger.info('Document request event published')
+}
+
+export async function publishStatusChangeEvent(logger, messageBody) {
+  configureClient()
+
+  const attributes = {
+    eventType: messageGeneratorMsgType
+  }
+
+  await publishMessage(
+    messageBody,
+    attributes,
+    config.get('sns.statusChangeTopicArn')
+  )
+
+  logger.info('Status change event published')
 }
 
 function configureClient() {

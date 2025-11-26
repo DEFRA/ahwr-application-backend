@@ -1,81 +1,75 @@
 import { validateClaimStatusToPaidEvent } from '../schema/set-payment-status-to-paid-schema.js'
-import { getClaimByReference } from '../../repositories/claim-repository.js'
+import {
+  getClaimByReference,
+  updateClaimStatus
+} from '../../repositories/claim-repository.js'
 import {
   TYPE_OF_LIVESTOCK,
   UNNAMED_FLOCK,
-  UNNAMED_HERD
+  UNNAMED_HERD,
+  STATUS
 } from 'ffc-ahwr-common-library'
-import { sendMessage } from '../send-message.js'
-import { config } from '../../config/config.js'
-import { v4 as uuid } from 'uuid'
-import { messageQueueConfig } from '../../config/message-queue.js'
+import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
+import { raiseClaimEvents } from '../../event-publisher/index.js'
 
-const messageGeneratorMsgType = config.get(
-  'messageTypes.messageGeneratorMsgType'
-)
-const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: should be in main config
-
-export const setPaymentStatusToPaid = async (message, logger) => {
+export const setPaymentStatusToPaid = async (message, db, logger) => {
   try {
-    const msgBody = message.body
+    if (validateClaimStatusToPaidEvent(message, logger)) {
+      const { claimRef, sbi } = message
+      logger.info(`Setting payment status to paid for claim: ${claimRef}`)
 
-    if (validateClaimStatusToPaidEvent(msgBody, logger)) {
-      const { claimRef, sbi } = msgBody
-      logger.info(`Setting payment status to paid for claim ${claimRef}...`)
-      //TODO use updateClaimStatus
-      // await updateClaimByReference(
-      //   {
-      //     reference: claimRef,
-      //     statusId: STATUS.PAID,
-      //     updatedBy: 'admin',
-      //     sbi
-      //   },
-      //   undefined,
-      //   logger
-      // )
-      // await raiseClaimEvents(
-      //   {
-      //     message: 'Claim has been updated',
-      //     claim: updatedRecord.dataValues,
-      //     note,
-      //     raisedBy: updatedRecord.dataValues.updatedBy,
-      //     raisedOn: updatedRecord.dataValues.updatedAt
-      //   },
-      //   data.sbi
-      // )
-      const { dataValues: claimDataValues } =
-        await getClaimByReference(claimRef)
+      const claim = await getClaimByReference(db, claimRef)
+      if (!claim || claim.status === STATUS.PAID) {
+        logger.warn(
+          { status: claim?.status, claimRef },
+          'Claim does not exist or status is paid'
+        )
+        return
+      }
+
+      const updatedClaim = await updateClaimStatus({
+        db,
+        reference: claimRef,
+        status: STATUS.PAID,
+        user: 'admin',
+        updatedAt: new Date()
+      })
 
       const {
         applicationReference,
-        reference: claimReference,
-        statusId,
+        status,
         data: { claimType, typeOfLivestock },
         herd
-      } = claimDataValues
+      } = updatedClaim
 
-      await sendMessage(
+      await raiseClaimEvents(
         {
-          sbi,
-          agreementReference: applicationReference,
-          claimReference,
-          claimStatus: statusId,
-          claimType,
-          typeOfLivestock,
-          dateTime: new Date(),
-          herdName:
-            herd?.herdName ||
-            (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP
-              ? UNNAMED_FLOCK
-              : UNNAMED_HERD)
+          message: 'Claim has been updated',
+          claim: updatedClaim,
+          note: undefined,
+          raisedBy: updatedClaim.updatedBy,
+          raisedOn: updatedClaim.updatedAt
         },
-        messageGeneratorMsgType,
-        messageGeneratorQueue,
-        { sessionId: uuid() }
+        sbi
       )
+      const statusChangeMessage = {
+        sbi,
+        agreementReference: applicationReference,
+        claimReference: claimRef,
+        claimStatus: status,
+        claimType,
+        typeOfLivestock,
+        dateTime: updatedClaim.updatedAt,
+        herdName:
+          herd?.name ||
+          (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP
+            ? UNNAMED_FLOCK
+            : UNNAMED_HERD)
+      }
+      await publishStatusChangeEvent(logger, statusChangeMessage)
     } else {
       throw new Error(
-        `Invalid message body in payment status to paid event: claimRef: ${msgBody.claimRef} sbi: ${msgBody.sbi}`
+        `Invalid message in payment status to paid event: claimRef: ${message.claimRef} sbi: ${message.sbi}`
       )
     }
   } catch (error) {

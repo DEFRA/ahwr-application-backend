@@ -230,7 +230,6 @@ export const claimHandlers = [
         })
 
         const claim = await getClaimByReference(db, reference)
-
         if (!claim) {
           return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }

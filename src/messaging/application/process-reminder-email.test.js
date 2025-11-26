@@ -33,10 +33,8 @@ describe('processReminderEmailRequest', () => {
   }
   const mockDb = {}
   const message = {
-    body: {
-      requestedDate: '2025-11-05T00:00:00.000Z',
-      maxBatchSize: fakeMaxBatchSize
-    }
+    requestedDate: '2025-11-05T00:00:00.000Z',
+    maxBatchSize: fakeMaxBatchSize
   }
 
   beforeEach(() => {

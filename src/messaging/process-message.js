@@ -1,40 +1,26 @@
 import { config } from '../config/config.js'
 import { setPaymentStatusToPaid } from './application/set-payment-status-to-paid.js'
-import { processRedactPiiRequest } from './application/process-redact-pii.js'
-import { processReminderEmailRequest } from './application/process-reminder-email.js'
 
-const {
-  moveClaimToPaidMsgType,
-  redactPiiRequestMsgType,
-  reminderEmailRequestMsgType
-} = config.get('messageTypes')
+const { moveClaimToPaidMsgType } = config.get('messageTypes')
 
 export const processApplicationMessage = async (
   message,
-  receiver,
   db,
-  logger
+  logger,
+  attributes
 ) => {
   try {
-    const { applicationProperties: properties } = message
+    const { eventType } = attributes
 
-    switch (properties.type) {
+    switch (eventType) {
       case moveClaimToPaidMsgType:
-        await setPaymentStatusToPaid(message, logger)
-        break
-      case redactPiiRequestMsgType:
-        await processRedactPiiRequest(message, logger)
-        break
-      case reminderEmailRequestMsgType:
-        await processReminderEmailRequest(message, db, logger)
+        await setPaymentStatusToPaid(message, db, logger)
         break
       default:
-        logger.warn(`Unknown message type: ${properties.type}`)
+        logger.warn(`Unknown message type: ${eventType}`)
         break
     }
-
-    await receiver.completeMessage(message)
   } catch (err) {
-    logger.error('Unable to process Application request:', err)
+    logger.error(err, 'Unable to process Application request:')
   }
 }
