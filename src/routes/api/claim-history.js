@@ -27,10 +27,8 @@ export const claimHistoryHandlers = [
           db,
           reference: claim.applicationReference
         })
-        const flags = application.flags
 
-        console.log(flags)
-
+        const { flags } = application
         const { statusHistory, updateHistory } = claim
 
         const normalisedStatusHistory = statusHistory.map(

@@ -123,6 +123,7 @@ describe('saveClaimAndRelatedData', () => {
           createdAt: expect.any(Date)
         }
       ],
+      updateHistory: [],
       reference: 'RESH-O9UD-0025',
       status: 'PENDING',
       type: 'REVIEW'

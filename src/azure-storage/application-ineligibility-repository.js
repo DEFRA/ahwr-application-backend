@@ -1,6 +1,8 @@
 // import { updateEntitiesByPartitionKey } from './update-entities.js'
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
 
+// TODO - is this to delete?
+
 export const redactPII = async (sbi, logger) => {
   // TODO 1182 impl
   // const propertiesToMerge = { ChangedBy: REDACT_PII_VALUES.REDACTED_CHANGED_BY }
