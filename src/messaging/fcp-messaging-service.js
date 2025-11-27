@@ -1,7 +1,4 @@
-import {
-  createServiceBusClient,
-  createEventPublisher
-} from 'ffc-ahwr-common-library'
+import { createServiceBusClient, createEventPublisher } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
 
 let fcpMessageClient

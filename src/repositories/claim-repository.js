@@ -7,20 +7,14 @@
 
 // const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import { v4 as uuid } from 'uuid'
 
 export const getClaimByReference = async (db, reference) => {
-  return db
-    .collection(CLAIMS_COLLECTION)
-    .findOne({ reference }, { projection: { _id: 0 } })
+  return db.collection(CLAIMS_COLLECTION).findOne({ reference }, { projection: { _id: 0 } })
 }
 
-export const getByApplicationReference = async ({
-  db,
-  applicationReference,
-  typeOfLivestock
-}) => {
+export const getByApplicationReference = async ({ db, applicationReference, typeOfLivestock }) => {
   const filter = {
     applicationReference
   }
@@ -29,24 +23,14 @@ export const getByApplicationReference = async ({
     filter['data.typeOfLivestock'] = typeOfLivestock
   }
 
-  return db
-    .collection(CLAIMS_COLLECTION)
-    .find(filter)
-    .sort({ createdAt: -1 })
-    .toArray()
+  return db.collection(CLAIMS_COLLECTION).find(filter).sort({ createdAt: -1 }).toArray()
 }
 
 export const createClaim = async (db, data) => {
   return db.collection(CLAIMS_COLLECTION).insertOne(data)
 }
 
-export const updateClaimStatus = async ({
-  db,
-  reference,
-  status,
-  user,
-  updatedAt
-}) => {
+export const updateClaimStatus = async ({ db, reference, status, user, updatedAt }) => {
   return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
     { reference },
     {
@@ -78,11 +62,7 @@ export const getAllClaimedClaims = async (claimStatusIds) => {
   // })
 }
 
-export const isURNUnique = async ({
-  db,
-  applicationReferences,
-  laboratoryURN
-}) => {
+export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) => {
   const result = await db.collection(CLAIMS_COLLECTION).findOne({
     applicationReference: { $in: applicationReferences },
     'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
@@ -124,12 +104,7 @@ export const updateClaimData = async ({
   )
 }
 
-export const addHerdToClaimData = async ({
-  claimRef,
-  claimHerdData,
-  createdBy,
-  db
-}) => {
+export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, db }) => {
   const { id, version, associatedAt, name } = claimHerdData
 
   await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(

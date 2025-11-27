@@ -16,9 +16,7 @@ describe('Is URN Unique', () => {
     await server.db.collection('claims').deleteMany({})
 
     await server.db.collection('applications').insertOne(application)
-    await server.db
-      .collection('owapplications')
-      .insertOne(owApplicationReviewClaim)
+    await server.db.collection('owapplications').insertOne(owApplicationReviewClaim)
     await server.db.collection('claims').insertOne(reviewClaim)
   })
 

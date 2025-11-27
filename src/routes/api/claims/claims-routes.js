@@ -26,11 +26,7 @@ import {
   claimType
 } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import {
-  createClaimHandler,
-  isURNUniqueHandler,
-  getClaimHandler
-} from './claims-controller.js'
+import { createClaimHandler, isURNUniqueHandler, getClaimHandler } from './claims-controller.js'
 // import { messageQueueConfig } from '../../../config/message-queue.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
 
@@ -96,10 +92,7 @@ export const claimHandlers = [
       },
       handler: async (request, h) => {
         const { typeOfLivestock } = request.query
-        const claims = await getByApplicationReference(
-          request.params.ref,
-          typeOfLivestock
-        )
+        const claims = await getByApplicationReference(request.params.ref, typeOfLivestock)
 
         return h.response(claims).code(StatusCodes.OK)
       }
@@ -132,8 +125,8 @@ export const claimHandlers = [
           filter,
           offset,
           limit,
-          sort,
-          request.db
+          request.db,
+          sort
         )
         return h.response({ total, claims }).code(StatusCodes.OK)
       }
@@ -178,10 +171,7 @@ export const claimHandlers = [
             .string()
             .valid(testResultsConstant.positive, testResultsConstant.negative)
             .optional(),
-          type: joi
-            .string()
-            .valid(claimType.review, claimType.endemics)
-            .required(),
+          type: joi.string().valid(claimType.review, claimType.endemics).required(),
           piHunt: joi.string().valid(piHunt.yes, piHunt.no).optional(),
           piHuntAllAnimals: joi
             .string()
@@ -252,9 +242,7 @@ export const claimHandlers = [
         logger.setBindings({ sbi })
 
         if (claim.status === status) {
-          logger.info(
-            `Claim ${reference} already has status ${status}, no update needed.`
-          )
+          logger.info(`Claim ${reference} already has status ${status}, no update needed.`)
           return h.response().code(StatusCodes.NO_CONTENT)
         }
 

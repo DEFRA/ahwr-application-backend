@@ -199,9 +199,7 @@ describe('applications-service', () => {
 
       it('should create application when no previous application exists in repo', async () => {
         const mockResult = []
-        jest
-          .spyOn(appRepo, 'getApplicationsBySbi')
-          .mockResolvedValue(mockResult)
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
         jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
           acknowledged: true,
           insertedId: '690e04e10341b23a7d3cb9e5'
@@ -257,9 +255,7 @@ describe('applications-service', () => {
             createdAt: '2025-01-01T00:00:00Z'
           }
         ]
-        jest
-          .spyOn(appRepo, 'getApplicationsBySbi')
-          .mockResolvedValue(mockResult)
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
         jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
           acknowledged: true,
           insertedId: '690e04e10341b23a7d3cb9e5'
@@ -303,9 +299,7 @@ describe('applications-service', () => {
 
       it('should create application in database, but not notify for document generation when not accepted', async () => {
         const mockResult = []
-        jest
-          .spyOn(appRepo, 'getApplicationsBySbi')
-          .mockResolvedValue(mockResult)
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
         jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
           acknowledged: true,
           insertedId: '690e04e10341b23a7d3cb9e5'
@@ -605,10 +599,7 @@ describe('applications-service', () => {
       expect(mockLogger.setBindings).toHaveBeenCalledWith({
         applicationReference: 'AHWR-B571-6E79'
       })
-      expect(owAppRepo.getOWApplication).toHaveBeenCalledWith(
-        db,
-        'AHWR-B571-6E79'
-      )
+      expect(owAppRepo.getOWApplication).toHaveBeenCalledWith(db, 'AHWR-B571-6E79')
       expect(result).toEqual({
         type: 'VV',
         reference: 'AHWR-B571-6E79',

@@ -24,13 +24,7 @@ describe('Claim Data Update Event', () => {
       note: 'changed vetRCVSNumber'
     }
 
-    await claimDataUpdateEvent(
-      eventData,
-      'application-vetName',
-      'admin',
-      eventDate,
-      '123456789'
-    )
+    await claimDataUpdateEvent(eventData, 'application-vetName', 'admin', eventDate, '123456789')
 
     expect(mockPublishEvent).toHaveBeenCalledWith({
       name: 'send-session-event',
@@ -58,13 +52,7 @@ describe('Claim Data Update Event', () => {
       note: 'changed vetRCVSNumber'
     }
 
-    await claimDataUpdateEvent(
-      eventData,
-      'claim-vetRcvs',
-      'admin',
-      eventDate,
-      '123456789'
-    )
+    await claimDataUpdateEvent(eventData, 'claim-vetRcvs', 'admin', eventDate, '123456789')
 
     expect(mockPublishEvent).toHaveBeenCalledWith({
       name: 'send-session-event',

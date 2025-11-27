@@ -14,15 +14,7 @@ export const buildFlagEvents = (flags) => {
   }
 
   return flags.flatMap((flag) => {
-    const {
-      appliesToMh,
-      note,
-      createdBy,
-      createdAt,
-      deletedAt,
-      deletedNote,
-      deletedBy
-    } = flag
+    const { appliesToMh, note, createdBy, createdAt, deletedAt, deletedNote, deletedBy } = flag
 
     if (!deletedAt) {
       const { eventType, newValue, oldValue } = getText(appliesToMh, 'flagged')
@@ -78,12 +70,7 @@ export const normaliseUpdateHistory = (update) => ({
   updatedAt: update.createdAt
 })
 
-export const normaliseStatusHistory = ({
-  status,
-  note,
-  createdBy,
-  createdAt
-}) => ({
+export const normaliseStatusHistory = ({ status, note, createdBy, createdAt }) => ({
   eventType: 'status-updated',
   updatedProperty: 'status',
   newValue: status,
@@ -112,12 +99,8 @@ export const applicationHistoryHandlers = [
         const { statusHistory, updateHistory } = application
         const flags = application.flags
 
-        const normalisedStatusHistory = statusHistory.map(
-          normaliseStatusHistory
-        )
-        const normalisedUpdateHistory = updateHistory.map(
-          normaliseUpdateHistory
-        )
+        const normalisedStatusHistory = statusHistory.map(normaliseStatusHistory)
+        const normalisedUpdateHistory = updateHistory.map(normaliseUpdateHistory)
         const normalisedFlagHistory = buildFlagEvents(flags)
 
         const historyRecords = [

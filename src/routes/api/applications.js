@@ -325,9 +325,7 @@ export const applicationHandlers = [
           updatedAt: new Date()
         }
 
-        isOwAppRef
-          ? await updateOWApplication(updateData)
-          : await updateApplication(updateData)
+        isOwAppRef ? await updateOWApplication(updateData) : await updateApplication(updateData)
 
         return h.response().code(HttpStatus.NO_CONTENT)
       }

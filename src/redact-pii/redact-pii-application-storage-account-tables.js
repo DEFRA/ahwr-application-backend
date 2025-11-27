@@ -12,18 +12,11 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
       const { sbi, claims } = data
       await redactApplicationEventPII(sbi, logger)
       await redactIneligibilityPII(sbi, logger)
-      await Promise.all(
-        claims.map(({ reference }) => redactStatusPII(reference, logger))
-      )
+      await Promise.all(claims.map(({ reference }) => redactStatusPII(reference, logger)))
     }
   } catch (err) {
     logger.setBindings({ error: err })
-    await updateApplicationRedactRecords(
-      agreementsToRedact,
-      true,
-      redactProgress,
-      'N'
-    )
+    await updateApplicationRedactRecords(agreementsToRedact, true, redactProgress, 'N')
     throw err
   }
 }

@@ -72,10 +72,7 @@ const optionalPiHuntModel = (
 
   if (piHuntYes) {
     if (isPositiveReviewTestResult) {
-      validations.piHuntAllAnimals = joi
-        .string()
-        .valid(piHuntAllAnimals.yes)
-        .required()
+      validations.piHuntAllAnimals = joi.string().valid(piHuntAllAnimals.yes).required()
     } else {
       validations.piHuntRecommended = joi
         .string()
@@ -113,22 +110,19 @@ export function getBeefValidation(claimData) {
     }
   }
 
-  const visitDateAfterPIHuntAndDairyGoLive =
-    isVisitDateAfterPIHuntAndDairyGoLive(claimData.data.dateOfVisit)
+  const visitDateAfterPIHuntAndDairyGoLive = isVisitDateAfterPIHuntAndDairyGoLive(
+    claimData.data.dateOfVisit
+  )
   const isPositiveReviewTestResult =
     claimData.data.reviewTestResults === testResultsConstant.positive
   const piHuntYes = claimData.data.piHunt === piHunt.yes
-  const piHuntRecommendedYes =
-    claimData.data.piHuntRecommended === piHuntRecommended.yes
-  const piHuntRecommendedYesOrNotSet =
-    claimData.data.piHuntRecommended !== piHuntRecommended.no
-  const piHuntAllAnimalsYes =
-    claimData.data.piHuntAllAnimals === piHuntAllAnimals.yes
+  const piHuntRecommendedYes = claimData.data.piHuntRecommended === piHuntRecommended.yes
+  const piHuntRecommendedYesOrNotSet = claimData.data.piHuntRecommended !== piHuntRecommended.no
+  const piHuntAllAnimalsYes = claimData.data.piHuntAllAnimals === piHuntAllAnimals.yes
   return {
     ...vetVisitsReviewTestResults,
     ...reviewTestResults,
-    ...(!visitDateAfterPIHuntAndDairyGoLive &&
-      piHuntModel(isPositiveReviewTestResult)),
+    ...(!visitDateAfterPIHuntAndDairyGoLive && piHuntModel(isPositiveReviewTestResult)),
     ...(visitDateAfterPIHuntAndDairyGoLive &&
       optionalPiHuntModel(
         isPositiveReviewTestResult,

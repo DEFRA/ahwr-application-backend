@@ -79,9 +79,9 @@ describe('applications-controller', () => {
       const mockError = new Error('Database failure')
       createApplication.mockRejectedValue(mockError)
 
-      await expect(
-        createApplicationHandler(mockRequest, mockH)
-      ).rejects.toThrow(Boom.internal(mockError))
+      await expect(createApplicationHandler(mockRequest, mockH)).rejects.toThrow(
+        Boom.internal(mockError)
+      )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
@@ -163,9 +163,9 @@ describe('applications-controller', () => {
       const mockError = new Error('Failed to fetch claims')
       getClaims.mockRejectedValue(mockError)
 
-      await expect(
-        getApplicationClaimsHandler(mockRequest, mockH)
-      ).rejects.toThrow(Boom.internal(mockError))
+      await expect(getApplicationClaimsHandler(mockRequest, mockH)).rejects.toThrow(
+        Boom.internal(mockError)
+      )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },
@@ -224,9 +224,9 @@ describe('applications-controller', () => {
       const mockError = new Error('Failed to fetch herds')
       getHerds.mockRejectedValue(mockError)
 
-      await expect(
-        getApplicationHerdsHandler(mockRequest, mockH)
-      ).rejects.toThrow(Boom.internal(mockError))
+      await expect(getApplicationHerdsHandler(mockRequest, mockH)).rejects.toThrow(
+        Boom.internal(mockError)
+      )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { error: mockError },

@@ -1,8 +1,5 @@
 import joi from 'joi'
-import {
-  getClaimByReference,
-  updateClaimData
-} from '../../repositories/claim-repository.js'
+import { getClaimByReference, updateClaimData } from '../../repositories/claim-repository.js'
 import { StatusCodes } from 'http-status-codes'
 import { findApplication } from '../../repositories/application-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
@@ -83,10 +80,7 @@ export const claimsHandlers = [
         updatedAt
       })
 
-      const application = await findApplication(
-        db,
-        updatedClaim.applicationReference
-      )
+      const application = await findApplication(db, updatedClaim.applicationReference)
 
       const eventData = {
         applicationReference: updatedClaim.applicationReference,

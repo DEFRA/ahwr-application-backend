@@ -19,8 +19,7 @@ export const latestContactDetailsHandlers = [
           return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
 
-        const { name, orgEmail, farmerName, email } =
-          application.dataValues.data.organisation
+        const { name, orgEmail, farmerName, email } = application.dataValues.data.organisation
         const contactDetails = {
           name,
           orgEmail,

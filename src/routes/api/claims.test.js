@@ -1,8 +1,5 @@
 import { findApplication } from '../../repositories/application-repository.js'
-import {
-  getClaimByReference,
-  updateClaimData
-} from '../../repositories/claim-repository.js'
+import { getClaimByReference, updateClaimData } from '../../repositories/claim-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import Hapi from '@hapi/hapi'
 import { claimsHandlers } from './claims.js'

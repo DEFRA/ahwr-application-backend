@@ -13,9 +13,9 @@ describe('applicationRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(
-          postRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).rejects.toEqual(Boom.badRequest(mockError))
+        expect(postRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toEqual(
+          Boom.badRequest(mockError)
+        )
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Create application validation error'
@@ -35,22 +35,17 @@ describe('applicationRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          getRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          mockError,
-          'Get application validation error'
+        expect(() => getRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
         )
+        expect(mockLogger.error).toHaveBeenCalledWith(mockError, 'Get application validation error')
       })
     })
   })
 
   describe('GET /api/applications/{applicationReference}/claims', () => {
     const getRoute = applicationRoutes.find(
-      (r) =>
-        r.method === 'GET' &&
-        r.path === '/api/applications/{applicationReference}/claims'
+      (r) => r.method === 'GET' && r.path === '/api/applications/{applicationReference}/claims'
     )
 
     describe('failAction', () => {
@@ -59,9 +54,9 @@ describe('applicationRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          getRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
+        expect(() => getRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
+        )
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Get application claims validation error'
@@ -72,9 +67,7 @@ describe('applicationRoutes', () => {
 
   describe('GET /api/applications/{applicationReference}/herds', () => {
     const getRoute = applicationRoutes.find(
-      (r) =>
-        r.method === 'GET' &&
-        r.path === '/api/applications/{applicationReference}/herds'
+      (r) => r.method === 'GET' && r.path === '/api/applications/{applicationReference}/herds'
     )
 
     describe('failAction', () => {
@@ -83,9 +76,9 @@ describe('applicationRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          getRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
+        expect(() => getRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
+        )
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Get application herds validation error'
@@ -96,9 +89,7 @@ describe('applicationRoutes', () => {
 
   describe('GET /api/applications/{applicationReference}', () => {
     const getRoute = applicationRoutes.find(
-      (r) =>
-        r.method === 'GET' &&
-        r.path === '/api/applications/{applicationReference}'
+      (r) => r.method === 'GET' && r.path === '/api/applications/{applicationReference}'
     )
 
     describe('failAction', () => {
@@ -107,13 +98,10 @@ describe('applicationRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          getRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          mockError,
-          'Get application validation error'
+        expect(() => getRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
         )
+        expect(mockLogger.error).toHaveBeenCalledWith(mockError, 'Get application validation error')
       })
     })
   })

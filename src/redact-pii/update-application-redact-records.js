@@ -16,9 +16,7 @@ export const updateApplicationRedactRecords = async (
   //   await Promise.all(
   applicationsToRedact.map((a) =>
     limit(() => {
-      const retryCount = incrementRetryCount
-        ? Number(a.retryCount) + 1
-        : a.retryCount
+      const retryCount = incrementRetryCount ? Number(a.retryCount) + 1 : a.retryCount
       return updateApplicationRedact(
         a.id,
         retryCount,

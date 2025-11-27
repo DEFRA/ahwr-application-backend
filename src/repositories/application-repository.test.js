@@ -104,9 +104,7 @@ describe('application-repository', () => {
         mockLogger
       )
 
-      expect(
-        dbMock.collection().aggregate().sort().project().limit
-      ).toHaveBeenCalledTimes(1)
+      expect(dbMock.collection().aggregate().sort().project().limit).toHaveBeenCalledTimes(1)
       expect(dbMock.collection).toHaveBeenCalledWith('applications')
       expect(dbMock.collection().aggregate).toHaveBeenCalledWith([
         {
@@ -136,9 +134,7 @@ describe('application-repository', () => {
       expect(dbMock.collection().aggregate().sort).toHaveBeenCalledWith({
         createdAt: 1
       })
-      expect(
-        dbMock.collection().aggregate().sort().project
-      ).toHaveBeenCalledWith({
+      expect(dbMock.collection().aggregate().sort().project).toHaveBeenCalledWith({
         reference: 1,
         crn: { $eq: ['$organisation.crn'] },
         sbi: { $eq: ['$organisation.sbi'] },
@@ -149,9 +145,7 @@ describe('application-repository', () => {
         reminderType: { $literal: threeMonths },
         createdAt: 1
       })
-      expect(
-        dbMock.collection().aggregate().sort().project().limit
-      ).toHaveBeenCalledWith(5000)
+      expect(dbMock.collection().aggregate().sort().project().limit).toHaveBeenCalledWith(5000)
       expect(mockLogger.info).toHaveBeenCalledTimes(1)
       expect(mockLogger.info).toHaveBeenCalledWith(
         "Getting reminders due, reminder type 'notClaimed_threeMonths', window start '2025-08-05T00:00:00.000Z', end '2024-05-05T00:00:00.000Z' and haven't already received later reminders 'notClaimed_sixMonths,notClaimed_nineMonths'"

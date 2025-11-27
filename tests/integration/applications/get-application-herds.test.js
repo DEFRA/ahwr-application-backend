@@ -17,8 +17,7 @@ describe('Get application herds', () => {
     await teardownTestEnvironment()
   })
 
-  const buildUrl = (appRef, species) =>
-    `/api/applications/${appRef}/herds?species=${species}`
+  const buildUrl = (appRef, species) => `/api/applications/${appRef}/herds?species=${species}`
 
   test('successfully retrieves herds for a given application and species', async () => {
     const res = await server.inject({

@@ -14,14 +14,8 @@ const mockLogger = {
 
 describe('publish outbound notification', () => {
   beforeAll(() => {
-    config.set(
-      'sns.documentRequestedTopicArn',
-      'arn:aws:sns:eu-west-2:1:document-requested'
-    )
-    config.set(
-      'sns.statusChangeTopicArn',
-      'arn:aws:sns:eu-west-2:1:status-change'
-    )
+    config.set('sns.documentRequestedTopicArn', 'arn:aws:sns:eu-west-2:1:document-requested')
+    config.set('sns.statusChangeTopicArn', 'arn:aws:sns:eu-west-2:1:status-change')
   })
 
   beforeEach(() => {

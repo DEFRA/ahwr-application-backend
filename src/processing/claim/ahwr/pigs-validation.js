@@ -6,10 +6,7 @@ import {
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
-import {
-  PIG_GENETIC_SEQUENCING_VALUES,
-  claimType
-} from 'ffc-ahwr-common-library'
+import { PIG_GENETIC_SEQUENCING_VALUES, claimType } from 'ffc-ahwr-common-library'
 
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
@@ -28,10 +25,7 @@ const getExactNumberAnimalsTested = (threshold) => ({
   numberAnimalsTested: joi.number().valid(threshold).required()
 }) // this was not required previously. Should be?
 const numberOfOralFluidSamples = {
-  numberOfOralFluidSamples: joi
-    .number()
-    .min(minimumNumberOfOralFluidSamples)
-    .required()
+  numberOfOralFluidSamples: joi.number().min(minimumNumberOfOralFluidSamples).required()
 }
 const testResults = {
   testResults: joi
@@ -53,16 +47,10 @@ const reviewTestResults = {
     .required()
 }
 const herdVaccinationStatus = {
-  herdVaccinationStatus: joi
-    .string()
-    .valid('vaccinated', 'notVaccinated')
-    .required()
+  herdVaccinationStatus: joi.string().valid('vaccinated', 'notVaccinated').required()
 }
 const numberOfSamplesTested = {
-  numberOfSamplesTested: joi
-    .number()
-    .valid(POSITIVE_SAMPLE_REQ, NEGATIVE_SAMPLE_REQ)
-    .required()
+  numberOfSamplesTested: joi.number().valid(POSITIVE_SAMPLE_REQ, NEGATIVE_SAMPLE_REQ).required()
 }
 
 const pigsFollowUpTest = {
@@ -83,9 +71,7 @@ const pigsElisaTestResult = {
 const pigsGeneticSequencing = {
   pigsGeneticSequencing: joi.string().when('pigsPcrTestResult', {
     is: 'positive',
-    then: joi
-      .valid(...PIG_GENETIC_SEQUENCING_VALUES.map((x) => x.value))
-      .required()
+    then: joi.valid(...PIG_GENETIC_SEQUENCING_VALUES.map((x) => x.value)).required()
   })
 }
 

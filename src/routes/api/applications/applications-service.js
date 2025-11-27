@@ -12,29 +12,11 @@ import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 const isPreviousApplicationRelevant = (application) => {
   return (
     application &&
-    ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(
-      application.status
-    )
+    ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(application.status)
   )
 }
 
-export const createApplication = async ({ applicationRequest, logger, db }) => {
-  logger.setBindings({ sbi: applicationRequest.organisation.sbi })
-
-  const applications = await appRepo.getApplicationsBySbi(
-    db,
-    applicationRequest.organisation.sbi
-  )
-  const latestApplication = applications?.[0]
-  if (isPreviousApplicationRelevant(latestApplication)) {
-    throw new Error(
-      `Recent application already exists: ${JSON.stringify({
-        reference: latestApplication.reference,
-        createdAt: latestApplication.createdAt
-      })}`
-    )
-  }
-
+const buildApplication = (applicationRequest) => {
   const status =
     applicationRequest.offerStatus === 'rejected'
       ? applicationStatus.notAgreed
@@ -42,7 +24,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   const createdAt = new Date()
   const createdBy = 'admin'
 
-  const application = {
+  return {
     reference: createApplicationReference(applicationRequest.reference),
     data: {
       reference: applicationRequest.reference,
@@ -68,6 +50,24 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     eligiblePiiRedaction: true,
     claimed: false
   }
+}
+
+export const createApplication = async ({ applicationRequest, logger, db }) => {
+  logger.setBindings({ sbi: applicationRequest.organisation.sbi })
+
+  const applications = await appRepo.getApplicationsBySbi(db, applicationRequest.organisation.sbi)
+  const latestApplication = applications?.[0]
+  if (isPreviousApplicationRelevant(latestApplication)) {
+    throw new Error(
+      `Recent application already exists: ${JSON.stringify({
+        reference: latestApplication.reference,
+        createdAt: latestApplication.createdAt
+      })}`
+    )
+  }
+
+  const application = buildApplication(applicationRequest)
+
   const result = await appRepo.createApplication(db, application)
 
   if (application.data.offerStatus === 'accepted') {
@@ -127,12 +127,7 @@ export const getApplications = async ({ sbi, logger, db }) => {
   }))
 }
 
-export const getClaims = async ({
-  db,
-  logger,
-  applicationReference,
-  typeOfLivestock
-}) => {
+export const getClaims = async ({ db, logger, applicationReference, typeOfLivestock }) => {
   logger.setBindings({ applicationReference, typeOfLivestock })
 
   const result = await getByApplicationReference({
@@ -156,12 +151,7 @@ export const getClaims = async ({
   }))
 }
 
-export const getHerds = async ({
-  db,
-  logger,
-  applicationReference,
-  species
-}) => {
+export const getHerds = async ({ db, logger, applicationReference, species }) => {
   logger.setBindings({ applicationReference, species })
 
   const result = await getHerdsByAppRefAndSpecies({
@@ -184,8 +174,7 @@ export const getHerds = async ({
   }
 }
 
-const isOWApplication = (applicationReference) =>
-  applicationReference.startsWith('AHWR')
+const isOWApplication = (applicationReference) => applicationReference.startsWith('AHWR')
 
 const getOWApplication = async (db, applicationReference) => {
   const result = await owAppRepo.getOWApplication(db, applicationReference)

@@ -25,8 +25,7 @@ export const processRedactPiiRequest = async (message, logger) => {
   const redactRequestedDate = message.requestedDate
   logger.setBindings({ redactRequestedDate })
 
-  const { applicationsToRedact, status } =
-    await getApplicationsToRedact(redactRequestedDate)
+  const { applicationsToRedact, status } = await getApplicationsToRedact(redactRequestedDate)
 
   if (applicationsToRedact.length === 0) {
     logger.info('No new applications to redact for this date')
@@ -51,20 +50,12 @@ export const processRedactPiiRequest = async (message, logger) => {
   }
 
   if (!status.includes(APPLICATION_STORAGE_REDACTED)) {
-    await redactApplicationStorageAccountTablesPII(
-      applicationsToRedact,
-      [...status],
-      logger
-    )
+    await redactApplicationStorageAccountTablesPII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_STORAGE_REDACTED)
   }
 
   if (!status.includes(APPLICATION_DATABASE_REDACTED)) {
-    await redactApplicationDatabasePII(
-      applicationsToRedact,
-      [...status],
-      logger
-    )
+    await redactApplicationDatabasePII(applicationsToRedact, [...status], logger)
     status.push(APPLICATION_DATABASE_REDACTED)
   }
 
@@ -73,11 +64,6 @@ export const processRedactPiiRequest = async (message, logger) => {
     status.push(APPLICATION_REDACT_FLAG_ADDED)
   }
 
-  await updateApplicationRedactRecords(
-    applicationsToRedact,
-    false,
-    [...status],
-    'Y'
-  )
+  await updateApplicationRedactRecords(applicationsToRedact, false, [...status], 'Y')
   logger.info('Successfully processed redact PII request')
 }

@@ -1,7 +1,4 @@
-import {
-  livestockTypes,
-  minimumNumberOfAnimalsTested
-} from '../../../constants/index.js'
+import { livestockTypes, minimumNumberOfAnimalsTested } from '../../../constants/index.js'
 import joi from 'joi'
 import { claimType } from 'ffc-ahwr-common-library'
 

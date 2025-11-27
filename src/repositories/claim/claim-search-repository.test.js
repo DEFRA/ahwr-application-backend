@@ -14,14 +14,7 @@ describe('claim-search-repository', () => {
       const sort = { field: 'createdAt', direction: 'DESC' }
       const dbMock = {}
 
-      const result = await searchClaims(
-        search,
-        filter,
-        offset,
-        limit,
-        sort,
-        dbMock
-      )
+      const result = await searchClaims(search, filter, offset, limit, dbMock, sort)
 
       expect(result).toEqual({ claims: [], total: 0 })
     })
@@ -37,9 +30,7 @@ describe('claim-search-repository', () => {
             toArray: jest.fn().mockReturnValue([{ total: 50 }])
           })
           .mockReturnValueOnce({
-            toArray: jest
-              .fn()
-              .mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
           })
       }
 
@@ -49,14 +40,7 @@ describe('claim-search-repository', () => {
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(
-        search,
-        filter,
-        offset,
-        limit,
-        sort,
-        dbMock
-      )
+      const result = await searchClaims(search, filter, offset, limit, dbMock, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -75,9 +59,7 @@ describe('claim-search-repository', () => {
             toArray: jest.fn().mockReturnValue([{ total: 50 }])
           })
           .mockReturnValueOnce({
-            toArray: jest
-              .fn()
-              .mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
           })
       }
 
@@ -87,14 +69,7 @@ describe('claim-search-repository', () => {
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(
-        search,
-        filter,
-        offset,
-        limit,
-        sort,
-        dbMock
-      )
+      const result = await searchClaims(search, filter, offset, limit, dbMock, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -118,9 +93,7 @@ describe('claim-search-repository', () => {
             toArray: jest.fn().mockReturnValue([{ total: 50 }])
           })
           .mockReturnValueOnce({
-            toArray: jest
-              .fn()
-              .mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
           })
       }
 
@@ -130,14 +103,7 @@ describe('claim-search-repository', () => {
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(
-        search,
-        filter,
-        offset,
-        limit,
-        sort,
-        dbMock
-      )
+      const result = await searchClaims(search, filter, offset, limit, dbMock, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],

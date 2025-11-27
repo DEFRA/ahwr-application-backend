@@ -5,8 +5,7 @@ import { livestockTypes } from '../../../constants/index.js'
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
   enterSbiNumberThatHas9Digits: 'The SBI number must have 9 digits',
-  sbiNumberOutOfRange:
-    'The single business identifier (SBI) number is not recognised'
+  sbiNumberOutOfRange: 'The single business identifier (SBI) number is not recognised'
 }
 
 const organisationValidations = () => ({
@@ -19,11 +18,7 @@ const organisationValidations = () => ({
   frn: Joi.string().optional(),
   address: Joi.string().required(),
   email: Joi.string().required().lowercase().email({ tlds: false }),
-  orgEmail: Joi.string()
-    .allow(null)
-    .optional()
-    .lowercase()
-    .email({ tlds: false })
+  orgEmail: Joi.string().allow(null).optional().lowercase().email({ tlds: false })
 })
 
 export const newApplicationSchema = Joi.object({

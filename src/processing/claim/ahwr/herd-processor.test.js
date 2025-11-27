@@ -28,9 +28,7 @@ describe('processHerd', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    arraysAreEqual.mockImplementation(
-      (a, b) => JSON.stringify(a) === JSON.stringify(b)
-    )
+    arraysAreEqual.mockImplementation((a, b) => JSON.stringify(a) === JSON.stringify(b))
     crypto.randomUUID.mockReturnValue('01d6b3f1-3fa2-465e-8dc7-cc28393ba902')
   })
 
@@ -117,12 +115,7 @@ describe('processHerd', () => {
           name: existingHerd.name,
           species: existingHerd.species
         })
-        expect(updateIsCurrentHerd).toHaveBeenCalledWith(
-          db,
-          herd.id,
-          false,
-          existingHerd.version
-        )
+        expect(updateIsCurrentHerd).toHaveBeenCalledWith(db, herd.id, false, existingHerd.version)
         expect(result.updated).toBe(true)
       })
 

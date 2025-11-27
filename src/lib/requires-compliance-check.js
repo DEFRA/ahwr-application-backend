@@ -6,9 +6,7 @@ export const generateClaimStatus = async (visitDateAsString, logger) => {
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
     // feature assurance left here as option but specific implementation has been removed
     // if we want to bring it back, then call logic here
-    logger.warn(
-      'Feature assurance enabled, but no specific implementation provided'
-    )
+    logger.warn('Feature assurance enabled, but no specific implementation provided')
     return getClaimStatusBasedOnRatio()
   }
 
@@ -33,11 +31,7 @@ const getClaimStatusBasedOnRatio = async () => {
   return applicationStatus.onHold
 }
 
-const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (
-  visitDateAsString
-) => {
+const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (visitDateAsString) => {
   const { enabled, startDate } = config.get('featureAssurance')
-  return (
-    enabled && startDate && new Date(visitDateAsString) >= new Date(startDate)
-  )
+  return enabled && startDate && new Date(visitDateAsString) >= new Date(startDate)
 }

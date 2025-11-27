@@ -1,7 +1,4 @@
-import {
-  getClaimByReference,
-  updateClaimStatus
-} from '../../repositories/claim-repository'
+import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository'
 import { publishStatusChangeEvent } from '../publish-outbound-notification'
 import { setPaymentStatusToPaid } from './set-payment-status-to-paid'
 import { raiseClaimEvents } from '../../event-publisher'

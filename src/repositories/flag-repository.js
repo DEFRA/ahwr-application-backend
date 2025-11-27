@@ -1,8 +1,5 @@
 // import { REDACT_PII_VALUES } from 'ffc-ahwr-common-library'
-import {
-  APPLICATION_COLLECTION,
-  OW_APPLICATION_COLLECTION
-} from '../constants/index.js'
+import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 
 export const getAllFlags = async (db) => {
   return db

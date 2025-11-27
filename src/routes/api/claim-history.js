@@ -31,12 +31,8 @@ export const claimHistoryHandlers = [
         const { flags } = application
         const { statusHistory, updateHistory } = claim
 
-        const normalisedStatusHistory = statusHistory.map(
-          normaliseStatusHistory
-        )
-        const normalisedUpdateHistory = updateHistory.map(
-          normaliseUpdateHistory
-        )
+        const normalisedStatusHistory = statusHistory.map(normaliseStatusHistory)
+        const normalisedUpdateHistory = updateHistory.map(normaliseUpdateHistory)
         const normalisedFlagHistory = buildFlagEvents(flags)
 
         const historyRecords = [

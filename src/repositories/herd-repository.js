@@ -16,16 +16,10 @@ export const getHerdById = async (db, id) => {
 }
 
 export const updateIsCurrentHerd = async (db, id, isCurrent, version) => {
-  return db
-    .collection(HERDS_COLLECTION)
-    .updateOne({ id, version }, { $set: { isCurrent } })
+  return db.collection(HERDS_COLLECTION).updateOne({ id, version }, { $set: { isCurrent } })
 }
 
-export const getHerdsByAppRefAndSpecies = async ({
-  db,
-  applicationReference,
-  species
-}) => {
+export const getHerdsByAppRefAndSpecies = async ({ db, applicationReference, species }) => {
   return db
     .collection(HERDS_COLLECTION)
     .find({

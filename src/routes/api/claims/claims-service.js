@@ -19,12 +19,7 @@ import Boom from '@hapi/boom'
 const isFollowUp = (payload) => payload.type === claimType.endemics
 
 export const processClaim = async ({ payload, logger, db }) => {
-  const {
-    applicationReference,
-    type,
-    reference: tempClaimReference,
-    data
-  } = payload
+  const { applicationReference, type, reference: tempClaimReference, data } = payload
   const { typeOfLivestock, laboratoryURN, herd } = data || {}
 
   const application = await getApplication({
@@ -40,11 +35,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     organisation: { sbi }
   } = application
 
-  const { value: validatedPayload, error } = validateClaim(
-    AHWR_SCHEME,
-    payload,
-    flags
-  )
+  const { value: validatedPayload, error } = validateClaim(AHWR_SCHEME, payload, flags)
   if (error) {
     logger.setBindings({ error })
     // TODO
@@ -52,11 +43,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     throw Boom.badRequest(error.message)
   }
 
-  const claimReference = createClaimReference(
-    tempClaimReference,
-    type,
-    typeOfLivestock
-  )
+  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
 
   logger.setBindings({
     isFollowUp: isFollowUp(validatedPayload),
@@ -73,15 +60,14 @@ export const processClaim = async ({ payload, logger, db }) => {
     }
   }
 
-  const { claim, herdGotUpdated, herdData, isMultiHerdsClaim } =
-    await saveClaimAndRelatedData({
-      db,
-      sbi,
-      claimPayload: validatedPayload,
-      claimReference,
-      flags,
-      logger
-    })
+  const { claim, herdGotUpdated, herdData, isMultiHerdsClaim } = await saveClaimAndRelatedData({
+    db,
+    sbi,
+    claimPayload: validatedPayload,
+    claimReference,
+    flags,
+    logger
+  })
   if (!claim) {
     throw new Error('Claim was not created')
   }

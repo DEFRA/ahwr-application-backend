@@ -16,12 +16,7 @@ export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
     })
   } catch (err) {
     logger.setBindings({ err, endpoint })
-    await updateApplicationRedactRecords(
-      agreementsToRedact,
-      true,
-      redactProgress,
-      'N'
-    )
+    await updateApplicationRedactRecords(agreementsToRedact, true, redactProgress, 'N')
     throw err
   }
 }

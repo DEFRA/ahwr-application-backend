@@ -1,10 +1,7 @@
 import { saveClaimAndRelatedData, generateEventsAndComms } from './processor.js'
 import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
-import {
-  getByApplicationReference,
-  createClaim
-} from '../../../repositories/claim-repository.js'
+import { getByApplicationReference, createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { processHerd } from './herd-processor.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
@@ -15,7 +12,6 @@ jest.mock('../../../lib/context-helper.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../lib/requires-compliance-check.js')
 jest.mock('../../../lib/emit-herd-MI-events.js')
-jest.mock('../../../messaging/send-message.js')
 jest.mock('./herd-processor.js')
 jest.mock('uuid')
 jest.mock('../../../event-publisher/index.js')
@@ -90,10 +86,7 @@ describe('saveClaimAndRelatedData', () => {
     })
 
     expect(getAmount).toHaveBeenCalledWith(claimPayload)
-    expect(isMultipleHerdsUserJourney).toHaveBeenCalledWith(
-      claimPayload.data.dateOfVisit,
-      []
-    )
+    expect(isMultipleHerdsUserJourney).toHaveBeenCalledWith(claimPayload.data.dateOfVisit, [])
     expect(processHerd).toHaveBeenCalled()
     createClaim.mockResolvedValue({
       insertedId: '6916f837292fe87d2bac0d5c'

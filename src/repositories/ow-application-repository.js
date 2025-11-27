@@ -26,20 +26,18 @@ export const createOWFlag = async (db, applicationReference, data) => {
 }
 
 export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
-  const result = await db
-    .collection(OW_APPLICATION_COLLECTION)
-    .findOneAndUpdate(
-      { 'flags.id': flagId },
-      {
-        $set: {
-          'flags.$.deletedAt': new Date(),
-          'flags.$.deletedBy': user,
-          'flags.$.deletedNote': deletedNote,
-          'flags.$.deleted': true
-        }
-      },
-      { returnDocument: 'after' }
-    )
+  const result = await db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
+    { 'flags.id': flagId },
+    {
+      $set: {
+        'flags.$.deletedAt': new Date(),
+        'flags.$.deletedBy': user,
+        'flags.$.deletedNote': deletedNote,
+        'flags.$.deleted': true
+      }
+    },
+    { returnDocument: 'after' }
+  )
   return result
 }
 
@@ -78,13 +76,7 @@ export const updateOWApplication = async ({
   )
 }
 
-export const updateOWApplicationStatus = async ({
-  db,
-  reference,
-  status,
-  user,
-  updatedAt
-}) => {
+export const updateOWApplicationStatus = async ({ db, reference, status, user, updatedAt }) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
     { reference },
     {

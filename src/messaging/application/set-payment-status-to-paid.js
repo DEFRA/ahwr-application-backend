@@ -1,14 +1,6 @@
 import { validateClaimStatusToPaidEvent } from '../schema/set-payment-status-to-paid-schema.js'
-import {
-  getClaimByReference,
-  updateClaimStatus
-} from '../../repositories/claim-repository.js'
-import {
-  TYPE_OF_LIVESTOCK,
-  UNNAMED_FLOCK,
-  UNNAMED_HERD,
-  STATUS
-} from 'ffc-ahwr-common-library'
+import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository.js'
+import { TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD, STATUS } from 'ffc-ahwr-common-library'
 import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
 import { raiseClaimEvents } from '../../event-publisher/index.js'
 
@@ -20,10 +12,7 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
 
       const claim = await getClaimByReference(db, claimRef)
       if (!claim || claim.status === STATUS.PAID) {
-        logger.warn(
-          { status: claim?.status, claimRef },
-          'Claim does not exist or status is paid'
-        )
+        logger.warn({ status: claim?.status, claimRef }, 'Claim does not exist or status is paid')
         return
       }
 
@@ -61,10 +50,7 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
         typeOfLivestock,
         dateTime: updatedClaim.updatedAt,
         herdName:
-          herd?.name ||
-          (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP
-            ? UNNAMED_FLOCK
-            : UNNAMED_HERD)
+          herd?.name || (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD)
       }
       await publishStatusChangeEvent(logger, statusChangeMessage)
     } else {

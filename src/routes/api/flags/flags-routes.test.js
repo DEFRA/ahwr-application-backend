@@ -13,9 +13,9 @@ describe('flagRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          postRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
+        expect(() => postRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
+        )
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
             error: { message: 'Validation failed', stack: expect.any(String) }
@@ -37,9 +37,9 @@ describe('flagRoutes', () => {
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(() =>
-          patchRoute.options.validate.failAction(mockRequest, null, mockError)
-        ).toThrow(Boom.badRequest(mockError.message))
+        expect(() => patchRoute.options.validate.failAction(mockRequest, null, mockError)).toThrow(
+          Boom.badRequest(mockError.message)
+        )
         expect(mockLogger.error).toHaveBeenCalledWith(
           {
             error: { message: 'Invalid query', stack: expect.any(String) }
