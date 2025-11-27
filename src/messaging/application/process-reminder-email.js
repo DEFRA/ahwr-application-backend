@@ -165,7 +165,6 @@ const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
     const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
     const { reminderType, createdAt } = reminder
 
-    // NOSONAR
     if (reminderType === threeMonths && isAtLeastMonthsOld(createdAt, FIVE_MONTHS)) {
       reminder.reminderType = sixMonths
     } else if (reminderType === sixMonths && isAtLeastMonthsOld(createdAt, EIGHT_MONTHS)) {
