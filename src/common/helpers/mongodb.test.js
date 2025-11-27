@@ -39,33 +39,16 @@ describe('mongodb', () => {
   it('should connect to mongo db and decorate server', async () => {
     await mongoDb.plugin.register(server, options)
 
-    expect(MongoClient.connect).toHaveBeenCalledWith(
-      options.mongoUrl,
-      options.mongoOptions
-    )
+    expect(MongoClient.connect).toHaveBeenCalledWith(options.mongoUrl, options.mongoOptions)
     expect(server.logger.info).toHaveBeenCalledWith('Setting up MongoDb')
-    expect(server.decorate).toHaveBeenCalledWith(
-      'server',
-      'mongoClient',
-      expect.any(Object)
-    )
-    expect(server.decorate).toHaveBeenCalledWith(
-      'server',
-      'db',
-      expect.any(Object)
-    )
-    expect(server.decorate).toHaveBeenCalledWith(
-      'server',
-      'locker',
-      expect.any(Object)
-    )
+    expect(server.decorate).toHaveBeenCalledWith('server', 'mongoClient', expect.any(Object))
+    expect(server.decorate).toHaveBeenCalledWith('server', 'db', expect.any(Object))
+    expect(server.decorate).toHaveBeenCalledWith('server', 'locker', expect.any(Object))
   })
 
   it('should register stop event to close mongo db client', async () => {
     await mongoDb.plugin.register(server, options)
-    const stopCallback = server.events.on.mock.calls.find(
-      (call) => call[0] === 'stop'
-    )[1]
+    const stopCallback = server.events.on.mock.calls.find((call) => call[0] === 'stop')[1]
 
     await stopCallback()
 

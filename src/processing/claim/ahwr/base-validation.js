@@ -21,10 +21,7 @@ const getDataModel = (multiHerds, specificValidationsForClaimType) =>
       )
       .required(),
     dateOfVisit: joi.date().required(),
-    speciesNumbers: joi
-      .string()
-      .valid(speciesNumbers.yes, speciesNumbers.no)
-      .required(),
+    speciesNumbers: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
     vetRCVSNumber: joi.string().required(),
     ...specificValidationsForClaimType,
@@ -41,22 +38,16 @@ const getClaimModel = (multiHerds, specificValidationsForClaimType) =>
   })
 
 export const validateAhwrClaim = (claimData, applicationFlags) => {
-  const multiHerds = isMultipleHerdsUserJourney(
-    claimData.data.dateOfVisit,
-    applicationFlags
-  )
+  const multiHerds = isMultipleHerdsUserJourney(claimData.data.dateOfVisit, applicationFlags)
 
   const specificValidationsForClaimType = speciesSpecificValidations.get(
     claimData.data.typeOfLivestock
   )(claimData)
 
-  return getClaimModel(multiHerds, specificValidationsForClaimType).validate(
-    claimData,
-    {
-      abortEarly: false,
-      convert: true
-    }
-  )
+  return getClaimModel(multiHerds, specificValidationsForClaimType).validate(claimData, {
+    abortEarly: false,
+    convert: true
+  })
 }
 
 const speciesSpecificValidations = new Map([

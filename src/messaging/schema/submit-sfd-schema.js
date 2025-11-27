@@ -1,5 +1,5 @@
 import joi from 'joi'
-import util from 'util'
+import util from 'node:util'
 
 const MAX_EMAIL_LENGTH = 320
 const MAX_CLAIM_REF_LENGTH = 14

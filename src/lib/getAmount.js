@@ -24,33 +24,19 @@ const getPiHuntValue = (
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
   }
 
-  return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults][
-    optionalPiHuntValue
-  ]
+  return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults][optionalPiHuntValue]
 }
 
-const getNonPiHuntValue = (
-  reviewTestResults,
-  pricesConfig,
-  claimType,
-  typeOfLivestock
-) => {
+const getNonPiHuntValue = (reviewTestResults, pricesConfig, claimType, typeOfLivestock) => {
   if (reviewTestResults === testResults.positive) {
     return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
   }
 
-  return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults]
-    .noPiHunt
+  return pricesConfig[claimType][typeOfLivestock].value[reviewTestResults].noPiHunt
 }
 
 const getBeefDairyAmount = (data, pricesConfig, claimType) => {
-  const {
-    typeOfLivestock,
-    reviewTestResults,
-    piHunt,
-    piHuntAllAnimals,
-    dateOfVisit
-  } = data
+  const { typeOfLivestock, reviewTestResults, piHunt, piHuntAllAnimals, dateOfVisit } = data
 
   if (isVisitDateAfterPIHuntAndDairyGoLive(dateOfVisit)) {
     return getPiHuntValue(
@@ -63,12 +49,7 @@ const getBeefDairyAmount = (data, pricesConfig, claimType) => {
     )
   }
 
-  return getNonPiHuntValue(
-    reviewTestResults,
-    pricesConfig,
-    claimType,
-    typeOfLivestock
-  )
+  return getNonPiHuntValue(reviewTestResults, pricesConfig, claimType, typeOfLivestock)
 }
 
 export const getAmount = async (payload) => {

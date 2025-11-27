@@ -1,10 +1,6 @@
 // TODO - is this to delete?
 
-export const queryEntitiesByPartitionKey = async (
-  tableName,
-  partitionKey,
-  queryFilter
-) => {
+export const queryEntitiesByPartitionKey = async (tableName, partitionKey, queryFilter) => {
   // TODO 1182 impl
   return []
 

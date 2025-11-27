@@ -6,9 +6,7 @@ import {
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   const dateOfVisitParsed = new Date(dateOfVisit)
   if (Number.isNaN(dateOfVisitParsed.getTime())) {
-    throw new Error(
-      `dateOfVisit must be parsable as a date, value provided: ${dateOfVisit}`
-    )
+    throw new Error(`dateOfVisit must be parsable as a date, value provided: ${dateOfVisit}`)
   }
 
   return dateOfVisitParsed >= PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE
@@ -22,5 +20,4 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
   return !agreementFlags?.some((f) => f.appliesToMh)
 }
 
-export const isOWAppRef = (applicationReference) =>
-  applicationReference.startsWith('AHWR')
+export const isOWAppRef = (applicationReference) => applicationReference.startsWith('AHWR')

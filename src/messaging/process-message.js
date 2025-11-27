@@ -3,12 +3,7 @@ import { setPaymentStatusToPaid } from './application/set-payment-status-to-paid
 
 const { moveClaimToPaidMsgType } = config.get('messageTypes')
 
-export const processApplicationMessage = async (
-  message,
-  db,
-  logger,
-  attributes
-) => {
+export const processApplicationMessage = async (message, db, logger, attributes) => {
   try {
     const { eventType } = attributes
 

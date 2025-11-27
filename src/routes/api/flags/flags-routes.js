@@ -1,8 +1,4 @@
-import {
-  deleteFlagHandler,
-  getAllFlagsHandler,
-  createFlagHandler
-} from './flags-controller.js'
+import { deleteFlagHandler, getAllFlagsHandler, createFlagHandler } from './flags-controller.js'
 import {
   deleteFlagQuerySchema,
   deleteFlagPayloadSchema,
@@ -21,7 +17,7 @@ export const flagRoutes = [
       validate: {
         query: deleteFlagQuerySchema,
         payload: deleteFlagPayloadSchema,
-        failAction: (request, h, err) => {
+        failAction: (request, _h, err) => {
           request.logger.error(
             { error: { message: err.message, stack: err.stack } },
             'Delete flag validation error'
@@ -47,7 +43,7 @@ export const flagRoutes = [
       validate: {
         params: createFlagQuerySchema,
         payload: createFlagPayloadSchema,
-        failAction: (request, h, err) => {
+        failAction: (request, _h, err) => {
           request.logger.error(
             { error: { message: err.message, stack: err.stack } },
             'Create flag validation error'

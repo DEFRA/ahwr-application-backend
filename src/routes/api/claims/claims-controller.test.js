@@ -1,10 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import {
-  createClaimHandler,
-  isURNUniqueHandler,
-  getClaimHandler
-} from './claims-controller.js'
+import { createClaimHandler, isURNUniqueHandler, getClaimHandler } from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 
 jest.mock('./claims-service.js')
@@ -94,9 +90,7 @@ describe('createClaimHandler', () => {
     const boomError = Boom.badRequest('Invalid input')
     processClaim.mockRejectedValue(boomError)
 
-    await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(
-      boomError
-    )
+    await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: boomError },
       'Failed to create claim'
@@ -157,9 +151,7 @@ describe('isURNUniqueHandler', () => {
     const boomError = Boom.badRequest('Invalid input')
     isURNNumberUnique.mockRejectedValue(boomError)
 
-    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(
-      boomError
-    )
+    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: boomError },
       'Failed to check if URN is unique'
@@ -253,19 +245,14 @@ describe('getClaimHandler', () => {
 
     await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
 
-    expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
-      'Failed to get claim'
-    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith({ err: boomError }, 'Failed to get claim')
   })
 
   it('should wrap non-Boom errors in Boom.internal', async () => {
     const genericError = new Error('Database failure')
     getClaim.mockRejectedValue(genericError)
 
-    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(
-      Boom.internal(genericError)
-    )
+    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(Boom.internal(genericError))
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: genericError },
       'Failed to get claim'

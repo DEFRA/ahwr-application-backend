@@ -13,17 +13,8 @@ const MONGO_OP_BY_FILTER_OP = {
   regex: '$regex'
 }
 
-const SEARCH_TYPES = [
-  'ref',
-  'appRef',
-  'type',
-  'species',
-  'status',
-  'sbi',
-  'date',
-  'reset'
-]
-const APPLICATION_SEARCH_TYPES = ['sbi']
+const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'])
+const APPLICATION_SEARCH_TYPES = new Set(['sbi'])
 
 const evalSortField = (sort) => {
   const direction = sort?.direction?.toUpperCase() === 'DESC' ? -1 : 1
@@ -94,15 +85,10 @@ const applyApplicationSearchConditions = (matchStage, search) => {
   }
 }
 
-export const searchClaims = async (
-  search,
-  filter,
-  offset,
-  limit,
-  sort = { field: 'createdAt', direction: 'DESC' },
-  db
-) => {
-  if (search?.type && !SEARCH_TYPES.includes(search.type)) {
+const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
+
+export const searchClaims = async (search, filter, offset, limit, db, sort = getDefaultSort()) => {
+  if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
   }
 
@@ -110,7 +96,7 @@ export const searchClaims = async (
   const appMatchStage = {}
 
   if (search) {
-    if (APPLICATION_SEARCH_TYPES.includes(search.type)) {
+    if (APPLICATION_SEARCH_TYPES.has(search.type)) {
       applyApplicationSearchConditions(appMatchStage, search)
     } else {
       applyClaimSearchConditions(claimMatchStage, search)
@@ -157,22 +143,12 @@ export const searchClaims = async (
   }
 
   const countPipeline = [...pipeline, { $count: 'total' }]
-  const totalResult = await db
-    .collection(CLAIMS_COLLECTION)
-    .aggregate(countPipeline)
-    .toArray()
+  const totalResult = await db.collection(CLAIMS_COLLECTION).aggregate(countPipeline).toArray()
   const total = totalResult[0]?.total || 0
 
-  pipeline.push(
-    { $sort: evalSortField(sort) },
-    { $skip: offset },
-    { $limit: limit }
-  )
+  pipeline.push({ $sort: evalSortField(sort) }, { $skip: offset }, { $limit: limit })
 
-  const claims = await db
-    .collection(CLAIMS_COLLECTION)
-    .aggregate(pipeline)
-    .toArray()
+  const claims = await db.collection(CLAIMS_COLLECTION).aggregate(pipeline).toArray()
 
   return { total, claims }
 }

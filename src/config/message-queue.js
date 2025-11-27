@@ -1,50 +1,50 @@
 import Joi from 'joi'
 
-export const getMessageQueueConfig = () => {
-  const sharedConfigSchema = {
-    host: Joi.string().default('localhost'),
-    password: Joi.string(),
-    username: Joi.string(),
-    useCredentialChain: Joi.bool().default(false),
-    managedIdentityClientId: Joi.string().optional(),
-    retries: 50,
-    retryWaitInMs: 100,
-    connectionString: Joi.string().optional()
+const sharedConfigSchema = {
+  host: Joi.string().default('localhost'),
+  password: Joi.string(),
+  username: Joi.string(),
+  useCredentialChain: Joi.bool().default(false),
+  managedIdentityClientId: Joi.string().optional(),
+  retries: 50,
+  retryWaitInMs: 100,
+  connectionString: Joi.string().optional()
+}
+
+const schema = Joi.object({
+  applicationRequestQueue: {
+    address: Joi.string().default('applicationRequestQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  applicationResponseQueue: {
+    address: Joi.string().default('applicationResponseQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  submitRequestQueue: {
+    address: Joi.string().default('submitRequestQueue'),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  eventQueue: {
+    address: Joi.string(),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  sfdMessageQueue: {
+    address: Joi.string(),
+    type: Joi.string(),
+    ...sharedConfigSchema
+  },
+  messageGeneratorQueue: {
+    address: Joi.string(),
+    type: Joi.string(),
+    ...sharedConfigSchema
   }
+})
 
-  const schema = Joi.object({
-    applicationRequestQueue: {
-      address: Joi.string().default('applicationRequestQueue'),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    },
-    applicationResponseQueue: {
-      address: Joi.string().default('applicationResponseQueue'),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    },
-    submitRequestQueue: {
-      address: Joi.string().default('submitRequestQueue'),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    },
-    eventQueue: {
-      address: Joi.string(),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    },
-    sfdMessageQueue: {
-      address: Joi.string(),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    },
-    messageGeneratorQueue: {
-      address: Joi.string(),
-      type: Joi.string(),
-      ...sharedConfigSchema
-    }
-  })
-
+export const getMessageQueueConfig = () => {
   const sharedConfig = {
     host: process.env.MESSAGE_QUEUE_HOST,
     password: process.env.MESSAGE_QUEUE_PASSWORD,

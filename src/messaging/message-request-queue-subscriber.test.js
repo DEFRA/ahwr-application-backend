@@ -1,7 +1,4 @@
-import {
-  configureAndStart,
-  stopSubscriber
-} from './message-request-queue-subscriber.js'
+import { configureAndStart, stopSubscriber } from './message-request-queue-subscriber.js'
 import { SqsSubscriber } from 'ffc-ahwr-common-library'
 import { getLogger } from '../logging/logger.js'
 import { config } from '../config/config.js'

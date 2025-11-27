@@ -126,9 +126,7 @@ describe('getOWApplication', () => {
     const error = new Error('Database error')
     mockCollection.findOne.mockRejectedValue(error)
 
-    await expect(getOWApplication(mockDb, 'AHWR-B571-6E79')).rejects.toThrow(
-      'Database error'
-    )
+    await expect(getOWApplication(mockDb, 'AHWR-B571-6E79')).rejects.toThrow('Database error')
   })
 })
 

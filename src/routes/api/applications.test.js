@@ -353,19 +353,16 @@ describe('Applications test', () => {
       { status: 'abc', user: null },
       { status: 'abc', user: 0 },
       { status: 5000, user: 'test' }
-    ])(
-      'returns 400 with error message for invalid input',
-      async ({ status, user }) => {
-        const options = {
-          method: 'PUT',
-          url: '/api/applications/ABC-1234',
-          payload: { status, user }
-        }
-        const res = await server.inject(options)
-
-        expect(res.statusCode).toBe(400)
+    ])('returns 400 with error message for invalid input', async ({ status, user }) => {
+      const options = {
+        method: 'PUT',
+        url: '/api/applications/ABC-1234',
+        payload: { status, user }
       }
-    )
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+    })
   })
 
   // describe('POST /api/applications/claim route', () => {
@@ -554,9 +551,7 @@ describe('Applications test', () => {
 
     test('when application not found, return 404', async () => {
       findOWApplication.mockResolvedValueOnce(null)
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetName: 'updated person' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
 
       expect(res.statusCode).toBe(404)
       expect(updateOWApplication).toHaveBeenCalledTimes(0)
@@ -577,9 +572,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetName: 'updated person' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -609,9 +602,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetName: 'updated person' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'updated person' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -642,9 +633,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ visitDate: '2025-06-21' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ visitDate: '2025-06-21' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -674,9 +663,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ visitDate: '2025-06-21' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ visitDate: '2025-06-21' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -707,9 +694,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetRcvs: '7654321' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetRcvs: '7654321' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -753,9 +738,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetRcvs: '7654321' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetRcvs: '7654321' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(1)
@@ -784,9 +767,7 @@ describe('Applications test', () => {
           sbi: '123456789'
         }
       })
-      const res = await server.inject(
-        getOptionsForUpdatedValue({ vetName: 'old person' })
-      )
+      const res = await server.inject(getOptionsForUpdatedValue({ vetName: 'old person' }))
 
       expect(res.statusCode).toBe(204)
       expect(updateOWApplication).toHaveBeenCalledTimes(0)

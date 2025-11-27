@@ -6,9 +6,7 @@ export async function startServer() {
   await server.start()
 
   server.logger.info('Server started successfully')
-  server.logger.info(
-    `Access your backend on http://localhost:${config.get('port')}`
-  )
+  server.logger.info(`Access your backend on http://localhost:${config.get('port')}`)
 
   return server
 }

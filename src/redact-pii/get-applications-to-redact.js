@@ -37,10 +37,8 @@ export const getApplicationsToRedact = async (requestedDate) => {
 }
 
 const createApplicationsToRedact = async (requestedDate) => {
-  const agreementsWithNoPayment =
-    await getApplicationsToRedactWithNoPaymentOlderThanThreeYears()
-  const agreementsWithPayment =
-    await getApplicationsToRedactWithPaymentOlderThanSevenYears()
+  const agreementsWithNoPayment = await getApplicationsToRedactWithNoPaymentOlderThanThreeYears()
+  const agreementsWithPayment = await getApplicationsToRedactWithPaymentOlderThanSevenYears()
 
   const uniqueAgreements = new Map()
 
@@ -55,9 +53,7 @@ const createApplicationsToRedact = async (requestedDate) => {
   const agreementsToRedact = Array.from(uniqueAgreements.values())
 
   // TODO 1182 impl
-  return agreementsToRedact.map((agreement) =>
-    createApplicationRedact(agreement)
-  )
+  return agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
   // return sequelize.transaction(async () =>
   //   Promise.all(
   //     agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
@@ -66,23 +62,16 @@ const createApplicationsToRedact = async (requestedDate) => {
 }
 
 const getStatus = (agreementsToRedact) => {
-  return agreementsToRedact.length === 0
-    ? []
-    : (agreementsToRedact[0].status?.split(',') ?? [])
+  return agreementsToRedact.length === 0 ? [] : (agreementsToRedact[0].status?.split(',') ?? [])
 }
 
 const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
-  const applicationsOlderThanThreeYears =
-    await getApplicationsToRedactOlderThan(THREE_YEARS)
+  const applicationsOlderThanThreeYears = await getApplicationsToRedactOlderThan(THREE_YEARS)
 
   const agreementsToRedactWithNoPayment = (
     await Promise.all(
       applicationsOlderThanThreeYears.map(async (application) => {
-        if (
-          application.reference.startsWith(
-            APPLICATION_REFERENCE_PREFIX_OLD_WORLD
-          )
-        ) {
+        if (application.reference.startsWith(APPLICATION_REFERENCE_PREFIX_OLD_WORLD)) {
           return owApplicationRedactDataIfNoPaymentClaimElseNull(application)
         } else {
           return nwApplicationRedactDataIfNoPaymentClaimsElseNull(application)
@@ -103,25 +92,17 @@ const buildApplicationRedact = (reference, sbi, claimReferences) => ({
   }
 })
 
-const owApplicationRedactDataIfNoPaymentClaimElseNull = (
-  oldWorldApplication
-) => {
+const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid
   return CLAIM_STATUS_PAID.includes(oldWorldApplication.statusId)
     ? null
-    : buildApplicationRedact(
-        oldWorldApplication.reference,
-        oldWorldApplication.dataValues.sbi,
-        [oldWorldApplication.reference]
-      )
+    : buildApplicationRedact(oldWorldApplication.reference, oldWorldApplication.dataValues.sbi, [
+        oldWorldApplication.reference
+      ])
 }
 
-const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (
-  newWorldApplication
-) => {
-  const appClaims = await getByApplicationReference(
-    newWorldApplication.reference
-  )
+const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplication) => {
+  const appClaims = await getByApplicationReference(newWorldApplication.reference)
 
   // skip if application has paid
   if (appClaims.some((c) => CLAIM_STATUS_PAID.includes(c.statusId))) {
@@ -136,28 +117,18 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (
 }
 
 const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
-  const nwAppReferences =
-    await getAppRefsWithLatestClaimLastUpdatedBefore(SEVEN_YEARS)
+  const nwAppReferences = await getAppRefsWithLatestClaimLastUpdatedBefore(SEVEN_YEARS)
   const nwAppRedacts = await Promise.all(
-    nwAppReferences.map(
-      async ({ applicationReference, dataValues: { sbi } }) => {
-        const appClaims = await getByApplicationReference(applicationReference)
-        const claimReferences = appClaims.map((c) => c.reference)
-        return buildApplicationRedact(
-          applicationReference,
-          sbi,
-          claimReferences
-        )
-      }
-    )
+    nwAppReferences.map(async ({ applicationReference, dataValues: { sbi } }) => {
+      const appClaims = await getByApplicationReference(applicationReference)
+      const claimReferences = appClaims.map((c) => c.reference)
+      return buildApplicationRedact(applicationReference, sbi, claimReferences)
+    })
   )
 
-  const owApplications =
-    await getOWApplicationsToRedactLastUpdatedBefore(SEVEN_YEARS)
-  const owAppRedacts = await Promise.all(
-    owApplications.map(({ reference, dataValues: { sbi } }) =>
-      buildApplicationRedact(reference, sbi, [reference])
-    )
+  const owApplications = await getOWApplicationsToRedactLastUpdatedBefore(SEVEN_YEARS)
+  const owAppRedacts = owApplications.map(({ reference, dataValues: { sbi } }) =>
+    buildApplicationRedact(reference, sbi, [reference])
   )
 
   const agreementsToRedact = [...nwAppRedacts, ...owAppRedacts]

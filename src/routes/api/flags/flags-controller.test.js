@@ -1,8 +1,4 @@
-import {
-  createFlagHandler,
-  getAllFlagsHandler,
-  deleteFlagHandler
-} from './flags-controller.js'
+import { createFlagHandler, getAllFlagsHandler, deleteFlagHandler } from './flags-controller.js'
 import { StatusCodes } from 'http-status-codes'
 import { getAllFlags } from '../../../repositories/flag-repository.js'
 import {

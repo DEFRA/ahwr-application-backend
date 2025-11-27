@@ -30,11 +30,7 @@ describe('Process Message test', () => {
     await processApplicationMessage(message, mockDb, mockLogger, attributes)
 
     expect(setPaymentStatusToPaid).toHaveBeenCalledTimes(1)
-    expect(setPaymentStatusToPaid).toHaveBeenCalledWith(
-      message,
-      mockDb,
-      mockLogger
-    )
+    expect(setPaymentStatusToPaid).toHaveBeenCalledWith(message, mockDb, mockLogger)
   })
 
   test('unknown message calls nothing', async () => {

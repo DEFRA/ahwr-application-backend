@@ -1,9 +1,6 @@
 import Joi from 'joi'
 import { updateApplication } from '../../repositories/application-repository.js'
-import {
-  getAllByApplicationReference,
-  set
-} from '../../repositories/contact-history-repository.js'
+import { getAllByApplicationReference, set } from '../../repositories/contact-history-repository.js'
 import { sbiSchema } from './schema/sbi.schema.js'
 import { StatusCodes } from 'http-status-codes'
 
@@ -50,10 +47,7 @@ export const contactHistoryHandlers = [
         // const applications = await getLatestApplicationsBySbi(sbi)
         const applications = []
         if (!applications.length) {
-          return h
-            .response('No applications found to update')
-            .code(StatusCodes.OK)
-            .takeover()
+          return h.response('No applications found to update').code(StatusCodes.OK).takeover()
         }
         await Promise.all(
           applications.map(async (application) => {
@@ -86,9 +80,7 @@ export const contactHistoryHandlers = [
               dataCopy.organisation.address = request.payload.address
             }
 
-            if (
-              request.payload.farmerName !== dataCopy.organisation.farmerName
-            ) {
+            if (request.payload.farmerName !== dataCopy.organisation.farmerName) {
               contactHistory.push({
                 field: 'farmerName',
                 oldValue: dataCopy.organisation.farmerName,

@@ -1,5 +1,5 @@
 import joi from 'joi'
-import util from 'util'
+import util from 'node:util'
 
 const setPaymentStatusToPaidSchema = joi.object({
   claimRef: joi.string().required(),

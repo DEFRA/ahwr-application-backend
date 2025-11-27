@@ -8,7 +8,7 @@ import {
   addHerdToClaimData,
   getByApplicationReference
 } from '../../../repositories/claim-repository.js'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import { raiseHerdEvent } from '../../../event-publisher/index.js'
 
 const hasHerdChanged = (existingHerd, updatedHerd) =>
@@ -29,12 +29,7 @@ const validateUpdate = (existingHerd, updatedHerd) => {
   }
 }
 
-const buildNewHerd = (
-  herd,
-  applicationReference,
-  createdBy,
-  typeOfLivestock
-) => ({
+const buildNewHerd = (herd, applicationReference, createdBy, typeOfLivestock) => ({
   id: crypto.randomUUID(),
   version: 1,
   applicationReference,
@@ -46,12 +41,7 @@ const buildNewHerd = (
   isCurrent: true
 })
 
-const buildUpdatedHerd = (
-  existingHerd,
-  herd,
-  applicationReference,
-  createdBy
-) => ({
+const buildUpdatedHerd = (existingHerd, herd, applicationReference, createdBy) => ({
   id: existingHerd.id,
   version: existingHerd.version + 1,
   applicationReference,
@@ -78,12 +68,7 @@ const createOrUpdateHerd = async (
     validateUpdate(existingHerd, herd)
 
     if (hasHerdChanged(existingHerd, herd)) {
-      herdData = buildUpdatedHerd(
-        existingHerd,
-        herd,
-        applicationReference,
-        createdBy
-      )
+      herdData = buildUpdatedHerd(existingHerd, herd, applicationReference, createdBy)
       await createHerd(db, herdData)
       await updateIsCurrentHerd(db, herd.id, false, existingHerd.version)
       updated = true // To check, but actually does feel like we should be setting this
@@ -93,12 +78,7 @@ const createOrUpdateHerd = async (
       updated = false
     }
   } else {
-    herdData = buildNewHerd(
-      herd,
-      applicationReference,
-      createdBy,
-      typeOfLivestock
-    )
+    herdData = buildNewHerd(herd, applicationReference, createdBy, typeOfLivestock)
     await createHerd(db, herdData)
     updated = true
   }
@@ -115,12 +95,8 @@ const addHerdToPreviousClaims = async ({
   logger,
   db
 }) => {
-  logger.info(
-    `Associating new herd with previous claims for agreement: ${applicationReference}`
-  )
-  const previousClaimsWithoutHerd = previousClaims.filter(
-    (claim) => !claim.herd?.id
-  )
+  logger.info(`Associating new herd with previous claims for agreement: ${applicationReference}`)
+  const previousClaimsWithoutHerd = previousClaims.filter((claim) => !claim.herd?.id)
   await Promise.all(
     previousClaimsWithoutHerd.map(async (claim) => {
       await addHerdToClaimData({

@@ -131,9 +131,7 @@ describe('claim-repository', () => {
       const error = new Error('Database error')
       mockFindOne.mockRejectedValue(error)
 
-      await expect(
-        getClaimByReference(mockDb, 'RESH-O9UD-0025')
-      ).rejects.toThrow('Database error')
+      await expect(getClaimByReference(mockDb, 'RESH-O9UD-0025')).rejects.toThrow('Database error')
     })
   })
 })

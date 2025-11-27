@@ -3,13 +3,7 @@ import { SEND_SESSION_EVENT } from './index.js'
 import { getEventPublisher } from '../messaging/fcp-messaging-service.js'
 import { config } from '../config/config.js'
 
-export const claimDataUpdateEvent = async (
-  data,
-  type,
-  updatedBy,
-  updatedAt,
-  sbi
-) => {
+export const claimDataUpdateEvent = async (data, type, updatedBy, updatedAt, sbi) => {
   const event = {
     name: SEND_SESSION_EVENT,
     id: randomUUID(),

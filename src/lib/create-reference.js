@@ -9,9 +9,7 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
   const firstTwoCharacters = claimTypeMap[typeOfClaim]
 
   if (!firstTwoCharacters) {
-    throw new Error(
-      `Reference cannot be created due to invalid type of reference: ${typeOfClaim}`
-    )
+    throw new Error(`Reference cannot be created due to invalid type of reference: ${typeOfClaim}`)
   }
 
   const typeOfLivestockMap = {

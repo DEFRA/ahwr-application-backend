@@ -21,20 +21,10 @@ export const deleteFlagHandler = async (request, h) => {
   // TODO: find solution using labels perhaps?
   request.logger.setBindings({ flagId, user })
 
-  let updatedApplication = await deleteFlag(
-    request.db,
-    flagId,
-    user,
-    deletedNote
-  )
+  let updatedApplication = await deleteFlag(request.db, flagId, user, deletedNote)
 
   if (!updatedApplication) {
-    updatedApplication = await deleteOWFlag(
-      request.db,
-      flagId,
-      user,
-      deletedNote
-    )
+    updatedApplication = await deleteOWFlag(request.db, flagId, user, deletedNote)
   }
 
   if (!updatedApplication) {
@@ -72,14 +62,10 @@ export const createFlagHandler = async (request, h) => {
   const { ref } = request.params
   const { db } = request
 
-  request.logger.info(
-    `Create flag ${JSON.stringify({ appliesToMh, user, note, ref })}`
-  )
+  request.logger.info(`Create flag ${JSON.stringify({ appliesToMh, user, note, ref })}`)
   const owAppRef = isOWAppRef(ref)
 
-  const application = owAppRef
-    ? await findOWApplication(db, ref)
-    : await findApplication(db, ref)
+  const application = owAppRef ? await findOWApplication(db, ref) : await findApplication(db, ref)
   if (application === null) {
     return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
   }

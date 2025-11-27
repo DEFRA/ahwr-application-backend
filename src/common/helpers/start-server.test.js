@@ -30,9 +30,7 @@ describe('startServer', () => {
     expect(createServer).toHaveBeenCalledTimes(1)
     expect(mockServer.start).toHaveBeenCalledTimes(1)
     expect(mockLogger.info).toHaveBeenCalledWith('Server started successfully')
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      'Access your backend on http://localhost:3000'
-    )
+    expect(mockLogger.info).toHaveBeenCalledWith('Access your backend on http://localhost:3000')
     expect(server).toBe(mockServer)
   })
 
@@ -44,8 +42,6 @@ describe('startServer', () => {
 
     expect(createServer).toHaveBeenCalledTimes(1)
     expect(mockServer.start).toHaveBeenCalledTimes(1)
-    expect(mockLogger.info).not.toHaveBeenCalledWith(
-      'Server started successfully'
-    )
+    expect(mockLogger.info).not.toHaveBeenCalledWith('Server started successfully')
   })
 })

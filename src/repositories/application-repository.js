@@ -3,26 +3,20 @@ import { STATUS } from 'ffc-ahwr-common-library'
 import { startandEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
-
-import {
-  APPLICATION_COLLECTION,
-  OW_APPLICATION_COLLECTION
-} from '../constants/index.js'
+import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
 
-export const getApplication = async ({
-  db,
-  reference,
-  includeDeletedFlags = false
-}) => {
+const flagNotDeletedFilter = {
+  input: { $ifNull: ['$flags', []] },
+  as: 'flag',
+  cond: { $eq: ['$$flag.deleted', false] }
+}
+
+export const getApplication = async ({ db, reference, includeDeletedFlags = false }) => {
   const flagFilter = includeDeletedFlags
     ? '$flags'
     : {
-        $filter: {
-          input: '$flags',
-          as: 'flag',
-          cond: { $eq: ['$$flag.deleted', false] }
-        }
+        $filter: flagNotDeletedFilter
       }
 
   return db
@@ -147,6 +141,8 @@ const buildSearchQuery = (searchText, searchType, filter) => {
   return query
 }
 
+const defaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
+
 export const searchApplications = async (
   db,
   searchText,
@@ -154,7 +150,7 @@ export const searchApplications = async (
   filter,
   offset = 0,
   limit = 10,
-  sort = { field: 'createdAt', direction: 'DESC' }
+  sort = defaultSort()
 ) => {
   const query = buildSearchQuery(searchText, searchType, filter)
 
@@ -204,11 +200,7 @@ export const searchApplications = async (
         {
           $addFields: {
             flags: {
-              $filter: {
-                input: { $ifNull: ['$flags', []] },
-                as: 'flag',
-                cond: { $ne: ['$$flag.deleted', true] }
-              }
+              $filter: flagNotDeletedFilter
             }
           }
         }
@@ -399,11 +391,7 @@ export const getApplicationsBySbi = async (db, sbi) => {
           flags: {
             $map: {
               input: {
-                $filter: {
-                  input: '$flags',
-                  as: 'flag',
-                  cond: { $eq: ['$$flag.deleted', false] }
-                }
+                $filter: flagNotDeletedFilter
               },
               as: 'flag',
               in: { appliesToMh: '$$flag.appliesToMh' }
@@ -518,13 +506,7 @@ export const getRemindersToSend = async (
     .toArray()
 }
 
-export const updateReminders = async (
-  reference,
-  newReminder,
-  _oldReminder,
-  db,
-  logger
-) => {
+export const updateReminders = async (reference, newReminder, _oldReminder, db, logger) => {
   const filter = { reference }
   // TODO replace this is condition that checks application history
   const updateDocument = {} // { $set: { reminders: newReminder } }
@@ -540,11 +522,7 @@ export const updateReminders = async (
   //   })
   // }
 
-  const result = db
-    .collection(APPLICATION_COLLECTION)
-    .updateOne(filter, updateDocument)
+  const result = db.collection(APPLICATION_COLLECTION).updateOne(filter, updateDocument)
 
-  logger.info(
-    `Successfully updated reminders, rows affected: ${result.modifiedCount}`
-  )
+  logger.info(`Successfully updated reminders, rows affected: ${result.modifiedCount}`)
 }

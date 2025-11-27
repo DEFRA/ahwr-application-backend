@@ -8,6 +8,7 @@ convict.addFormats(convictFormatWithValidator)
 const isProduction = process.env.NODE_ENV === 'production'
 const usePrettyPrint = process.env.USE_PRETTY_PRINT === 'true'
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
+const defaultServiceUri = 'http://localhost:3002'
 
 const config = convict({
   serviceVersion: {
@@ -38,34 +39,25 @@ const config = convict({
     documentGeneratorApiUri: {
       doc: 'Api Uri for Document Generator Service',
       format: String,
-      default: 'http://localhost:3002',
+      default: defaultServiceUri,
       env: 'DOCUMENT_GENERATOR_SERVICE_URI'
     },
     sfdMessagingProxyApiUri: {
       doc: 'Api Uri for Sfd Mesaging Proxy Service',
       format: String,
-      default: 'http://localhost:3002',
+      default: defaultServiceUri,
       env: 'SFD_MESSAGING_PROXY_SERVICE_URI'
     },
     messageGeneratorApiUri: {
       doc: 'Api Uri for Message Generator Service',
       format: String,
-      default: 'http://localhost:3002',
+      default: defaultServiceUri,
       env: 'MESSAGE_GENERATOR_SERVICE_URI'
     }
   },
   cdpEnvironment: {
     doc: 'The CDP environment the app is running in. With the addition of "local" for local development',
-    format: [
-      'local',
-      'infra-dev',
-      'management',
-      'dev',
-      'test',
-      'perf-test',
-      'ext-test',
-      'prod'
-    ],
+    format: ['local', 'infra-dev', 'management', 'dev', 'test', 'perf-test', 'ext-test', 'prod'],
     default: 'local',
     env: 'ENVIRONMENT'
   },
@@ -170,13 +162,7 @@ const config = convict({
       },
       readPreference: {
         doc: 'mongo read preference',
-        format: [
-          'primary',
-          'primaryPreferred',
-          'secondary',
-          'secondaryPreferred',
-          'nearest'
-        ],
+        format: ['primary', 'primaryPreferred', 'secondary', 'secondaryPreferred', 'nearest'],
         default: 'primaryPreferred'
       }
     }
@@ -216,13 +202,13 @@ const config = convict({
       env: 'DOCUMENT_REQUEST_TOPIC_ARN'
     },
     reminderRequestedTopicArn: {
-      doc: 'ARN of the topic to send document requested events to',
+      doc: 'ARN of the topic to send reminder requested events to',
       format: String,
       default: '#',
       env: 'REMINDER_REQUEST_TOPIC_ARN'
     },
     statusChangeTopicArn: {
-      doc: 'ARN of the topic to send document requested events to',
+      doc: 'ARN of the topic to send status change events to',
       format: String,
       default: '#',
       env: 'STATUS_CHANGE_TOPIC_ARN'

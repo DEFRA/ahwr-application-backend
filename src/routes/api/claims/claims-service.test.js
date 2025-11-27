@@ -93,11 +93,7 @@ describe('processClaim', () => {
     })
 
     expect(result).toEqual(saveClaimResult.claim)
-    expect(createClaimReference).toHaveBeenCalledWith(
-      'TEMP-O9UD-0025',
-      'REVIEW',
-      'beef'
-    )
+    expect(createClaimReference).toHaveBeenCalledWith('TEMP-O9UD-0025', 'REVIEW', 'beef')
     expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
       db: mockDb,
       sbi: '123456789',
@@ -111,9 +107,9 @@ describe('processClaim', () => {
   test('throws NotFound error when application does not exist', async () => {
     getApplication.mockResolvedValue(null)
 
-    await expect(
-      processClaim({ payload, logger: mockLogger, db: mockDb })
-    ).rejects.toThrow('NotFound')
+    await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
+      'NotFound'
+    )
 
     expect(getApplication).toHaveBeenCalledWith({
       db: mockDb,
@@ -128,9 +124,9 @@ describe('processClaim', () => {
     })
     validateClaim.mockReturnValue({ error: new Error('Invalid claim') })
 
-    await expect(
-      processClaim({ payload, logger: mockLogger, db: mockDb })
-    ).rejects.toThrow('BadRequest')
+    await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
+      'BadRequest'
+    )
 
     expect(validateClaim).toHaveBeenCalledWith(AHWR_SCHEME, payload, [])
   })
@@ -144,9 +140,9 @@ describe('processClaim', () => {
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
     mockIsURNNumberUnique(false)
 
-    await expect(
-      processClaim({ payload, logger: mockLogger, db: mockDb })
-    ).rejects.toThrow('BadRequest')
+    await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
+      'BadRequest'
+    )
 
     expect(isNWURNUnique).toHaveBeenCalledWith({
       db: mockDb,
@@ -170,9 +166,9 @@ describe('processClaim', () => {
     mockIsURNNumberUnique(true)
     saveClaimAndRelatedData.mockResolvedValue({ claim: null })
 
-    await expect(
-      processClaim({ payload, logger: mockLogger, db: mockDb })
-    ).rejects.toThrow('Claim was not created')
+    await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
+      'Claim was not created'
+    )
   })
 })
 
@@ -311,8 +307,6 @@ describe('getClaim', () => {
   it('returns not found error when claim does not exist for reference ', async () => {
     getClaimByReference.mockResolvedValue(null)
 
-    await expect(getClaim({ db, reference: 'FUBC-JTTU-SDQ7' })).rejects.toThrow(
-      'Claim not found'
-    )
+    await expect(getClaim({ db, reference: 'FUBC-JTTU-SDQ7' })).rejects.toThrow('Claim not found')
   })
 })
