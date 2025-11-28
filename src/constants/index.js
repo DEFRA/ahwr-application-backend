@@ -1,9 +1,7 @@
-import { config } from '../config/config.js'
 import { claimType } from 'ffc-ahwr-common-library'
 
 export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date('2025-01-21T00:00:00')
-
-export const MULTIPLE_HERDS_RELEASE_DATE = new Date(config.get('multiHerds.releaseDate'))
+export const MULTIPLE_HERDS_RELEASE_DATE = new Date('2025-06-26T00:00:00')
 
 export const applicationStatus = {
   agreed: 'AGREED',
