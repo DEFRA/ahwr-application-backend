@@ -1,5 +1,7 @@
-import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from '../constants/index.js'
-import { config } from '../config/config.js'
+import {
+  PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE,
+  MULTIPLE_HERDS_RELEASE_DATE
+} from '../constants/index.js'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   const dateOfVisitParsed = new Date(dateOfVisit)
@@ -11,7 +13,7 @@ export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
 }
 
 export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
-  if (new Date(dateOfVisit) < new Date(config.get('multiHerds.releaseDate'))) {
+  if (new Date(dateOfVisit) < MULTIPLE_HERDS_RELEASE_DATE) {
     return false
   }
   // check for rejected T&Cs flag, if absent then is multiple herds journey

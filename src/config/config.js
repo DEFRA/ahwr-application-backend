@@ -297,14 +297,6 @@ const config = convict({
       }
     }
   },
-  multiHerds: {
-    releaseDate: {
-      doc: 'Release date for go live of multi herds feature',
-      format: String,
-      default: '2025-05-01',
-      env: 'MULTI_HERDS_RELEASE_DATE'
-    }
-  },
   featureAssurance: {
     enabled: {
       doc: 'Feature assurance enabled',
