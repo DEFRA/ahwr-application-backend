@@ -1,15 +1,20 @@
-export const getAndIncrementComplianceCheckCount = async () => {
-  // TODO 1182 impl
-  return Number(22)
+const COLLECTION = 'compliancecheckcount'
 
-  // const complianceCheckCount = await models.complianceCheckCount.findOne({
-  //   where: { id: 1 }
-  // })
+export const getAndIncrementComplianceCheckCount = async (db) => {
+  const now = new Date()
 
-  // if (!complianceCheckCount) {
-  //   throw new Error('Compliance check count not found')
-  // }
+  const result = await db.collection(COLLECTION).findOneAndUpdate(
+    { _id: 1 },
+    {
+      $inc: { count: 1 },
+      $set: { updatedAt: now },
+      $setOnInsert: { createdAt: now }
+    },
+    {
+      upsert: true,
+      returnDocument: 'after'
+    }
+  )
 
-  // const updatedCount = await complianceCheckCount.increment('count')
-  // return Number(updatedCount.dataValues.count)
+  return result.count
 }

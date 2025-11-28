@@ -147,6 +147,7 @@ describe('saveClaimAndRelatedData', () => {
       },
       '123456789'
     )
+    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb)
   })
 
   it('should save claim without herd', async () => {

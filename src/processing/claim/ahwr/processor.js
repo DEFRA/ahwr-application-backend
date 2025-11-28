@@ -1,6 +1,6 @@
 import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
-import { getByApplicationReference, createClaim } from '../../../repositories/claim-repository.js'
+import { createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 // import { sendMessage } from '../../../messaging/send-message.js'
@@ -58,20 +58,9 @@ const addClaimAndHerdToDatabase = async ({
         herdGotUpdated = herdResult.updated
       }
 
-      const previousClaimsForSpeciesAfterUpdates = await getByApplicationReference({
-        db,
-        applicationReference,
-        typeOfLivestock
-      })
-      const status = await generateClaimStatus(
-        dateOfVisit,
-        claimHerdData.id,
-        previousClaimsForSpeciesAfterUpdates,
-        logger
-      )
+      const status = await generateClaimStatus(dateOfVisit, logger, db)
 
       const createdAt = new Date()
-
       claim = {
         ...claimPayload,
         reference: claimReference,
