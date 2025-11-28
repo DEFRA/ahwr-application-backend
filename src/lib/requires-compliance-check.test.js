@@ -27,7 +27,7 @@ const mockConfig = ({
   })
 }
 
-describe('Test generateClaimStatus', () => {
+describe('generateClaimStatus', () => {
   afterEach(() => jest.clearAllMocks())
 
   test('should return inCheck when compliance checks are enabled and ratio matches', async () => {
