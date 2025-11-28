@@ -434,9 +434,11 @@ describe('applications-service', () => {
           },
           status: 'IN_CHECK',
           herd: {
+            id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
             cph: '12/345/6789',
             name: 'EventTester',
-            reasons: ['uniqueHealthNeeds']
+            reasons: ['uniqueHealthNeeds'],
+            version: 2
           }
         }
       ])
