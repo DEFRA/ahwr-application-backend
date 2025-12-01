@@ -1,7 +1,7 @@
 import { failAction } from './fail-action.js'
 
 describe('#fail-action', () => {
-  test('Should throw expected error', () => {
+  test('Should throw expected error a', () => {
     const mockRequest = {}
     const mockToolkit = {}
     const mockError = Error('Something terrible has happened!')
