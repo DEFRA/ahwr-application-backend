@@ -24,7 +24,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: |
+        run: |
           npm ci
           npm run format:check
           npm run lint
