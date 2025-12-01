@@ -144,9 +144,11 @@ export const getClaims = async ({ db, logger, applicationReference, typeOfLivest
     data: claim.data,
     status: claim.status,
     herd: {
+      id: claim.herd.id,
       cph: claim.herd.cph,
       name: claim.herd.name,
-      reasons: claim.herd.reasons
+      reasons: claim.herd.reasons,
+      version: claim.herd.version
     }
   }))
 }
