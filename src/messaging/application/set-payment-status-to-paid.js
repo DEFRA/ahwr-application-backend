@@ -27,7 +27,8 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
       const {
         applicationReference,
         status,
-        data: { claimType, typeOfLivestock },
+        type,
+        data: { typeOfLivestock },
         herd
       } = updatedClaim
 
@@ -46,7 +47,7 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
         agreementReference: applicationReference,
         claimReference: claimRef,
         claimStatus: status,
-        claimType,
+        claimType: type,
         typeOfLivestock,
         dateTime: updatedClaim.updatedAt,
         herdName:

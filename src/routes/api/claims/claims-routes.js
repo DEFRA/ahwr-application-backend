@@ -272,7 +272,7 @@ export const claimHandlers = [
         //     agreementReference: applicationReference,
         //     claimReference: reference,
         //     claimStatus: status,
-        //     claimType: claim.dataValues.data.claimType,
+        //     claimType: claim.type,
         //     typeOfLivestock,
         //     reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
         //     piHuntRecommended: claim.dataValues.data.piHuntRecommended,
@@ -308,7 +308,7 @@ export const claimHandlers = [
         //     sbi,
         //     whichReview: typeOfLivestock,
         //     isEndemics: true,
-        //     claimType: claim.data.claimType,
+        //     claimType: claim.type,
         //     reviewTestResults:
         //       reviewTestResults ?? vetVisitsReviewTestResults,
         //     frn,

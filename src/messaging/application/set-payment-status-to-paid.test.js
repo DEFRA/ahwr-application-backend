@@ -20,7 +20,8 @@ describe('handler function for setting payment status to paid for claims', () =>
       applicationReference: 'IAHW-RWE2-G8S7',
       reference: 'REBC-ABCD-1234',
       status: 'RECOMMENDED_TO_PAY',
-      data: { claimType: 'R', typeOfLivestock: 'beef' },
+      type: 'REVIEW',
+      data: { typeOfLivestock: 'beef' },
       herd: { name: 'Beefers' }
     }
     getClaimByReference.mockResolvedValueOnce(claimFromDb)
@@ -66,7 +67,7 @@ describe('handler function for setting payment status to paid for claims', () =>
       agreementReference: claimFromDb.applicationReference,
       claimReference: claimFromDb.reference,
       claimStatus: 'PAID',
-      claimType: claimFromDb.data.claimType,
+      claimType: claimFromDb.type,
       dateTime: new Date('2025-11-21T14:17:20.084Z'),
       herdName: claimFromDb.herd.name,
       sbi: message.sbi,
@@ -94,7 +95,8 @@ describe('handler function for setting payment status to paid for claims', () =>
       applicationReference: 'IAHW-RWE2-G8S7',
       reference: 'REBC-ABCD-1234',
       status: 'RECOMMENDED_TO_PAY',
-      data: { claimType: 'R', typeOfLivestock: 'beef' }
+      type: 'REVIEW',
+      data: { typeOfLivestock: 'beef' }
     }
     getClaimByReference.mockResolvedValueOnce(herdlessClaimFromDb)
     updateClaimStatus.mockResolvedValueOnce({
@@ -113,7 +115,7 @@ describe('handler function for setting payment status to paid for claims', () =>
       agreementReference: 'IAHW-RWE2-G8S7',
       claimReference: 'REBC-ABCD-1234',
       claimStatus: 'PAID',
-      claimType: 'R',
+      claimType: 'REVIEW',
       dateTime: new Date('2025-11-21T14:17:20.084Z'),
       herdName: 'Unnamed herd',
       sbi: '123456789',

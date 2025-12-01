@@ -11,7 +11,7 @@ export const startandEndDate = (date) => {
 }
 
 export const isAtLeastMonthsOld = (dateToCheck, months) => {
-  const now = new Date()
+  const now = new Date(Date.now())
   const comparisonDate = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - months, now.getUTCDate())
   )
