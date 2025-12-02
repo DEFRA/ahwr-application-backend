@@ -3,7 +3,7 @@ const parseDate = (date) => {
   return new Date(year, month - 1, day)
 }
 
-export const startandEndDate = (date) => {
+export const startAndEndDate = (date) => {
   const startDate = parseDate(date)
   const endDate = new Date(startDate)
   endDate.setDate(startDate.getDate() + 1)

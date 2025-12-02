@@ -15,7 +15,6 @@ import {
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
 import { getApplication } from '../../../repositories/application-repository.js'
-import { getAmount } from '../../../lib/getAmount.js'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 // import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import { StatusCodes } from 'http-status-codes'
@@ -23,7 +22,8 @@ import {
   // TYPE_OF_LIVESTOCK,
   // UNNAMED_FLOCK,
   // UNNAMED_HERD,
-  claimType
+  claimType,
+  getAmount
 } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 import { createClaimHandler, isURNUniqueHandler, getClaimHandler } from './claims-controller.js'
@@ -185,10 +185,7 @@ export const claimHandlers = [
         }
       },
       handler: async (request, h) => {
-        const amount = await getAmount({
-          type: request.payload.type,
-          data: request.payload
-        })
+        const amount = await getAmount(request.payload)
         return h.response(amount).code(StatusCodes.OK)
       }
     }

@@ -239,61 +239,29 @@ const config = convict({
   },
   azure: {
     eventQueue: {
-      uri: {
-        doc: 'URI for AWHR event service bus queue',
-        format: String,
-        default: '',
-        env: 'FCP_AHWR_EVENT_QUEUE_URI'
-      },
-      ttl: {
-        doc: 'Time to live for AWHR event access token',
-        format: 'nat',
-        default: 86400,
-        env: 'FCP_AHWR_EVENT_QUEUE_TTL'
-      },
-      keyName: {
-        doc: 'Key name for AWHR event service bus',
-        format: String,
-        default: 'LogicAppsAccessKey',
-        env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY_NAME'
-      },
-      key: {
-        doc: 'Key for AWHR event service bus',
-        format: String,
-        default: 'my_key',
-        sensitive: true,
-        env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY'
-      },
       address: {
-        doc: 'foo',
+        doc: 'Queue name to send AHWR events to',
         format: String,
         default: 'ffc-ahwr-event-dev',
         env: 'EVENT_QUEUE_ADDRESS'
       },
       host: {
-        doc: 'foo',
+        doc: 'Host used for the event message queue',
         format: String,
         default: '',
         env: 'MESSAGE_QUEUE_HOST'
       },
       password: {
-        doc: 'foo',
+        doc: 'Password to connect to Service bus instance',
         format: String,
         default: '',
         env: 'FCP_AHWR_EVENT_QUEUE_SA_KEY'
       },
       username: {
-        doc: 'foo',
+        doc: 'Username to connect to Service bus instance',
         format: String,
         default: '',
         env: 'MESSAGE_QUEUE_USER'
-      },
-      connection: {
-        doc: 'foo',
-        format: String,
-        default: 'my_connection_string',
-        sensitive: true,
-        env: 'QUEUE_CONNECTION_STRING'
       }
     }
   },

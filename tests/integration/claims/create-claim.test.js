@@ -57,7 +57,7 @@ describe('Create claim', () => {
       createdBy: 'admin',
       createdAt: expect.any(String),
       data: {
-        amount: 4,
+        amount: 436,
         claimType: 'REVIEW',
         dateOfTesting: '2024-01-22T00:00:00.000Z',
         dateOfVisit: '2025-10-20T00:00:00.000Z',
