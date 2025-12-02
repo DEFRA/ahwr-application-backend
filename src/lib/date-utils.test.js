@@ -15,15 +15,14 @@ describe('date utils', () => {
 
   describe('isAtLeastMonthsOld', () => {
     const mockToday = new Date('2025-11-07T00:00:00Z')
-    let originalDateNow
 
     beforeAll(() => {
-      originalDateNow = Date.now
-      Date.now = jest.fn(() => mockToday.getTime())
+      jest.useFakeTimers()
+      jest.setSystemTime(mockToday)
     })
 
     afterAll(() => {
-      Date.now = originalDateNow
+      jest.useRealTimers()
     })
 
     test('returns true when date is older than specified months', () => {
@@ -36,7 +35,7 @@ describe('date utils', () => {
       expect(isAtLeastMonthsOld(recentDate, 3)).toBe(false)
     })
 
-    test('returns true when date is exactly N months old', () => {
+    test('returns true when date is exactly N mont  hs old', () => {
       const exactDate = new Date('2025-05-07')
       expect(isAtLeastMonthsOld(exactDate, 6)).toBe(true)
     })

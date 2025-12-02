@@ -19,12 +19,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Test code and Create Test Coverage Reports
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: |
+
+      - name: Test code and Create Test Coverage Reports
+        run: |
           npm ci
           npm run format:check
           npm run lint
