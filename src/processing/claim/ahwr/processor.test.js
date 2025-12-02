@@ -1,13 +1,13 @@
 import { saveClaimAndRelatedData, generateEventsAndComms } from './processor.js'
-import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 import { getByApplicationReference, createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { processHerd } from './herd-processor.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
+import { getAmount } from 'ffc-ahwr-common-library'
 
-jest.mock('../../../lib/getAmount.js')
+jest.mock('ffc-ahwr-common-library')
 jest.mock('../../../lib/context-helper.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../lib/requires-compliance-check.js')
@@ -85,7 +85,7 @@ describe('saveClaimAndRelatedData', () => {
       logger
     })
 
-    expect(getAmount).toHaveBeenCalledWith(claimPayload)
+    expect(getAmount).toHaveBeenCalledWith({ ...claimPayload.data, type: claimPayload.type })
     expect(isMultipleHerdsUserJourney).toHaveBeenCalledWith(claimPayload.data.dateOfVisit, [])
     expect(processHerd).toHaveBeenCalled()
     createClaim.mockResolvedValue({

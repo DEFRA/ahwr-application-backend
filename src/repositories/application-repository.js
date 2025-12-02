@@ -1,6 +1,6 @@
 import { STATUS } from 'ffc-ahwr-common-library'
 // import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
-import { startandEndDate } from '../lib/date-utils.js'
+import { startAndEndDate } from '../lib/date-utils.js'
 // import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
@@ -117,7 +117,7 @@ const buildSearchQuery = (searchText, searchType, filter) => {
         break
 
       case 'date': {
-        const { startDate, endDate } = startandEndDate(searchText)
+        const { startDate, endDate } = startAndEndDate(searchText)
         query.createdAt = { $gte: startDate, $lt: endDate }
         break
       }

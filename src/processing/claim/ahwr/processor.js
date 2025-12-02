@@ -1,4 +1,3 @@
-import { getAmount } from '../../../lib/getAmount.js'
 import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 import { createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
@@ -14,6 +13,7 @@ import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { processHerd } from './herd-processor.js'
 // import { messageQueueConfig } from '../../../config/message-queue.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
+import { getAmount } from 'ffc-ahwr-common-library'
 
 // const messageGeneratorMsgType = config.get(
 //   'messageTypes.messageGeneratorMsgType'
@@ -107,7 +107,7 @@ export async function saveClaimAndRelatedData({
   const { typeOfLivestock, dateOfVisit } = claimPayload.data
   const { applicationReference } = claimPayload
 
-  const amount = await getAmount(claimPayload)
+  const amount = await getAmount({ ...claimPayload.data, type: claimPayload.type })
   const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, flags)
 
   const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase({

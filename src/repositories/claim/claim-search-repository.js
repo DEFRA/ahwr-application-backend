@@ -1,4 +1,4 @@
-import { startandEndDate } from '../../lib/date-utils.js'
+import { startAndEndDate } from '../../lib/date-utils.js'
 import { CLAIMS_COLLECTION } from '../../constants/index.js'
 
 const MONGO_OP_BY_FILTER_OP = {
@@ -59,7 +59,7 @@ const applyClaimSearchConditions = (matchStage, search) => {
       matchStage['data.typeOfLivestock'] = { $regex: text, $options: 'i' }
       break
     case 'date': {
-      const { startDate, endDate } = startandEndDate(text)
+      const { startDate, endDate } = startAndEndDate(text)
       matchStage['createdAt'] = {
         $gte: startDate,
         $lt: endDate
