@@ -2,6 +2,7 @@ import { getClaimByReference, updateClaimStatus } from '../../repositories/claim
 import { publishStatusChangeEvent } from '../publish-outbound-notification'
 import { setPaymentStatusToPaid } from './set-payment-status-to-paid'
 import { raiseClaimEvents } from '../../event-publisher'
+import { ObjectId } from 'mongodb'
 
 jest.mock('../../repositories/claim-repository')
 jest.mock('../publish-outbound-notification')
@@ -22,7 +23,8 @@ describe('handler function for setting payment status to paid for claims', () =>
       status: 'RECOMMENDED_TO_PAY',
       type: 'REVIEW',
       data: { typeOfLivestock: 'beef' },
-      herd: { name: 'Beefers' }
+      herd: { name: 'Beefers' },
+      _id: new ObjectId('507f191e810c19729de860ea')
     }
     getClaimByReference.mockResolvedValueOnce(claimFromDb)
     const updatedClaim = {
@@ -56,7 +58,7 @@ describe('handler function for setting payment status to paid for claims', () =>
     expect(raiseClaimEvents).toHaveBeenCalledWith(
       {
         message: 'Claim has been updated',
-        claim: updatedClaim,
+        claim: { ...updatedClaim, id: '507f191e810c19729de860ea' },
         note: undefined,
         raisedBy: 'admin',
         raisedOn: new Date('2025-11-21T14:17:20.084Z')
@@ -96,7 +98,8 @@ describe('handler function for setting payment status to paid for claims', () =>
       reference: 'REBC-ABCD-1234',
       status: 'RECOMMENDED_TO_PAY',
       type: 'REVIEW',
-      data: { typeOfLivestock: 'beef' }
+      data: { typeOfLivestock: 'beef' },
+      _id: new ObjectId('507f191e810c19729de860ea')
     }
     getClaimByReference.mockResolvedValueOnce(herdlessClaimFromDb)
     updateClaimStatus.mockResolvedValueOnce({

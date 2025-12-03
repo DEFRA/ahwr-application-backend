@@ -35,7 +35,7 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
       await raiseClaimEvents(
         {
           message: 'Claim has been updated',
-          claim: updatedClaim,
+          claim: { ...updatedClaim, id: updatedClaim._id.toString() },
           note: undefined,
           raisedBy: updatedClaim.updatedBy,
           raisedOn: updatedClaim.updatedAt
