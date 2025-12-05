@@ -120,7 +120,7 @@ export const searchClaims = async (search, filter, offset, limit, db, sort = get
           $filter: {
             input: '$application.flags',
             as: 'flag',
-            cond: { $eq: ['$$flag.deletedBy', null] }
+            cond: { $eq: ['$$flag.deleted', false] }
           }
         }
       }
