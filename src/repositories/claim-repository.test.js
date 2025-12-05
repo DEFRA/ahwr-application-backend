@@ -185,6 +185,54 @@ describe('updateClaimStatus', () => {
     )
     expect(result).toBe(updatedClaim)
   })
+  it('should call findOneAndUpdate with correct parameters and return result with optional note', async () => {
+    const updatedClaim = {
+      reference: 'REBC-VA4R-TRL7',
+      status: 'WITHDRAWN',
+      updatedBy: 'test-user',
+      updatedAt: new Date('2025-10-22T16:21:46.091Z'),
+      statusHistory: [
+        {
+          status: 'AGREED',
+          createdBy: 'admin',
+          createdAt: new Date('2025-10-22T16:21:46.091Z'),
+          note: 'This is a note'
+        }
+      ]
+    }
+    mockCollection.findOneAndUpdate.mockResolvedValue(updatedClaim)
+
+    const result = await updateClaimStatus({
+      db: mockDb,
+      reference: 'REBC-VA4R-TRL7',
+      status: 'WITHDRAWN',
+      user: 'test-user',
+      updatedAt: new Date('2025-10-22T16:21:46.091Z'),
+      note: 'This is a note'
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('claims')
+    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+      { reference: 'REBC-VA4R-TRL7' },
+      {
+        $set: {
+          status: 'WITHDRAWN',
+          updatedBy: 'test-user',
+          updatedAt: new Date('2025-10-22T16:21:46.091Z')
+        },
+        $push: {
+          statusHistory: {
+            status: 'WITHDRAWN',
+            createdAt: new Date('2025-10-22T16:21:46.091Z'),
+            createdBy: 'test-user',
+            note: 'This is a note'
+          }
+        }
+      },
+      { returnDocument: 'after' }
+    )
+    expect(result).toBe(updatedClaim)
+  })
 })
 
 describe('updateClaimData', () => {

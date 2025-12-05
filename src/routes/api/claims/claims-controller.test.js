@@ -1,9 +1,29 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import { createClaimHandler, isURNUniqueHandler, getClaimHandler } from './claims-controller.js'
+import {
+  createClaimHandler,
+  isURNUniqueHandler,
+  getClaimHandler,
+  updateClaimStatusHandler
+} from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
+import { getClaimByReference, updateClaimStatus } from '../../../repositories/claim-repository.js'
+import { ObjectId } from 'mongodb'
+import { getApplication } from '../../../repositories/application-repository.js'
+import { raiseClaimEvents } from '../../../event-publisher/index.js'
+import { STATUS } from 'ffc-ahwr-common-library'
+import {
+  publishRequestForPaymentEvent,
+  publishStatusChangeEvent
+} from '../../../messaging/publish-outbound-notification.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 
 jest.mock('./claims-service.js')
+jest.mock('../../../repositories/claim-repository.js')
+jest.mock('../../../repositories/application-repository.js')
+jest.mock('../../../event-publisher/index.js')
+jest.mock('../../../messaging/publish-outbound-notification.js')
+jest.mock('../../../lib/context-helper.js')
 
 describe('createClaimHandler', () => {
   const mockRequest = {
@@ -257,5 +277,433 @@ describe('getClaimHandler', () => {
       { err: genericError },
       'Failed to get claim'
     )
+  })
+})
+
+describe('updateClaimStatusHandler', () => {
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis(),
+    takeover: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    getApplication.mockResolvedValueOnce({
+      organisation: {
+        sbi: '106705779',
+        crn: '1100014934',
+        frn: '1102569649'
+      }
+    })
+  })
+
+  test.each([
+    { status: 'IN_CHECK', useOldWorldTestResults: false },
+    { status: 'READY_TO_PAY', useOldWorldTestResults: false },
+    { status: 'REJECTED', useOldWorldTestResults: true }
+  ])('Update claim status to status $status', async ({ status, useOldWorldTestResults }) => {
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementationOnce(() => {
+      return true
+    })
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status,
+        user: 'admin'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        ...(useOldWorldTestResults && { reviewTestResults: 'positive' }),
+        ...(!useOldWorldTestResults && { vetVisitsReviewTestResults: 'positive' }),
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z')
+      },
+      herd: {
+        name: 'sheepies'
+      },
+      type: 'REVIEW'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe45'),
+      reference: 'REBC-J9AR-KILQ',
+      status,
+      updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+      updatedBy: 'user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(updateClaimStatus).toHaveBeenCalledWith({
+      db: {},
+      reference: 'REBC-J9AR-KILQ',
+      status,
+      updatedAt: expect.any(Date),
+      user: 'admin'
+    })
+    expect(raiseClaimEvents).toHaveBeenCalledWith(
+      {
+        message: 'Claim has been updated',
+        claim: {
+          _id: new ObjectId('691df90a35d046309ef9fe45'),
+          id: '691df90a35d046309ef9fe45',
+          reference: 'REBC-J9AR-KILQ',
+          status,
+          updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+          updatedBy: 'user'
+        },
+        note: undefined,
+        raisedBy: 'user',
+        raisedOn: new Date('2025-04-24T08:24:24.092Z')
+      },
+      '106705779'
+    )
+    if (status === STATUS.READY_TO_PAY) {
+      expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+        reference: 'REBC-J9AR-KILQ',
+        sbi: '106705779',
+        whichReview: 'sheep',
+        isEndemics: true,
+        claimType: 'REVIEW',
+        reviewTestResults: 'positive',
+        frn: '1102569649',
+        optionalPiHuntValue: 'noPiHunt'
+      })
+    }
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
+      crn: '1100014934',
+      sbi: '106705779',
+      agreementReference: 'AHWR-KJLI-2678',
+      claimReference: 'REBC-J9AR-KILQ',
+      claimAmount: undefined,
+      claimStatus: status,
+      claimType: 'REVIEW',
+      typeOfLivestock: 'sheep',
+      reviewTestResults: 'positive',
+      dateTime: expect.any(Date),
+      herdName: 'sheepies'
+    })
+  })
+
+  test('Update claim should fail when claim does not exist', async () => {
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'admin'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce(null)
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(404)
+    expect(updateClaimStatus).not.toHaveBeenCalled()
+    expect(raiseClaimEvents).not.toHaveBeenCalled()
+    expect(publishStatusChangeEvent).not.toHaveBeenCalled()
+    expect(publishRequestForPaymentEvent).not.toHaveBeenCalled()
+  })
+
+  test('should update claim and submit payment request when piHunt is yes', async () => {
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => {
+      return true
+    })
+
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'some user',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        reviewTestResults: 'positive',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
+        piHunt: 'yes',
+        piHuntAllAnimals: 'yes'
+      },
+      herd: {
+        name: 'sheepies'
+      },
+      type: 'FOLLOW_UP'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe45'),
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+      updatedBy: 'some user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+
+    expect(updateClaimStatus).toHaveBeenCalledWith({
+      db: {},
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: expect.any(Date),
+      user: 'some user',
+      note: 'updating status'
+    })
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      whichReview: 'sheep',
+      isEndemics: true,
+      claimType: 'FOLLOW_UP',
+      reviewTestResults: 'positive',
+      frn: '1102569649',
+      optionalPiHuntValue: 'yesPiHunt'
+    })
+
+    expect(publishStatusChangeEvent).toHaveBeenCalled()
+  })
+
+  test('should update claim and submit payment request when piHunt is yes and piHuntRecommended is yes for negative review', async () => {
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => {
+      return true
+    })
+
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'some user',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
+        reviewTestResults: 'negative',
+        piHunt: 'yes',
+        piHuntAllAnimals: 'yes',
+        piHuntRecommended: 'yes',
+        testResults: 'negative'
+      },
+      herd: {
+        name: 'sheepies'
+      },
+      type: 'FOLLOW_UP'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe45'),
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+      updatedBy: 'some user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+
+    expect(updateClaimStatus).toHaveBeenCalledWith({
+      db: {},
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: expect.any(Date),
+      user: 'some user',
+      note: 'updating status'
+    })
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      whichReview: 'sheep',
+      isEndemics: true,
+      claimType: 'FOLLOW_UP',
+      reviewTestResults: 'negative',
+      frn: '1102569649',
+      optionalPiHuntValue: 'yesPiHunt'
+    })
+
+    expect(publishStatusChangeEvent).toHaveBeenCalled()
+  })
+
+  test('should update claim and submit payment request when piHunt is no', async () => {
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => {
+      return true
+    })
+
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'some user',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
+        reviewTestResults: 'positive',
+        piHunt: 'no',
+        piHuntAllAnimals: 'no'
+      },
+      herd: {
+        name: 'sheepies'
+      },
+      type: 'FOLLOW_UP'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe45'),
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+      updatedBy: 'some user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+
+    expect(updateClaimStatus).toHaveBeenCalled()
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      whichReview: 'sheep',
+      isEndemics: true,
+      claimType: 'FOLLOW_UP',
+      reviewTestResults: 'positive',
+      frn: '1102569649',
+      optionalPiHuntValue: 'noPiHunt'
+    })
+
+    expect(publishStatusChangeEvent).toHaveBeenCalled()
+  })
+
+  test('should update claim and submit payment request when optionalPiHunt not in play', async () => {
+    isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => {
+      return false
+    })
+
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'some user',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
+        reviewTestResults: 'positive',
+        piHunt: 'no',
+        piHuntAllAnimals: 'no'
+      },
+      type: 'FOLLOW_UP'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe45'),
+      reference: 'REBC-J9AR-KILQ',
+      status: 'READY_TO_PAY',
+      updatedAt: new Date('2025-04-24T08:24:24.092Z'),
+      updatedBy: 'some user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+
+    expect(updateClaimStatus).toHaveBeenCalled()
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+      reference: 'REBC-J9AR-KILQ',
+      sbi: '106705779',
+      whichReview: 'sheep',
+      isEndemics: true,
+      claimType: 'FOLLOW_UP',
+      reviewTestResults: 'positive',
+      frn: '1102569649'
+    })
+
+    expect(publishStatusChangeEvent).toHaveBeenCalled()
+  })
+
+  test('should do nothing and return no content when status is the same as one already on claim', async () => {
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'some user',
+        note: 'updating status'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      applicationReference: 'AHWR-KJLI-2678',
+      data: {
+        typeOfLivestock: 'sheep',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
+        reviewTestResults: 'positive',
+        piHunt: 'no',
+        piHuntAllAnimals: 'no'
+      },
+      status: 'READY_TO_PAY',
+      type: 'FOLLOW_UP'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(204)
+
+    expect(updateClaimStatus).not.toHaveBeenCalled()
+
+    expect(publishRequestForPaymentEvent).not.toHaveBeenCalled()
+
+    expect(publishStatusChangeEvent).not.toHaveBeenCalled()
   })
 })

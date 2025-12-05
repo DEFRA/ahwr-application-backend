@@ -212,6 +212,12 @@ const config = convict({
       format: String,
       default: '#',
       env: 'STATUS_CHANGE_TOPIC_ARN'
+    },
+    paymentRequestTopicArn: {
+      doc: 'ARN of the topic to send payment request events to',
+      format: String,
+      default: '#',
+      env: 'PAYMENT_REQUEST_TOPIC_ARN'
     }
   },
   aws: {

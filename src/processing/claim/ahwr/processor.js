@@ -2,23 +2,11 @@ import { isMultipleHerdsUserJourney } from '../../../lib/context-helper.js'
 import { createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
-// import { sendMessage } from '../../../messaging/send-message.js'
-// import { v4 as uuid } from 'uuid'
-// import {
-//   TYPE_OF_LIVESTOCK,
-//   UNNAMED_FLOCK,
-//   UNNAMED_HERD
-// } from 'ffc-ahwr-common-library'
-// import { config } from '../../../config/config.js'
+import { TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD, getAmount } from 'ffc-ahwr-common-library'
 import { processHerd } from './herd-processor.js'
-// import { messageQueueConfig } from '../../../config/message-queue.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
-import { getAmount } from 'ffc-ahwr-common-library'
-
-// const messageGeneratorMsgType = config.get(
-//   'messageTypes.messageGeneratorMsgType'
-// )
-// const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: get from main config
+import { publishStatusChangeEvent } from '../../../messaging/publish-outbound-notification.js'
+import { getLogger } from '../../../logging/logger.js'
 
 const addClaimAndHerdToDatabase = async ({
   sbi,
@@ -93,8 +81,8 @@ const addClaimAndHerdToDatabase = async ({
   return { claim, herdGotUpdated, herdData }
 }
 
-// const getUnnamedHerdValue = (typeOfLivestock) =>
-//   typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
+const getUnnamedHerdValue = (typeOfLivestock) =>
+  typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
 
 export async function saveClaimAndRelatedData({
   db,
@@ -134,18 +122,12 @@ export async function generateEventsAndComms(
   herdGotUpdated,
   herdIdSelected
 ) {
-  const { reference: claimReference } = claim
-  // const {
-  // amount,
-  // typeOfLivestock,
-  // // dateOfVisit,
-  // reviewTestResults,
-  // piHuntRecommended,
-  // piHuntAllAnimals
-  // } = claim.data
+  const { reference: claimReference, status, type } = claim
+  const { amount, typeOfLivestock, reviewTestResults, piHuntRecommended, piHuntAllAnimals } =
+    claim.data
   const {
     reference: applicationReference,
-    organisation: { sbi }
+    organisation: { crn, sbi }
   } = application
 
   if (isMultiHerdsClaim) {
@@ -159,42 +141,32 @@ export async function generateEventsAndComms(
     })
   }
 
-  // TODO
-  // await sendMessage(
-  //   {
-  //     crn,
-  //     sbi,
-  //     agreementReference: applicationReference,
-  //     claimReference,
-  //     claimStatus: statusId,
-  //     claimType: type,
-  //     typeOfLivestock,
-  //     reviewTestResults,
-  //     piHuntRecommended,
-  //     piHuntAllAnimals,
-  //     claimAmount: amount,
-  //     dateTime: new Date(),
-  //     herdName: herdData.name ?? getUnnamedHerdValue(typeOfLivestock)
-  //   },
-  //   messageGeneratorMsgType,
-  //   messageGeneratorQueue,
-  //   { sessionId: uuid() }
-  // )
+  const logger = getLogger()
 
-  // appInsights.defaultClient.trackEvent({
-  //   name: 'process-claim',
-  //   properties: {
-  //     data: {
-  //       applicationReference,
-  //       typeOfLivestock,
-  //       dateOfVisit,
-  //       claimType: type,
-  //       piHunt: claim.data.piHunt
-  //     },
-  //     reference: claim.reference,
-  //     status: claim.statusId,
-  //     sbi,
-  //     scheme: 'new-world'
-  //   }
-  // })
+  await publishStatusChangeEvent(logger, {
+    crn,
+    sbi,
+    agreementReference: applicationReference,
+    claimReference,
+    claimStatus: status,
+    claimType: type,
+    typeOfLivestock,
+    reviewTestResults,
+    piHuntRecommended,
+    piHuntAllAnimals,
+    claimAmount: amount,
+    dateTime: new Date(),
+    herdName: herdData.name ?? getUnnamedHerdValue(typeOfLivestock)
+  })
+
+  logger.info({
+    event: {
+      type: 'process-claim',
+      reference: `${sbi} - ${applicationReference} - ${claimReference}`,
+      outcome: `Status - ${status}`,
+      kind: type,
+      category: typeOfLivestock,
+      created: new Date()
+    }
+  })
 }
