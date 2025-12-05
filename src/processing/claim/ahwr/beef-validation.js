@@ -1,7 +1,6 @@
 import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import {
   biosecurity,
-  livestockTypes,
   minimumNumberOfAnimalsTested,
   piHunt,
   piHuntAllAnimals,
@@ -9,10 +8,10 @@ import {
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
-import { claimType } from 'ffc-ahwr-common-library'
+import { claimType, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 
 const minimumAnimalsTestedForReview =
-  minimumNumberOfAnimalsTested[livestockTypes.beef][claimType.review]
+  minimumNumberOfAnimalsTested[TYPE_OF_LIVESTOCK.BEEF][claimType.review]
 
 const dateOfTesting = { dateOfTesting: joi.date().required() }
 const laboratoryURN = { laboratoryURN: joi.string().required() }

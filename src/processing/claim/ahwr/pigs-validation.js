@@ -1,20 +1,23 @@
 import {
   biosecurity,
-  livestockTypes,
   minimumNumberOfAnimalsTested,
   minimumNumberOfOralFluidSamples,
   testResults as testResultsConstant
 } from '../../../constants/index.js'
 import joi from 'joi'
-import { PIG_GENETIC_SEQUENCING_VALUES, claimType } from 'ffc-ahwr-common-library'
+import {
+  PIG_GENETIC_SEQUENCING_VALUES,
+  claimType,
+  TYPE_OF_LIVESTOCK
+} from 'ffc-ahwr-common-library'
 
 const POSITIVE_SAMPLE_REQ = 6
 const NEGATIVE_SAMPLE_REQ = 30
 
 const minimumAnimalsTestedForReview =
-  minimumNumberOfAnimalsTested[livestockTypes.pigs][claimType.review]
+  minimumNumberOfAnimalsTested[TYPE_OF_LIVESTOCK.PIGS][claimType.review]
 const exactAnimalsTestedForFollowUp =
-  minimumNumberOfAnimalsTested[livestockTypes.pigs][claimType.endemics]
+  minimumNumberOfAnimalsTested[TYPE_OF_LIVESTOCK.PIGS][claimType.endemics]
 
 const dateOfTesting = { dateOfTesting: joi.date().required() }
 const laboratoryURN = { laboratoryURN: joi.string().required() }

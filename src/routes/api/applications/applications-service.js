@@ -1,4 +1,3 @@
-import { applicationStatus } from '../../../constants/index.js'
 import { createApplicationReference } from '../../../lib/create-reference.js'
 import * as appRepo from '../../../repositories/application-repository.js'
 import * as owAppRepo from '../../../repositories/ow-application-repository.js'
@@ -7,20 +6,14 @@ import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repositor
 import Boom from '@hapi/boom'
 import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
 import { publishDocumentRequestEvent } from '../../../messaging/publish-outbound-notification.js'
-import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
+import { AHWR_SCHEME, STATUS } from 'ffc-ahwr-common-library'
 
 const isPreviousApplicationRelevant = (application) => {
-  return (
-    application &&
-    ![applicationStatus.withdrawn, applicationStatus.notAgreed].includes(application.status)
-  )
+  return application && ![STATUS.WITHDRAWN, STATUS.NOT_AGREED].includes(application.status)
 }
 
 const buildApplication = (applicationRequest) => {
-  const status =
-    applicationRequest.offerStatus === 'rejected'
-      ? applicationStatus.notAgreed
-      : applicationStatus.agreed
+  const status = applicationRequest.offerStatus === 'rejected' ? STATUS.NOT_AGREED : STATUS.AGREED
   const createdAt = new Date()
   const createdBy = 'admin'
 

@@ -365,115 +365,20 @@ describe('Applications test', () => {
     })
   })
 
-  // describe('POST /api/applications/claim route', () => {
-  //   const method = 'POST'
+  describe('POST /api/applications/claim route', () => {
+    const method = 'POST'
 
-  //   test.each([
-  //     {
-  //       approved: false,
-  //       user: 'test',
-  //       reference,
-  //       payment: 0,
-  //       statusId: applicationStatus.rejected
-  //     },
-  //     {
-  //       approved: true,
-  //       user: 'test',
-  //       reference,
-  //       payment: 1,
-  //       statusId: applicationStatus.readyToPay
-  //     }
-  //   ])(
-  //     'returns 200 for valid input',
-  //     async ({ approved, user, reference, payment, statusId }) => {
-  //       getApplication.mockResolvedValue({
-  //         dataValues: {
-  //           reference,
-  //           createdBy: 'admin',
-  //           createdAt: new Date(),
-  //           data,
-  //           flags: []
-  //         }
-  //       })
+    test('returns 204', async () => {
+      const options = {
+        method,
+        url: '/api/applications/claim',
+        payload: { approved: true, user: 'test', reference: '123-ABC' }
+      }
+      const res = await server.inject(options)
 
-  //       const options = {
-  //         method,
-  //         url: '/api/application/claim',
-  //         payload: { approved, user, reference }
-  //       }
-  //       const res = await server.inject(options)
-
-  //       expect(res.statusCode).toBe(200)
-  //       expect(getApplication).toHaveBeenCalledTimes(1)
-  //       expect(updateApplicationByReference).toHaveBeenCalledTimes(1)
-  //       expect(updateApplicationByReference).toHaveBeenCalledWith({
-  //         reference,
-  //         statusId,
-  //         updatedBy: user
-  //       })
-  //       expect(sendMessage).toHaveBeenCalledTimes(payment)
-  //     }
-  //   )
-
-  //   test('returns a 200 when sending message fails, payment failure & status not updated', async () => {
-  //     getApplication.mockResolvedValue({
-  //       dataValues: {
-  //         reference,
-  //         createdBy: 'admin',
-  //         createdAt: new Date(),
-  //         data,
-  //         flags: []
-  //       }
-  //     })
-  //     sendMessage.mockImplementation(() => {
-  //       throw new Error()
-  //     })
-
-  //     const options = {
-  //       method,
-  //       url: '/api/application/claim',
-  //       payload: { approved: true, user: 'test', reference }
-  //     }
-  //     const res = await server.inject(options)
-
-  //     expect(res.statusCode).toBe(200)
-  //     expect(getApplication).toHaveBeenCalledTimes(1)
-  //     expect(sendMessage).toHaveBeenCalledTimes(1)
-  //     expect(updateApplicationByReference).toHaveBeenCalledTimes(0)
-  //   })
-
-  //   test('returns 404 when no application is found in the DB', async () => {
-  //     getApplication.mockResolvedValue({ dataValues: null })
-
-  //     const options = {
-  //       method,
-  //       url: '/api/application/claim',
-  //       payload: { approved: true, user: 'test', reference }
-  //     }
-  //     const res = await server.inject(options)
-
-  //     expect(res.statusCode).toBe(404)
-  //     expect(getApplication).toHaveBeenCalledTimes(1)
-  //   })
-
-  //   test.each([
-  //     { approved: false, user: 'test', reference: false },
-  //     { approved: true, user: 0, reference: true },
-  //     { approved: 'wrong', user: 'test', reference }
-  //   ])(
-  //     'returns 400 with error message for invalid input',
-  //     async ({ approved, user, reference }) => {
-  //       const options = {
-  //         method,
-  //         url: '/api/application/claim',
-  //         payload: { approved, user, reference }
-  //       }
-  //       const res = await server.inject(options)
-
-  //       expect(res.statusCode).toBe(400)
-  //     }
-  //   )
-  // })
+      expect(res.statusCode).toBe(204)
+    })
+  })
 
   // describe('POST /api/application/processor', () => {
   //   const options = {

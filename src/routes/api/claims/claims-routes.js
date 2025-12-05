@@ -2,8 +2,7 @@ import joi from 'joi'
 import {
   piHunt,
   piHuntAllAnimals,
-  testResults as testResultsConstant,
-  livestockTypes
+  testResults as testResultsConstant
 } from '../../../constants/index.js'
 import {
   getClaimByReference,
@@ -11,7 +10,7 @@ import {
 } from '../../../repositories/claim-repository.js'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import { StatusCodes } from 'http-status-codes'
-import { claimType, getAmount } from 'ffc-ahwr-common-library'
+import { claimType, getAmount, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 import {
   createClaimHandler,
@@ -65,10 +64,10 @@ export const claimHandlers = [
             .string()
             .optional()
             .valid(
-              livestockTypes.beef,
-              livestockTypes.dairy,
-              livestockTypes.pigs,
-              livestockTypes.sheep
+              TYPE_OF_LIVESTOCK.BEEF,
+              TYPE_OF_LIVESTOCK.DAIRY,
+              TYPE_OF_LIVESTOCK.PIGS,
+              TYPE_OF_LIVESTOCK.SHEEP
             )
         })
       },
@@ -143,10 +142,10 @@ export const claimHandlers = [
           typeOfLivestock: joi
             .string()
             .valid(
-              livestockTypes.beef,
-              livestockTypes.dairy,
-              livestockTypes.pigs,
-              livestockTypes.sheep
+              TYPE_OF_LIVESTOCK.BEEF,
+              TYPE_OF_LIVESTOCK.DAIRY,
+              TYPE_OF_LIVESTOCK.PIGS,
+              TYPE_OF_LIVESTOCK.SHEEP
             )
             .required(),
           reviewTestResults: joi

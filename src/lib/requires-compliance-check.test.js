@@ -1,7 +1,6 @@
 import { generateClaimStatus } from './requires-compliance-check'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count'
 import { config } from '../config/config.js'
-import { applicationStatus } from '../constants'
 
 jest.mock('../repositories/compliance-check-count')
 jest.mock('../config/config.js', () => ({
@@ -38,7 +37,7 @@ describe('generateClaimStatus', () => {
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
     expect(getAndIncrementComplianceCheckCount).toHaveBeenCalledTimes(1)
-    expect(result).toBe(applicationStatus.inCheck)
+    expect(result).toBe('IN_CHECK')
   })
 
   test('should return onHold when compliance checks are disabled (ratio <= 0)', async () => {
@@ -48,7 +47,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
     expect(getAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
   })
 
@@ -59,7 +58,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
     expect(getAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
   })
 
@@ -70,7 +69,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
   })
 
   test('should return inCheck when claim count matches ratio interval', async () => {
@@ -80,7 +79,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.inCheck)
+    expect(result).toBe('IN_CHECK')
   })
 
   test('should return inCheck when claim count is multiple of ratio', async () => {
@@ -90,7 +89,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.inCheck)
+    expect(result).toBe('IN_CHECK')
   })
 
   test('should return onHold when claim count is not multiple of ratio', async () => {
@@ -100,7 +99,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
   })
 
   test('should return onHold when feature assurance on but visit date before assurance start', async () => {
@@ -113,7 +112,7 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
   })
 
   test('should return onHold when visit date after assurance start but feature assurance off', async () => {
@@ -126,6 +125,6 @@ describe('generateClaimStatus', () => {
 
     const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe(applicationStatus.onHold)
+    expect(result).toBe('ON_HOLD')
   })
 })

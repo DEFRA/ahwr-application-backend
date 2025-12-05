@@ -1,6 +1,6 @@
 import { config } from '../config/config.js'
-import { applicationStatus } from '../constants/index.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
+import { STATUS } from 'ffc-ahwr-common-library'
 
 export const generateClaimStatus = async (visitDateAsString, logger, db) => {
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
@@ -18,17 +18,17 @@ const getClaimStatusBasedOnRatio = async (db) => {
 
   // if complianceCheckRatio is 0 or less this means compliance checks are turned off
   if (complianceCheckRatio <= 0) {
-    return applicationStatus.onHold
+    return STATUS.ON_HOLD
   }
 
   const complianceCheckCount = await getAndIncrementComplianceCheckCount(db)
 
   // if claim hits the compliance check ratio, it should be inCheck
   if (complianceCheckCount % complianceCheckRatio === 0) {
-    return applicationStatus.inCheck
+    return STATUS.IN_CHECK
   }
 
-  return applicationStatus.onHold
+  return STATUS.ON_HOLD
 }
 
 const isFeatureAssuranceEnabledAndStartedBeforeVisitDate = (visitDateAsString) => {

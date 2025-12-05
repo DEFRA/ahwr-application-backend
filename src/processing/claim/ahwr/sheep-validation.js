@@ -1,11 +1,11 @@
-import { livestockTypes, minimumNumberOfAnimalsTested } from '../../../constants/index.js'
+import { minimumNumberOfAnimalsTested } from '../../../constants/index.js'
 import joi from 'joi'
-import { claimType } from 'ffc-ahwr-common-library'
+import { claimType, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 
 const minimumAnimalsTestedForReview =
-  minimumNumberOfAnimalsTested[livestockTypes.sheep][claimType.review]
+  minimumNumberOfAnimalsTested[TYPE_OF_LIVESTOCK.SHEEP][claimType.review]
 const minimumAnimalsTestedForFollowUp =
-  minimumNumberOfAnimalsTested[livestockTypes.sheep][claimType.endemics]
+  minimumNumberOfAnimalsTested[TYPE_OF_LIVESTOCK.SHEEP][claimType.endemics]
 
 const dateOfTesting = { dateOfTesting: joi.date().required() }
 const laboratoryURN = { laboratoryURN: joi.string().required() }

@@ -7,7 +7,6 @@ import {
 } from '../../repositories/application-repository.js'
 // import { config } from '../../config/config.js'
 // import { sendMessage } from '../../messaging/send-message.js'
-import { applicationStatus as APPLICATION_STATUS } from '../../constants/index.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 // import { messageQueueConfig } from '../../config/message-queue.js'
@@ -20,6 +19,7 @@ import {
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import { raiseApplicationStatusEvent } from '../../event-publisher/index.js'
 import { isOWAppRef } from '../../lib/context-helper.js'
+import { STATUS } from 'ffc-ahwr-common-library'
 
 // const submitPaymentRequestMsgType = config.get('messageTypes')
 // const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
@@ -74,7 +74,7 @@ export const applicationHandlers = [
           ref: joi.string().valid()
         }),
         payload: joi.object({
-          status: joi.string().valid(...Object.values(APPLICATION_STATUS)),
+          status: joi.string().valid(...Object.values(STATUS)),
           user: joi.string(),
           note: joi.string()
         }),
@@ -138,58 +138,9 @@ export const applicationHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { approved, reference, user, note } = request.payload
-        const { db } = request
-
-        request.logger.setBindings({ reference })
-
-        const application = await getOWApplication(db, reference)
-        if (!application) {
-          return h.response('Not Found').code(HttpStatus.NOT_FOUND).takeover()
-        }
-
-        try {
-          let status = APPLICATION_STATUS.rejected
-
-          if (approved) {
-            status = APPLICATION_STATUS.readyToPay
-
-            // TODO
-            // await sendMessage(
-            //   {
-            //     reference,
-            //     sbi: application.organisation.sbi,
-            //     whichReview: application.data.whichReview
-            //   },
-            //   submitPaymentRequestMsgType,
-            //   submitRequestQueue,
-            //   { sessionId: uuid() }
-            // )
-          }
-
-          request.logger.setBindings({ status })
-
-          const result = await updateOWApplicationStatus({
-            db,
-            reference,
-            status,
-            user,
-            updatedAt: new Date()
-          })
-
-          if (result) {
-            await raiseApplicationStatusEvent({
-              message: 'Application has been updated',
-              application: { ...result, id: result._id.toString() },
-              raisedBy: result.updatedBy,
-              raisedOn: result.updatedAt,
-              note
-            })
-          }
-        } catch (err) {
-          request.logger.setBindings({ error: err })
-        }
-        return h.response().code(HttpStatus.OK)
+        // TODO: This handler is still targeted from CDP backoffice, however it's no longer possible to process an application as a claim
+        // so this should be removed. Removing the guts of this now, but remove it totally when also unplumbing from the BO side
+        return h.response().code(HttpStatus.NO_CONTENT)
       }
     }
   },
