@@ -1,6 +1,6 @@
 import Joi from 'joi'
 import { sbiSchema } from '../schema/sbi.schema.js'
-import { livestockTypes } from '../../../constants/index.js'
+import { TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 
 const ERROR_MESSAGE = {
   mandatoryQueryParameters: '"sbi" query param must be provided',
@@ -49,9 +49,9 @@ export const getApplicationsQuerySchema = Joi.object({
 export const getApplicationClaimsQuerySchema = Joi.object({
   typeOfLivestock: Joi.string()
     .optional()
-    .valid(...Object.values(livestockTypes))
+    .valid(...Object.values(TYPE_OF_LIVESTOCK))
 })
 
 export const getApplicationHerdsQuerySchema = Joi.object({
-  species: Joi.string().valid(...Object.values(livestockTypes))
+  species: Joi.string().valid(...Object.values(TYPE_OF_LIVESTOCK))
 })

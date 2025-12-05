@@ -1,10 +1,12 @@
-import { configureAndStart, stopSubscriber } from './message-request-queue-subscriber.js'
+import { configureAndStart, stopSubscriber } from './application-message-queue-subscriber.js'
 import { SqsSubscriber } from 'ffc-ahwr-common-library'
 import { getLogger } from '../logging/logger.js'
 import { config } from '../config/config.js'
+import { processApplicationMessage } from './process-message.js'
 
 jest.mock('../logging/logger.js')
 jest.mock('ffc-ahwr-common-library')
+jest.mock('./process-message.js')
 
 describe('MessageRequestQueueSubscriber', () => {
   beforeEach(() => {
@@ -34,6 +36,20 @@ describe('MessageRequestQueueSubscriber', () => {
         onMessage: expect.any(Function)
       })
       expect(SqsSubscriber.mock.instances[0].start).toHaveBeenCalledTimes(1)
+    })
+
+    it('should pass message on via onmessage function', async () => {
+      const mockLogger = { info: jest.fn() }
+      getLogger.mockReturnValue(mockLogger)
+      processApplicationMessage.mockResolvedValueOnce()
+      const mockDb = {}
+
+      const onMessage = await configureAndStart(mockDb)
+
+      await onMessage({ claimRef: 'ABC123', sbi: '123456789' }, {})
+
+      expect(mockLogger.info).toHaveBeenCalledTimes(1)
+      expect(processApplicationMessage).toHaveBeenCalledTimes(1)
     })
   })
 
