@@ -116,7 +116,8 @@ export const getApplications = async ({ sbi, logger, db }) => {
     status: app.status,
     createdAt: app.createdAt,
     organisation: app.organisation,
-    redacted: app.redacted
+    redacted: app.redacted,
+    flags: app.flags
   }))
 }
 
