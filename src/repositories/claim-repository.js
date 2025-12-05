@@ -30,7 +30,7 @@ export const createClaim = async (db, data) => {
   return db.collection(CLAIMS_COLLECTION).insertOne(data)
 }
 
-export const updateClaimStatus = async ({ db, reference, status, user, updatedAt }) => {
+export const updateClaimStatus = async ({ db, reference, status, user, updatedAt, note }) => {
   return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
     { reference },
     {
@@ -42,6 +42,7 @@ export const updateClaimStatus = async ({ db, reference, status, user, updatedAt
       $push: {
         statusHistory: {
           status,
+          note,
           createdAt: updatedAt,
           createdBy: user
         }

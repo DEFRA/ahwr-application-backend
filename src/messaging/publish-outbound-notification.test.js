@@ -1,5 +1,7 @@
 import {
   publishDocumentRequestEvent,
+  publishReminderEvent,
+  publishRequestForPaymentEvent,
   publishStatusChangeEvent
 } from './publish-outbound-notification.js'
 import { publishMessage, setupClient } from 'ffc-ahwr-common-library'
@@ -16,6 +18,8 @@ describe('publish outbound notification', () => {
   beforeAll(() => {
     config.set('sns.documentRequestedTopicArn', 'arn:aws:sns:eu-west-2:1:document-requested')
     config.set('sns.statusChangeTopicArn', 'arn:aws:sns:eu-west-2:1:status-change')
+    config.set('sns.paymentRequestTopicArn', 'arn:aws:sns:eu-west-2:1:payment-request')
+    config.set('sns.reminderRequestedTopicArn', 'arn:aws:sns:eu-west-2:1:reminder-request')
   })
 
   beforeEach(() => {
@@ -86,7 +90,7 @@ describe('publish outbound notification', () => {
         agreementReference: 'IAHW-RWE2-G8S7',
         claimReference: 'REBC-ABCD-1234',
         claimStatus: 'PAID',
-        claimType: 'R',
+        claimType: 'REVIEW',
         typeOfLivestock: 'beef',
         dateTime: new Date('2025-11-21T14:17:20.084Z'),
         herdName: 'Unnamed herd'
@@ -101,6 +105,54 @@ describe('publish outbound notification', () => {
           eventType: 'uk.gov.ffc.ahwr.claim.status.update'
         },
         'arn:aws:sns:eu-west-2:1:status-change'
+      )
+    })
+  })
+
+  describe('publishRequestForPaymentEvent', () => {
+    test('publishes request for payment message', async () => {
+      const inputMessageBody = {
+        reviewTestResults: 'positive',
+        reference: 'REBC-ABCD-1234',
+        sbi: '123456789',
+        frn: '123',
+        claimType: 'FOLLOW_UP',
+        whichReview: 'beef',
+        optionalPiHuntValue: 'yesPiHunt',
+        isEndemics: true,
+        dateTime: new Date('2025-11-21T14:17:20.084Z')
+      }
+
+      await publishRequestForPaymentEvent(mockLogger, inputMessageBody)
+
+      expect(setupClient).toHaveBeenCalledTimes(0)
+      expect(publishMessage).toHaveBeenCalledWith(
+        inputMessageBody,
+        {
+          eventType: 'uk.gov.ffc.ahwr.submit.payment.request'
+        },
+        'arn:aws:sns:eu-west-2:1:payment-request'
+      )
+    })
+  })
+
+  describe('publishReminderEvent', () => {
+    test('publishes reminder message', async () => {
+      const inputMessageBody = {
+        agreementReference: 'IAHW-ABCD-1234',
+        sbi: '123456789',
+        dateTime: new Date('2025-11-21T14:17:20.084Z')
+      }
+
+      await publishReminderEvent(mockLogger, inputMessageBody)
+
+      expect(setupClient).toHaveBeenCalledTimes(0)
+      expect(publishMessage).toHaveBeenCalledWith(
+        inputMessageBody,
+        {
+          eventType: 'uk.gov.ffc.ahwr.agreement.reminder.email'
+        },
+        'arn:aws:sns:eu-west-2:1:reminder-request'
       )
     })
   })

@@ -1,42 +1,24 @@
 import joi from 'joi'
-// import { v4 as uuid } from 'uuid'
-// import { sendMessage } from '../../../messaging/send-message.js'
-// import { config } from '../../../config/config.js'
 import {
   piHunt,
   piHuntAllAnimals,
   testResults as testResultsConstant,
   livestockTypes
-  // applicationStatus
 } from '../../../constants/index.js'
 import {
   getClaimByReference,
-  getByApplicationReference,
-  updateClaimStatus
+  getByApplicationReference
 } from '../../../repositories/claim-repository.js'
-import { getApplication } from '../../../repositories/application-repository.js'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
-// import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import { StatusCodes } from 'http-status-codes'
-import {
-  // TYPE_OF_LIVESTOCK,
-  // UNNAMED_FLOCK,
-  // UNNAMED_HERD,
-  claimType,
-  getAmount
-} from 'ffc-ahwr-common-library'
+import { claimType, getAmount } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { createClaimHandler, isURNUniqueHandler, getClaimHandler } from './claims-controller.js'
-// import { messageQueueConfig } from '../../../config/message-queue.js'
-import { raiseClaimEvents } from '../../../event-publisher/index.js'
-
-// const submitPaymentRequestMsgType = config.get('messageTypes')
-// const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
-// const messageGeneratorMsgType = config.get('messageTypes')
-// const messageGeneratorQueue = messageQueueConfig.messageGeneratorQueue // TODO: get from main config
-
-// const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
-//   typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
+import {
+  createClaimHandler,
+  isURNUniqueHandler,
+  getClaimHandler,
+  updateClaimStatusHandler
+} from './claims-controller.js'
 
 export const claimHandlers = [
   {
@@ -202,123 +184,12 @@ export const claimHandlers = [
           note: joi.string()
         }),
         failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
+          request.logger.error({ err })
 
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
         }
       },
-      handler: async (request, h) => {
-        const { reference, status, note, user } = request.payload
-        const { db, logger } = request
-
-        logger.setBindings({
-          reference,
-          status
-        })
-
-        const claim = await getClaimByReference(db, reference)
-        if (!claim) {
-          return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
-        }
-
-        // const {
-        //   typeOfLivestock,
-        //   reviewTestResults,
-        //   vetVisitsReviewTestResults
-        // } = claim.data || {}
-
-        const { applicationReference } = claim
-
-        const application = await getApplication({
-          db,
-          reference: applicationReference
-        })
-        // const { sbi, frn, crn } = application?.organisation || {}
-        const { sbi } = application?.organisation || {}
-
-        logger.setBindings({ sbi })
-
-        if (claim.status === status) {
-          logger.info(`Claim ${reference} already has status ${status}, no update needed.`)
-          return h.response().code(StatusCodes.NO_CONTENT)
-        }
-
-        const updatedClaim = await updateClaimStatus({
-          db,
-          reference,
-          status,
-          user,
-          updatedAt: new Date()
-        })
-
-        await raiseClaimEvents(
-          {
-            message: 'Claim has been updated',
-            claim: { ...updatedClaim, id: updatedClaim._id.toString() },
-            note,
-            raisedBy: updatedClaim.updatedBy,
-            raisedOn: updatedClaim.updatedAt
-          },
-          sbi
-        )
-
-        // await sendMessage(
-        //   {
-        //     crn,
-        //     sbi,
-        //     agreementReference: applicationReference,
-        //     claimReference: reference,
-        //     claimStatus: status,
-        //     claimType: claim.type,
-        //     typeOfLivestock,
-        //     reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
-        //     piHuntRecommended: claim.dataValues.data.piHuntRecommended,
-        //     piHuntAllAnimals: claim.dataValues.data.piHuntAllAnimals,
-        //     dateTime: new Date(),
-        //     herdName:
-        //       claim.dataValues?.herd?.herdName ||
-        //       getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
-        //   },
-        //   messageGeneratorMsgType,
-        //   messageGeneratorQueue,
-        //   { sessionId: uuid() }
-        // )
-
-        // if (status === applicationStatus.readyToPay) {
-        //   let optionalPiHuntValue
-
-        //   if (
-        //     isVisitDateAfterPIHuntAndDairyGoLive(
-        //       claim.data.dateOfVisit
-        //     )
-        //   ) {
-        //     optionalPiHuntValue =
-        //       claim.data.piHunt === piHunt.yes &&
-        //       claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
-        //         ? 'yesPiHunt'
-        //         : 'noPiHunt'
-        //   }
-
-        // await sendMessage(
-        //   {
-        //     reference,
-        //     sbi,
-        //     whichReview: typeOfLivestock,
-        //     isEndemics: true,
-        //     claimType: claim.type,
-        //     reviewTestResults:
-        //       reviewTestResults ?? vetVisitsReviewTestResults,
-        //     frn,
-        //     optionalPiHuntValue
-        //   },
-        //   submitPaymentRequestMsgType,
-        //   submitRequestQueue,
-        //   { sessionId: uuid() }
-        // )
-        // }
-
-        return h.response().code(StatusCodes.OK)
-      }
+      handler: updateClaimStatusHandler
     }
   }
 ]

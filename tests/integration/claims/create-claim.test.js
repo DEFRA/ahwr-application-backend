@@ -1,6 +1,7 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 
+jest.mock('../../../src/messaging/publish-outbound-notification.js')
 describe('Create claim', () => {
   let server
 

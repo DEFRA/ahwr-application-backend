@@ -6,6 +6,8 @@ import { processHerd } from './herd-processor.js'
 import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
 import { getAmount } from 'ffc-ahwr-common-library'
+import { publishStatusChangeEvent } from '../../../messaging/publish-outbound-notification.js'
+import { getLogger } from '../../../logging/logger.js'
 
 jest.mock('ffc-ahwr-common-library')
 jest.mock('../../../lib/context-helper.js')
@@ -13,8 +15,9 @@ jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../lib/requires-compliance-check.js')
 jest.mock('../../../lib/emit-herd-MI-events.js')
 jest.mock('./herd-processor.js')
-jest.mock('uuid')
 jest.mock('../../../event-publisher/index.js')
+jest.mock('../../../messaging/publish-outbound-notification.js')
+jest.mock('../../../logging/logger.js')
 
 const mockSession = {
   withTransaction: jest.fn((fn) => fn()),
@@ -193,7 +196,7 @@ describe('generateEventsAndComms', () => {
   const claim = {
     reference: 'CLM-999',
     type: 'REVIEW',
-    statusId: 'PENDING',
+    status: 'ON_HOLD',
     data: {
       amount: 100,
       typeOfLivestock: 'sheep',
@@ -206,11 +209,11 @@ describe('generateEventsAndComms', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    // uuid.mockReturnValue('uuid-1234')
-    // appInsights.defaultClient = { trackEvent: jest.fn() }
   })
 
-  it('should emit herd events and send message for multi-herd claim', async () => {
+  it('should emit herd events, send status notification, and log event message for multi-herd claim', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'My Herd' }
     await generateEventsAndComms(true, claim, mockApp, herdData, true, 'HERD-1')
 
@@ -224,37 +227,55 @@ describe('generateEventsAndComms', () => {
         applicationReference: 'APP-999'
       })
     )
-    // expect(sendMessage).toHaveBeenCalledWith(
-    //   expect.objectContaining({
-    //     claimReference: 'CLM-999',
-    //     sbi: 'SBI-123',
-    //     claimAmount: 100
-    //   }),
-    //   config.messageGeneratorMsgType,
-    //   config.messageGeneratorQueue,
-    //   { sessionId: 'uuid-1234' }
-    // )
-    // expect(appInsights.defaultClient.trackEvent).toHaveBeenCalled()
+
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
+      agreementReference: 'APP-999',
+      claimAmount: 100,
+      claimReference: 'CLM-999',
+      claimStatus: 'ON_HOLD',
+      claimType: 'REVIEW',
+      crn: 'CRN-999',
+      dateTime: expect.any(Date),
+      herdName: 'My Herd',
+      piHuntAllAnimals: false,
+      piHuntRecommended: false,
+      reviewTestResults: [],
+      sbi: 'SBI-123',
+      typeOfLivestock: 'sheep'
+    })
+
+    expect(mockLogger.info).toHaveBeenCalledWith({
+      event: {
+        category: 'sheep',
+        created: expect.any(Date),
+        kind: 'REVIEW',
+        outcome: 'Status - ON_HOLD',
+        reference: 'SBI-123 - APP-999 - CLM-999',
+        type: 'process-claim'
+      }
+    })
   })
 
-  // it('should send message with unnamed herd if herd name missing', async () => {
-  //   const herdData = {}
-  //   await generateEventsAndComms(
-  //     false,
-  //     claim,
-  //     mockApp,
-  //     herdData,
-  //     false,
-  //     'HERD-1'
-  //   )
+  it('should send message with unnamed herd if herd name missing', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
+    const herdData = {}
+    await generateEventsAndComms(false, claim, mockApp, herdData, false, 'HERD-1')
 
-  //   expect(sendMessage).toHaveBeenCalledWith(
-  //     expect.objectContaining({
-  //       herdName: UNNAMED_FLOCK
-  //     }),
-  //     expect.anything(),
-  //     expect.anything(),
-  //     expect.anything()
-  //   )
-  // })
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
+      agreementReference: 'APP-999',
+      claimAmount: 100,
+      claimReference: 'CLM-999',
+      claimStatus: 'ON_HOLD',
+      claimType: 'REVIEW',
+      crn: 'CRN-999',
+      dateTime: expect.any(Date),
+      herdName: 'Unnamed flock',
+      piHuntAllAnimals: false,
+      piHuntRecommended: false,
+      reviewTestResults: [],
+      sbi: 'SBI-123',
+      typeOfLivestock: 'sheep'
+    })
+  })
 })
