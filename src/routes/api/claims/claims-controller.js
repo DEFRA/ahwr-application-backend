@@ -143,14 +143,7 @@ export const updateClaimStatusHandler = async (request, h) => {
   })
 
   if (status === STATUS.READY_TO_PAY) {
-    let optionalPiHuntValue
-
-    if (isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)) {
-      optionalPiHuntValue =
-        claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHunt.yes
-          ? 'yesPiHunt'
-          : 'noPiHunt'
-    }
+    const optionalPiHuntValue = getOptionalPiHuntValue(claim)
 
     await publishRequestForPaymentEvent(logger, {
       reference,
@@ -165,6 +158,19 @@ export const updateClaimStatusHandler = async (request, h) => {
   }
 
   return h.response().code(StatusCodes.OK)
+}
+
+const getOptionalPiHuntValue = (claim) => {
+  let optionalPiHuntValue
+
+  if (isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)) {
+    optionalPiHuntValue =
+      claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHunt.yes
+        ? 'yesPiHunt'
+        : 'noPiHunt'
+  }
+
+  return optionalPiHuntValue
 }
 
 const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
