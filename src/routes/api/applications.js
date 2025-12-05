@@ -1,15 +1,11 @@
 import joi from 'joi'
-// import { v4 as uuid } from 'uuid'
 import {
   getApplication,
   searchApplications,
   updateApplication
 } from '../../repositories/application-repository.js'
-// import { config } from '../../config/config.js'
-// import { sendMessage } from '../../messaging/send-message.js'
 import { searchPayloadSchema } from './schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
-// import { messageQueueConfig } from '../../config/message-queue.js'
 import {
   findOWApplication,
   updateOWApplication,
@@ -20,9 +16,6 @@ import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-ev
 import { raiseApplicationStatusEvent } from '../../event-publisher/index.js'
 import { isOWAppRef } from '../../lib/context-helper.js'
 import { STATUS } from 'ffc-ahwr-common-library'
-
-// const submitPaymentRequestMsgType = config.get('messageTypes')
-// const submitRequestQueue = messageQueueConfig.submitRequestQueue // TODO: get from main config
 
 export const applicationHandlers = [
   {
@@ -137,7 +130,7 @@ export const applicationHandlers = [
           return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
         }
       },
-      handler: async (request, h) => {
+      handler: async (_request, h) => {
         // TODO: This handler is still targeted from CDP backoffice, however it's no longer possible to process an application as a claim
         // so this should be removed. Removing the guts of this now, but remove it totally when also unplumbing from the BO side
         return h.response().code(HttpStatus.NO_CONTENT)
