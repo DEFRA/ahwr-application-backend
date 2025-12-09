@@ -49,7 +49,8 @@ describe('Get applications', () => {
           address: '1 fake street,fake town,United Kingdom',
           orgEmail: 'fake.org.email@example.com.test'
         },
-        redacted: false
+        redacted: false,
+        flags: []
       }
     ])
   })
