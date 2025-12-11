@@ -13,21 +13,17 @@ export const latestContactDetailsHandlers = [
         })
       },
       handler: async (request, h) => {
-        const application = await getApplication(request.params.ref)
+        const application = await getApplication({
+          db: request.db,
+          reference: request.params.ref
+        })
 
         if (!application) {
           return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
         }
 
-        const { name, orgEmail, farmerName, email } = application.dataValues.data.organisation
-        const contactDetails = {
-          name,
-          orgEmail,
-          farmerName,
-          email
-        }
-
-        return h.response(contactDetails).code(StatusCodes.OK)
+        const { name, orgEmail, farmerName, email } = application.organisation
+        return h.response({ name, orgEmail, farmerName, email }).code(StatusCodes.OK)
       }
     }
   }
