@@ -161,7 +161,6 @@ describe('applications-service', () => {
       }
 
       const expectedApplication = {
-        claimed: false,
         contactHistory: [],
         createdAt: expect.any(Date),
         createdBy: 'admin',
