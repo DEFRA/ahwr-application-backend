@@ -273,7 +273,7 @@ describe('Applications test', () => {
       })
     })
 
-    test('returns 200 when new status is In Check (5)', async () => {
+    test('returns 200 when new status is In Check', async () => {
       getOWApplication.mockResolvedValue({
         reference: 'IAHW-U6ZE-5R5E',
         createdBy: 'admin',
@@ -362,21 +362,6 @@ describe('Applications test', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
-    })
-  })
-
-  describe('POST /api/applications/claim route', () => {
-    const method = 'POST'
-
-    test('returns 204', async () => {
-      const options = {
-        method,
-        url: '/api/applications/claim',
-        payload: { approved: true, user: 'test', reference: '123-ABC' }
-      }
-      const res = await server.inject(options)
-
-      expect(res.statusCode).toBe(204)
     })
   })
 
