@@ -40,8 +40,7 @@ const buildApplication = (applicationRequest) => {
     updateHistory: [],
     flags: [],
     redactionHistory: {},
-    eligiblePiiRedaction: true,
-    claimed: false
+    eligiblePiiRedaction: true
   }
 }
 
