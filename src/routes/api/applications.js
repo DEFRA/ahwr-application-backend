@@ -115,29 +115,6 @@ export const applicationHandlers = [
     }
   },
   {
-    method: 'POST',
-    path: '/api/applications/claim',
-    options: {
-      validate: {
-        payload: joi.object({
-          approved: joi.boolean().required(),
-          reference: joi.string().required(),
-          user: joi.string().required(),
-          note: joi.string()
-        }),
-        failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
-          return h.response({ err }).code(HttpStatus.BAD_REQUEST).takeover()
-        }
-      },
-      handler: async (_request, h) => {
-        // TODO: This handler is still targeted from CDP backoffice, however it's no longer possible to process an application as a claim
-        // so this should be removed. Removing the guts of this now, but remove it totally when also unplumbing from the BO side
-        return h.response().code(HttpStatus.NO_CONTENT)
-      }
-    }
-  },
-  {
     method: 'PUT',
     path: '/api/applications/{reference}/data',
     options: {

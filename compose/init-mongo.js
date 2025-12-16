@@ -300,6 +300,63 @@ db.getCollection('owapplications').insertMany([
     eligiblePiiRedaction: true
   },
   {
+    reference: 'AHWR-B571-6E80',
+    createdAt: new Date('2023-09-21T21:11:02.776Z'),
+    updatedAt: new Date('2024-11-20T13:51:24.283Z'),
+    createdBy: 'admin',
+    updatedBy: 'admin',
+    data: {
+      vetName: 'Mr CowWhisperer',
+      vetRcvs: '1208642',
+      urnResult: '355981',
+      visitDate: new Date('2023-11-10T00:00:00.000Z'),
+      dateOfClaim: new Date('2023-11-23T20:17:43.694Z'),
+      declaration: true,
+      offerStatus: 'accepted',
+      whichReview: 'beef',
+      dateOfTesting: new Date('2023-11-10T00:00:00.000Z'),
+      detailsCorrect: 'yes',
+      eligibleSpecies: 'yes',
+      confirmCheckDetails: 'yes'
+    },
+    organisation: {
+      sbi: '123456789',
+      name: 'Mr madeup',
+      email: 'karengilberta@trebligneraky.com.test',
+      address:
+        'Forest View Farm,PAYHEMBURY,CLAYTONS FARM,LITTLE LONDON,NEWBURY,GL3 4RA,United Kingdom',
+      orgEmail: 'burdassfrz@rfssadrubj.com.test',
+      farmerName: 'Karen Gilbert'
+    },
+    status: 'RECOMMENDED_TO_PAY',
+    statusHistory: [
+      {
+        status: 'IN_CHECK',
+        createdBy: 'admin',
+        createdAt: new Date('2023-09-21T21:11:02.776Z')
+      },
+      {
+        status: 'RECOMMENDED_TO_PAY',
+        createdBy: 'admin',
+        createdAt: new Date('2023-09-22T21:11:02.776Z')
+      }
+    ],
+    updateHistory: [],
+    contactHistory: [
+      {
+        id: '7e4dca92-2ee8-4420-8efc-eec7daafd26b',
+        field: 'email',
+        newValue: 'karengilberta@trebligneraky.com.test',
+        oldValue: 'notreal@madeitup.com',
+        createdAt: new Date('2024-11-20T13:51:24.291Z')
+      }
+    ],
+    redactionHistory: {},
+    flags: [],
+    claimed: false,
+    eligiblePiiRedaction: true
+  },
+  {
     reference: 'AHWR-B571-6E85',
     createdAt: new Date('2018-08-12T10:00:00.000Z'),
     updatedAt: new Date('2025-08-13T14:40:14.591Z'),
