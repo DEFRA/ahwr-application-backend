@@ -2,7 +2,8 @@ import {
   getByApplicationReference,
   getClaimByReference,
   updateClaimStatus,
-  updateClaimData
+  updateClaimData,
+  addHerdToClaimData
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 
@@ -277,6 +278,63 @@ describe('updateClaimData', () => {
             createdBy: 'test-user',
             eventType: 'claim-vetsName',
             updatedProperty: 'vetsName'
+          }
+        }
+      }
+    )
+  })
+})
+
+describe('addHerdToClaimData', () => {
+  const mockDb = { collection: jest.fn() }
+  const mockCollection = { findOneAndUpdate: jest.fn() }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockDb.collection.mockReturnValue(mockCollection)
+  })
+
+  it('should update claim herd data and add history entry', async () => {
+    const associatedAt = new Date('2024-11-20T13:51:24.291Z')
+
+    await addHerdToClaimData({
+      db: mockDb,
+      claimRef: 'FUBC-JTTU-SDQ7',
+      claimHerdData: {
+        id: 'herd-id-123',
+        version: 2,
+        associatedAt,
+        name: 'New Herd Name',
+        cph: '12/345/6789',
+        reasons: ['diseaseControl', 'uniqueHealthNeeds']
+      },
+      createdBy: 'test-user'
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('claims')
+    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+      { reference: 'FUBC-JTTU-SDQ7' },
+      {
+        $set: {
+          'herd.id': 'herd-id-123',
+          'herd.version': 2,
+          'herd.associatedAt': associatedAt,
+          'herd.name': 'New Herd Name',
+          'herd.cph': '12/345/6789',
+          'herd.reasons': ['diseaseControl', 'uniqueHealthNeeds'],
+          updatedBy: 'test-user',
+          updatedAt: expect.any(Date)
+        },
+        $push: {
+          updateHistory: {
+            id: expect.any(String),
+            note: 'Herd details were retroactively applied to this pre-multiple herds claim',
+            newValue: 'New Herd Name',
+            oldValue: 'Unnamed herd',
+            createdAt: expect.any(Date),
+            createdBy: 'test-user',
+            eventType: 'claim-herdAssociated',
+            updatedProperty: 'herdName'
           }
         }
       }
