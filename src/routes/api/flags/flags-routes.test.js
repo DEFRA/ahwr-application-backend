@@ -1,9 +1,9 @@
 import Boom from '@hapi/boom'
-import { flagRoutes } from './flags-routes.js'
+import { flagHandlers } from './flags-routes.js'
 
-describe('flagRoutes', () => {
+describe('flagHandlers', () => {
   describe('POST /api/applications/{ref}/flag', () => {
-    const postRoute = flagRoutes.find(
+    const postRoute = flagHandlers.find(
       (r) => r.method === 'POST' && r.path === '/api/applications/{ref}/flag'
     )
 
@@ -27,7 +27,7 @@ describe('flagRoutes', () => {
   })
 
   describe('PATCH /api/flags/{flagId}/delete', () => {
-    const patchRoute = flagRoutes.find(
+    const patchRoute = flagHandlers.find(
       (r) => r.method === 'PATCH' && r.path === '/api/flags/{flagId}/delete'
     )
 

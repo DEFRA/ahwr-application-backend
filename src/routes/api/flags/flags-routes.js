@@ -7,7 +7,7 @@ import {
 } from './flags-schema.js'
 import Boom from '@hapi/boom'
 
-export const flagRoutes = [
+export const flagHandlers = [
   {
     method: 'PATCH',
     path: '/api/flags/{flagId}/delete',
