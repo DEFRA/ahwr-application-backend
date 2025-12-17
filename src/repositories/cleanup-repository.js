@@ -1,6 +1,8 @@
+import { APPLICATION_COLLECTION, CLAIMS_COLLECTION, HERDS_COLLECTION } from '../constants'
+
 export const deleteDataForSbis = async (sbisToDelete, db) => {
   const applications = await db
-    .collection('applications')
+    .collection(APPLICATION_COLLECTION)
     .find({ 'organisation.sbi': { $in: sbisToDelete } }, { projection: { reference: 1 } })
     .toArray()
 
@@ -15,13 +17,13 @@ export const deleteDataForSbis = async (sbisToDelete, db) => {
   }
 
   const [herds, claims, applicationsDelete] = await Promise.all([
-    db.collection('herds').deleteMany({
+    db.collection(HERDS_COLLECTION).deleteMany({
       applicationReference: { $in: appRefs }
     }),
-    db.collection('claims').deleteMany({
+    db.collection(CLAIMS_COLLECTION).deleteMany({
       applicationReference: { $in: appRefs }
     }),
-    db.collection('applications').deleteMany({
+    db.collection(APPLICATION_COLLECTION).deleteMany({
       reference: { $in: appRefs }
     })
   ])
