@@ -106,7 +106,7 @@ export const updateClaimData = async ({
 }
 
 export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, db }) => {
-  const { id, version, associatedAt, name } = claimHerdData
+  const { id, version, associatedAt, name, cph, reasons } = claimHerdData
 
   await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
     { reference: claimRef },
@@ -115,6 +115,9 @@ export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, d
         'herd.id': id,
         'herd.version': version,
         'herd.associatedAt': associatedAt,
+        'herd.name': name,
+        'herd.cph': cph,
+        'herd.reasons': reasons,
         updatedBy: createdBy,
         updatedAt: new Date()
       },
