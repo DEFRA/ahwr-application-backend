@@ -2,7 +2,8 @@ import {
   isOWURNUnique,
   getOWApplication,
   updateOWApplication,
-  updateOWApplicationStatus
+  updateOWApplicationStatus,
+  getOWApplicationsBySbi
 } from './ow-application-repository.js'
 
 jest.mock('uuid', () => ({
@@ -234,5 +235,56 @@ describe('updateOWApplicationStatus', () => {
       { returnDocument: 'after' }
     )
     expect(result).toBe(updatedApplication)
+  })
+})
+
+describe('getOWApplicationsBySbi', () => {
+  const mockCollection = {
+    toArray: jest.fn(),
+    find: jest.fn().mockReturnThis(),
+    aggregate: jest.fn().mockReturnThis()
+  }
+  const dbMock = {
+    collection: jest.fn(() => mockCollection)
+  }
+  it('should return applications that match sbi in descending order', async () => {
+    const mockResult = [
+      {
+        reference: 'AHWR-8ZPZ-8CLI',
+        createdAt: new Date('2025-01-01'),
+        updatedAt: new Date('2025-01-02'),
+        createdBy: 'admin',
+        updatedBy: 'user2',
+        data: {
+          reference: 'TEMP-8ZPZ-8CLI',
+          declaration: true,
+          offerStatus: 'accepted',
+          confirmCheckDetails: 'yes'
+        },
+        organisation: {
+          crn: '1101489790',
+          sbi: '118409263',
+          name: 'High Oustley Farm',
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          address:
+            'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          userType: 'newUser',
+          farmerName: 'J Parkinson'
+        },
+        status: 'AGREED',
+        flags: [{ appliesToMh: true }],
+        redacted: false,
+        claimed: true
+      }
+    ]
+    mockCollection.toArray.mockResolvedValue(mockResult)
+    const sbi = '123456789'
+
+    const result = await getOWApplicationsBySbi(dbMock, sbi)
+
+    expect(dbMock.collection).toHaveBeenCalledWith('owapplications')
+    expect(mockCollection.aggregate).toHaveBeenCalledWith(expect.any(Array))
+    expect(result).toEqual(mockResult)
   })
 })
