@@ -5,12 +5,7 @@ import { startAndEndDate } from '../lib/date-utils.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
-
-const flagNotDeletedFilter = {
-  input: { $ifNull: ['$flags', []] },
-  as: 'flag',
-  cond: { $eq: ['$$flag.deleted', false] }
-}
+import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
 
 export const getApplication = async ({ db, reference, includeDeletedFlags = false }) => {
   const flagFilter = includeDeletedFlags
@@ -372,41 +367,7 @@ export const redactPII = async (agreementReference, logger) => {
 }
 
 export const getApplicationsBySbi = async (db, sbi) => {
-  return db
-    .collection(APPLICATION_COLLECTION)
-    .aggregate([
-      {
-        $match: { 'organisation.sbi': sbi.toString() }
-      },
-      {
-        $project: {
-          reference: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          createdBy: 1,
-          updatedBy: 1,
-          data: 1,
-          organisation: 1,
-          status: 1,
-          flags: {
-            $map: {
-              input: {
-                $filter: flagNotDeletedFilter
-              },
-              as: 'flag',
-              in: { appliesToMh: '$$flag.appliesToMh' }
-            }
-          },
-          redacted: {
-            $eq: [{ $ifNull: ['$redactionHistory.success', 'N'] }, 'Y']
-          }
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      }
-    ])
-    .toArray()
+  return getApplicationsFromCollectionBySbi(db, sbi, APPLICATION_COLLECTION)
 }
 
 export const createApplication = async (db, application) => {

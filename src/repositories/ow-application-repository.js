@@ -1,11 +1,6 @@
 import { OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
-
-const flagNotDeletedFilter = {
-  input: { $ifNull: ['$flags', []] },
-  as: 'flag',
-  cond: { $eq: ['$$flag.deleted', false] }
-}
+import { getApplicationsFromCollectionBySbi } from './common.js'
 
 export const isOWURNUnique = async ({ db, sbi, laboratoryURN }) => {
   const result = await db.collection(OW_APPLICATION_COLLECTION).findOne({
@@ -22,41 +17,7 @@ export const getOWApplication = async (db, reference) => {
 }
 
 export const getOWApplicationsBySbi = async (db, sbi) => {
-  return db
-    .collection(OW_APPLICATION_COLLECTION)
-    .aggregate([
-      {
-        $match: { 'organisation.sbi': sbi.toString() }
-      },
-      {
-        $project: {
-          reference: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          createdBy: 1,
-          updatedBy: 1,
-          data: 1,
-          organisation: 1,
-          status: 1,
-          flags: {
-            $map: {
-              input: {
-                $filter: flagNotDeletedFilter
-              },
-              as: 'flag',
-              in: { appliesToMh: '$$flag.appliesToMh' }
-            }
-          },
-          redacted: {
-            $eq: [{ $ifNull: ['$redactionHistory.success', 'N'] }, 'Y']
-          }
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      }
-    ])
-    .toArray()
+  return getApplicationsFromCollectionBySbi(db, sbi, OW_APPLICATION_COLLECTION)
 }
 
 export const findOWApplication = async (db, reference) => {
