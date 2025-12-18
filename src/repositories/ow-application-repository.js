@@ -1,5 +1,6 @@
 import { OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
+import { getApplicationsFromCollectionBySbi } from './common.js'
 
 export const isOWURNUnique = async ({ db, sbi, laboratoryURN }) => {
   const result = await db.collection(OW_APPLICATION_COLLECTION).findOne({
@@ -13,6 +14,10 @@ export const getOWApplication = async (db, reference) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOne({
     reference
   })
+}
+
+export const getOWApplicationsBySbi = async (db, sbi) => {
+  return getApplicationsFromCollectionBySbi(db, sbi, OW_APPLICATION_COLLECTION)
 }
 
 export const findOWApplication = async (db, reference) => {
