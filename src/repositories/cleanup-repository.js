@@ -1,4 +1,4 @@
-import { APPLICATION_COLLECTION, CLAIMS_COLLECTION, HERDS_COLLECTION } from '../constants'
+import { APPLICATION_COLLECTION, CLAIMS_COLLECTION, HERDS_COLLECTION } from '../constants/index.js'
 
 export const deleteDataForSbis = async (sbisToDelete, db) => {
   const applications = await db
