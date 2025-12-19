@@ -77,7 +77,8 @@ describe('PUT /api/applications/contact-history handler', () => {
           farmerName: 'John Farmer',
           orgEmail: 'orgEmail@somewhere.net',
           email: 'email@somewhere.net',
-          address: '123 Farm Lane'
+          address: '123 Farm Lane',
+          crn: '0123456789'
         }
       }
     ])
@@ -222,6 +223,36 @@ describe('PUT /api/applications/contact-history handler', () => {
       updatedPropertyPathsAndValues: {
         'organisation.crn': '0123456789',
         'organisation.farmerName': 'John Farmer'
+      }
+    })
+    expect(res.statusCode).toBe(200)
+  })
+
+  test('should return 200 and update the application with CRN when nothing changed but CRN missing', async () => {
+    getApplicationsBySbi.mockResolvedValueOnce([])
+    getOWApplicationsBySbi.mockResolvedValueOnce([
+      {
+        reference: 'AHWR-JTTU-SDQ7',
+        organisation: {
+          sbi: '123456789',
+          farmerName: 'John Farmer',
+          orgEmail: 'orgEmail@somewhere.net',
+          email: 'email@somewhere.net',
+          address: '123 Farm Lane'
+        }
+      }
+    ])
+
+    const res = await server.inject(options)
+
+    expect(updateApplicationValuesAndContactHistory).toHaveBeenCalledWith({
+      collection: 'owapplications',
+      db: mockDb,
+      reference: 'AHWR-JTTU-SDQ7',
+      contactHistory: [],
+      updatedBy: 'admin',
+      updatedPropertyPathsAndValues: {
+        'organisation.crn': '0123456789'
       }
     })
     expect(res.statusCode).toBe(200)
