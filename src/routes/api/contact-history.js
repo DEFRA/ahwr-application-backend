@@ -95,7 +95,7 @@ export const contactHistoryHandlers = [
               orgValues['organisation.farmerName'] = request.payload.farmerName
             }
 
-            if (contactHistory.length > 0) {
+            if (contactHistory.length > 0 || request.payload.crn !== organisation.crn) {
               orgValues['organisation.crn'] = request.payload.crn
               await updateApplicationValuesAndContactHistory({
                 db: request.db,
