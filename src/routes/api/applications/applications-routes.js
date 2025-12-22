@@ -14,7 +14,7 @@ import {
   getApplicationHerdsQuerySchema
 } from './applications-schema.js'
 import Boom from '@hapi/boom'
-import Joi from 'Joi'
+import Joi from 'joi'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { searchApplications } from '../../../repositories/application-repository.js'
