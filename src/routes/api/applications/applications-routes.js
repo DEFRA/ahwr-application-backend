@@ -113,7 +113,7 @@ export const applicationRoutes = [
           }).optional(),
           filter: Joi.array().optional()
         }),
-        failAction: async (request, h, err) => {
+        failAction: async (request, _h, err) => {
           request.logger.error(err, 'Application search validation error')
           throw Boom.badRequest(err.message)
         }
