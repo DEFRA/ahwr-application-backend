@@ -10,7 +10,7 @@ import { STATUS } from 'ffc-ahwr-common-library'
 export const applicationHandlers = [
   {
     method: 'PUT',
-    path: '/api/applications/{ref}', // TODO: think we can retire this one. Update status of old world application being removed from BO
+    path: '/api/applications/{ref}', // TODO: Remove as part of AHWR-1472. Update status of old world application being removed from BO
     options: {
       validate: {
         params: joi.object({

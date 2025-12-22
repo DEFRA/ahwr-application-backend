@@ -81,6 +81,7 @@ export const updateOWApplication = async ({
   )
 }
 
+// TODO: Remove as part of AHWR-1472
 export const updateOWApplicationStatus = async ({ db, reference, status, user, updatedAt }) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
     { reference },

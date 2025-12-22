@@ -156,7 +156,7 @@ export const applicationRoutes = [
         })
           .or('vetName', 'visitDate', 'vetRcvs')
           .required(),
-        failAction: async (request, h, err) => {
+        failAction: async (request, _h, err) => {
           request.logger.error(err, 'Update application data validation error')
           throw Boom.badRequest(err.message)
         }
