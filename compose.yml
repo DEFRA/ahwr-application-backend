@@ -32,6 +32,9 @@ services:
     volumes:
       - mongodb-data:/data
       - ./compose/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./compose/DevNewWorldApplications.json:/temp/DevNewWorldApplications.json:ro
+      - ./compose/DevOldWorldApplications.json:/temp/DevOldWorldApplications.json:ro
+      - ./compose/DevClaims.json:/temp/DevClaims.json:ro
     restart: always
 
   ahwr-application-backend:

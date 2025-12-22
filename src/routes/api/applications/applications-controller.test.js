@@ -10,21 +10,34 @@ import {
   getApplicationsHandler,
   getApplicationClaimsHandler,
   getApplicationHerdsHandler,
-  getApplicationHandler
+  getApplicationHandler,
+  updateEligibleForPiiRedactionHandler,
+  updateApplicationDataHandler
 } from './applications-controller.js'
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
+import { updateApplication } from '../../../repositories/application-repository.js'
+import {
+  findOWApplication,
+  updateOWApplication
+} from '../../../repositories/ow-application-repository.js'
+import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
 
 jest.mock('./applications-service.js')
+jest.mock('../../../repositories/application-repository.js')
+jest.mock('../../../repositories/ow-application-repository.js')
+jest.mock('../../../event-publisher/claim-data-update-event.js')
 
 describe('applications-controller', () => {
   const mockLogger = {
-    error: jest.fn()
+    error: jest.fn(),
+    setBindings: jest.fn()
   }
   const mockDb = {}
   const mockH = {
     response: jest.fn().mockReturnThis(),
-    code: jest.fn().mockReturnThis()
+    code: jest.fn().mockReturnThis(),
+    takeover: jest.fn().mockReturnThis()
   }
 
   beforeEach(() => {
@@ -294,6 +307,393 @@ describe('applications-controller', () => {
         { error: mockError },
         'Failed to get application'
       )
+    })
+  })
+
+  describe('updateEligibleForPiiRedactionHandler', () => {
+    const mockRequest = {
+      payload: {
+        eligiblePiiRedaction: true,
+        note: 'updated note',
+        user: 'admin'
+      },
+      params: {
+        ref: 'IAHW-AAA1-0012'
+      },
+      logger: mockLogger,
+      db: mockDb
+    }
+
+    it('should return 204 when NW application found and updated successfully', async () => {
+      const mockApplication = {
+        reference: 'IAHW-AAA1-0012',
+        status: 'AGREED',
+        eligiblePiiRedaction: false
+      }
+      getApplication.mockResolvedValueOnce(mockApplication)
+      updateApplication.mockResolvedValueOnce()
+
+      const result = await updateEligibleForPiiRedactionHandler(mockRequest, mockH)
+
+      expect(getApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'IAHW-AAA1-0012'
+      })
+
+      expect(updateApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        newValue: true,
+        note: 'updated note',
+        oldValue: false,
+        reference: 'IAHW-AAA1-0012',
+        updatedAt: expect.any(Date),
+        updatedPropertyPath: 'eligiblePiiRedaction',
+        user: 'admin'
+      })
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 204 when OW application found and updated successfully', async () => {
+      const mockApplication = {
+        reference: 'AHWR-AAA1-0012',
+        status: 'AGREED',
+        eligiblePiiRedaction: false
+      }
+      getApplication.mockResolvedValueOnce(mockApplication)
+      updateOWApplication.mockResolvedValueOnce()
+
+      const result = await updateEligibleForPiiRedactionHandler(
+        {
+          ...mockRequest,
+          params: {
+            ref: 'AHWR-AAA1-0012'
+          }
+        },
+        mockH
+      )
+
+      expect(getApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'AHWR-AAA1-0012'
+      })
+
+      expect(updateOWApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        newValue: true,
+        note: 'updated note',
+        oldValue: false,
+        reference: 'AHWR-AAA1-0012',
+        updatedAt: expect.any(Date),
+        updatedPropertyPath: 'eligiblePiiRedaction',
+        user: 'admin'
+      })
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 404 when no application was found', async () => {
+      getApplication.mockResolvedValueOnce(null)
+
+      const result = await updateEligibleForPiiRedactionHandler(
+        {
+          ...mockRequest,
+          params: {
+            ref: 'AHWR-AAA1-0012'
+          }
+        },
+        mockH
+      )
+
+      expect(getApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'AHWR-AAA1-0012'
+      })
+
+      expect(updateOWApplication).not.toHaveBeenCalled()
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(result).toBe(mockH)
+    })
+
+    it('should return 204 and perform no update when application found but update value is the same as current', async () => {
+      const mockApplication = {
+        reference: 'IAHW-AAA1-0012',
+        status: 'AGREED',
+        eligiblePiiRedaction: true
+      }
+      getApplication.mockResolvedValueOnce(mockApplication)
+
+      const result = await updateEligibleForPiiRedactionHandler(mockRequest, mockH)
+
+      expect(getApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        logger: mockLogger,
+        applicationReference: 'IAHW-AAA1-0012'
+      })
+
+      expect(updateApplication).not.toHaveBeenCalled()
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+    })
+  })
+
+  describe('updateApplicationDataHandler', () => {
+    function getMockRequestForUpdatedValue(updatedValue) {
+      return {
+        params: {
+          reference: 'AHWR-OLDS-KOOL'
+        },
+        payload: {
+          ...updatedValue,
+          note: 'updated note',
+          user: 'Admin'
+        },
+        logger: mockLogger,
+        db: mockDb
+      }
+    }
+
+    afterAll(() => {
+      jest.clearAllMocks()
+    })
+
+    test('when application not found, return 404', async () => {
+      findOWApplication.mockResolvedValueOnce(null)
+
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ vetName: 'updated person' }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).toHaveBeenCalledTimes(0)
+    })
+
+    test('when application found data successfully updated for vetName', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01',
+        vetRcvs: '123456'
+      }
+      findOWApplication.mockResolvedValueOnce({
+        reference: 'AHWR-OLDS-KOOL',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: existingData,
+        organisation: {
+          sbi: '123456789'
+        }
+      })
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ vetName: 'updated person' }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'AHWR-OLDS-KOOL',
+        updatedPropertyPath: 'data.vetName',
+        newValue: 'updated person',
+        oldValue: 'old person',
+        note: 'updated note',
+        user: 'Admin',
+        updatedAt: expect.any(Date)
+      })
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'AHWR-OLDS-KOOL',
+          newValue: 'updated person',
+          note: 'updated note',
+          oldValue: 'old person',
+          reference: 'AHWR-OLDS-KOOL',
+          updatedProperty: 'vetName'
+        },
+        'application-vetName',
+        'Admin',
+        expect.any(Date),
+        '123456789'
+      )
+    })
+
+    test('when application found data successfully added for vetName', async () => {
+      const existingData = {
+        visitDate: '2021-01-01',
+        vetRcvs: '123456'
+      }
+      findOWApplication.mockResolvedValueOnce({
+        reference: 'AHWR-OLDS-KOOL',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: existingData,
+        organisation: {
+          sbi: '123456789'
+        }
+      })
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ vetName: 'updated person' }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'AHWR-OLDS-KOOL',
+        updatedPropertyPath: 'data.vetName',
+        newValue: 'updated person',
+        oldValue: '',
+        note: 'updated note',
+        user: 'Admin',
+        updatedAt: expect.any(Date)
+      })
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'AHWR-OLDS-KOOL',
+          newValue: 'updated person',
+          note: 'updated note',
+          oldValue: '',
+          reference: 'AHWR-OLDS-KOOL',
+          updatedProperty: 'vetName'
+        },
+        'application-vetName',
+        'Admin',
+        expect.any(Date),
+        '123456789'
+      )
+    })
+
+    test('when application found data successfully updated for visitDate', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: new Date('2021-01-01'),
+        vetRcvs: '123456'
+      }
+      findOWApplication.mockResolvedValueOnce({
+        reference: 'AHWR-OLDS-KOOL',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: existingData,
+        organisation: {
+          sbi: '123456789'
+        }
+      })
+
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ visitDate: new Date('2025-06-21') }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'AHWR-OLDS-KOOL',
+        updatedPropertyPath: 'data.visitDate',
+        newValue: new Date('2025-06-21'),
+        oldValue: new Date('2021-01-01'),
+        note: 'updated note',
+        user: 'Admin',
+        updatedAt: expect.any(Date)
+      })
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'AHWR-OLDS-KOOL',
+          newValue: new Date('2025-06-21'),
+          note: 'updated note',
+          oldValue: new Date('2021-01-01'),
+          reference: 'AHWR-OLDS-KOOL',
+          updatedProperty: 'visitDate'
+        },
+        'application-visitDate',
+        'Admin',
+        expect.any(Date),
+        '123456789'
+      )
+    })
+
+    test('successfully update vetRcvs in application', async () => {
+      const existingData = {
+        vetName: 'old person',
+        visitDate: '2021-01-01',
+        vetRcvs: '1234567'
+      }
+      findOWApplication.mockResolvedValueOnce({
+        reference: 'AHWR-OLDS-KOOL',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: existingData,
+        organisation: {
+          sbi: '123456789'
+        }
+      })
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ vetRcvs: '7654321' }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).toHaveBeenCalledTimes(1)
+      expect(updateOWApplication).toHaveBeenCalledWith({
+        db: mockDb,
+        reference: 'AHWR-OLDS-KOOL',
+        updatedPropertyPath: 'data.vetRcvs',
+        newValue: '7654321',
+        oldValue: '1234567',
+        note: 'updated note',
+        user: 'Admin',
+        updatedAt: expect.any(Date)
+      })
+      expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+        {
+          applicationReference: 'AHWR-OLDS-KOOL',
+          newValue: '7654321',
+          note: 'updated note',
+          oldValue: '1234567',
+          reference: 'AHWR-OLDS-KOOL',
+          updatedProperty: 'vetRcvs'
+        },
+        'application-vetRcvs',
+        'Admin',
+        expect.any(Date),
+        '123456789'
+      )
+    })
+
+    test('when value is not changed return 204 without updating application data', async () => {
+      const existingData = {
+        vetName: 'old person'
+      }
+      findOWApplication.mockResolvedValueOnce({
+        reference: 'AHWR-OLDS-KOOL',
+        createdBy: 'admin',
+        createdAt: new Date(),
+        data: existingData,
+        organisation: {
+          sbi: '123456789'
+        }
+      })
+      const result = await updateApplicationDataHandler(
+        getMockRequestForUpdatedValue({ vetName: 'old person' }),
+        mockH
+      )
+
+      expect(mockH.code).toHaveBeenCalledWith(StatusCodes.NO_CONTENT)
+      expect(result).toBe(mockH)
+      expect(updateOWApplication).not.toHaveBeenCalled()
     })
   })
 })

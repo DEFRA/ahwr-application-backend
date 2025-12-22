@@ -5,7 +5,7 @@ import { StatusCodes } from 'http-status-codes'
 export const applicationEventsHandlers = [
   {
     method: 'GET',
-    path: '/api/applications/events/{ref}',
+    path: '/api/applications/events/{ref}', // TODO: pretty sure we don't need this endpoint any more
     options: {
       validate: {
         params: joi.object({

@@ -1,11 +1,3 @@
-// import {
-//   REDACT_PII_VALUES,
-//   APPLICATION_REFERENCE_PREFIX_OLD_WORLD
-// } from 'ffc-ahwr-common-library'
-// import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
-// import { findApplication } from './application-repository.js'
-
-// const CLAIM_UPDATED_AT_COL = 'claim.updatedAt'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { v4 as uuid } from 'uuid'
@@ -50,17 +42,6 @@ export const updateClaimStatus = async ({ db, reference, status, user, updatedAt
     },
     { returnDocument: 'after' }
   )
-}
-
-export const getAllClaimedClaims = async (claimStatusIds) => {
-  // TODO 1182 impl
-  return []
-
-  // return models.claim.count({
-  //   where: {
-  //     statusId: claimStatusIds // shorthand for IN operator
-  //   }
-  // })
 }
 
 export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) => {
@@ -138,7 +119,7 @@ export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, d
 }
 
 export const redactPII = async (applicationReference, logger) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   // const redactedValueByField = {
   //   vetsName: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
   //   vetRCVSNumber: `${REDACT_PII_VALUES.REDACTED_VET_RCVS_NUMBER}`,
@@ -233,7 +214,7 @@ export const redactPII = async (applicationReference, logger) => {
 // }
 
 export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   return []
 
   // const now = new Date()

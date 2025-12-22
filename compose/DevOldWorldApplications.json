@@ -1,0 +1,1876 @@
+[
+  {
+    "_id": "690dc73317e3f39b41fe6a15",
+    "reference": "AHWR-267S-7GRT",
+    "createdAt": "2018-08-12T10:00:00.000Z",
+    "updatedAt": "2025-08-13T14:40:14.589Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2023-11-22T00:00:00.000Z",
+      "dateOfClaim": "2023-11-22T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "diary",
+      "dateOfTesting": "2023-01-01T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106546992",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "07862772-d0a0-408f-9ce7-227752a4d115",
+        "note": "REDACTED_NOTE",
+        "deleted": true,
+        "createdAt": "2025-08-13T14:30:31.625Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-08-13T14:40:14.681Z",
+        "deletedBy": "admin",
+        "appliesToMh": false,
+        "deletedNote": "Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed."
+      },
+      {
+        "id": "db63f651-6be6-4463-8646-bdb4c31f450b",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.779Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "ea5a439b-b242-4e35-84b7-4b78133ab560",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.696Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2b",
+    "reference": "AHWR-BB23-24AF",
+    "createdAt": "2022-08-11T00:00:00.000Z",
+    "updatedAt": "2025-08-13T15:14:44.094Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "dairy",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100611109",
+      "frn": "1100199667",
+      "sbi": "113928545",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-09-19T09:22:44.976Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "746bc7c2-d13a-4033-89c1-81775bcfa957",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:14:44.277Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a14",
+    "reference": "AHWR-08C2-9677",
+    "createdAt": "2022-08-11T00:00:00.000Z",
+    "updatedAt": "2025-08-13T15:14:44.188Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-20T00:00:00.000Z",
+      "dateOfClaim": "2024-09-20T10:50:26.576Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "sheep",
+      "animalsTested": "50",
+      "dateOfTesting": "2024-09-20T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100612769",
+      "frn": "1101160756",
+      "sbi": "106315619",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "REJECTED",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-09-19T09:24:22.629Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-20T10:50:26.732Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-09-20T10:50:43.039Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_REJECT",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-09-20T10:51:00.809Z"
+      },
+      {
+        "status": "REJECTED",
+        "createdBy": "Sangadi, sridevi",
+        "createdAt": "2024-09-20T10:52:13.340Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "40f33e1d-e824-49c4-8410-d24f5f0bb0fb",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:14:44.278Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a17",
+    "reference": "AHWR-2FF6-09A6",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.036Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-06T00:00:00.000Z",
+      "dateOfClaim": "2024-09-06T11:14:10.636Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "animalsTested": "51",
+      "dateOfTesting": "2024-09-06T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1101822546",
+      "frn": "1101376937",
+      "sbi": "106215355",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:48:43.624Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T11:14:10.795Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-09T18:00:03.542Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "f35cbdd2-2cfa-487e-b4b1-1b68d9462b54",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.122Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a23",
+    "reference": "AHWR-B571-6E77",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.027Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2023-11-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "107616977",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "747c1431-9ad4-4861-9395-81008213e53e",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.116Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a29",
+    "reference": "AHWR-B571-6E99",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.033Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2023-11-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "121245181",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "9c12b926-22e7-445d-98d9-840ce8ca684e",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.118Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2a",
+    "reference": "AHWR-B7D9-E2EB",
+    "createdAt": "2022-08-11T00:00:00.000Z",
+    "updatedAt": "2025-08-13T15:14:44.092Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1104542293",
+      "frn": "1102084476",
+      "sbi": "121793210",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T14:11:23.210Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "6cffcada-24f5-4f05-9c11-21022e220b15",
+        "note": "Application PII redacted",
+        "deleted": true,
+        "createdAt": "2025-08-13T15:14:44.279Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-09-17T07:41:25.772Z",
+        "deletedBy": "Carroll, Aaron",
+        "appliesToMh": false,
+        "deletedNote": "testing other flag"
+      },
+      {
+        "id": "c894673d-4987-43f7-a340-28295272d4e1",
+        "note": "Subject to an ex-gratia payment. This was paid to SBI 200954268 as a result of the insolvency of SBI 115713051. Flag requested by Bob Sherwood 16/9/2025.",
+        "deleted": true,
+        "createdAt": "2025-09-17T07:47:26.314Z",
+        "createdBy": "Admin2",
+        "deletedAt": "2025-10-14T11:00:53.137Z",
+        "deletedBy": "Ben Hope (Equal Experts)",
+        "appliesToMh": false,
+        "deletedNote": "test"
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a21",
+    "reference": "AHWR-B571-6E71",
+    "createdAt": "2023-09-21T21:11:02.776Z",
+    "updatedAt": "2024-10-10T13:40:48.305Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Mr CowWhisperer",
+      "vetRcvs": "1208642",
+      "urnResult": "355981",
+      "visitDate": "2023-11-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106364539",
+      "name": "Mr madeup",
+      "email": "lesliefryattv@ttayrfeilsela.com.test",
+      "address": "NORWICH,PE31 8AA,United Kingdom",
+      "orgEmail": "dburtont@notrubdf.com.test",
+      "farmerName": "Leslie Marcile Fryatt"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a27",
+    "reference": "AHWR-B571-6E88",
+    "createdAt": "2018-08-12T10:00:00.000Z",
+    "updatedAt": "2025-08-13T14:40:14.590Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-10-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "107021978",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [
+      {
+        "id": "50ca534c-2613-41b7-b547-4fa5bec3c646",
+        "field": "email",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T14:00:36.979Z"
+      },
+      {
+        "id": "65e8f875-b3f1-41e1-9451-0656dce2d6cb",
+        "field": "orgEmail",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T14:00:36.980Z"
+      },
+      {
+        "id": "7745441b-4f32-4a7b-9c60-132d0f9dad8f",
+        "field": "address",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T14:00:36.980Z"
+      },
+      {
+        "id": "e623bebf-6696-4aec-ba95-0906f6c52c66",
+        "field": "farmerName",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T14:00:36.980Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "6e7e332d-fd7e-458c-935a-ca35eeab88b3",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.780Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "c33af22d-deb4-44b3-b436-6b25959bbf9c",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.702Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "efa44d4c-51b3-44eb-bd1e-503795c719cb",
+        "note": "REDACTED_NOTE",
+        "deleted": true,
+        "createdAt": "2025-08-13T14:30:31.624Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-08-13T14:40:14.613Z",
+        "deletedBy": "admin",
+        "appliesToMh": false,
+        "deletedNote": "Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed."
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1b",
+    "reference": "AHWR-6995-398A",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.037Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-19T00:00:00.000Z",
+      "dateOfClaim": "2024-09-19T09:42:59.072Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "dairy",
+      "dateOfTesting": "2024-09-19T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1101990104",
+      "frn": "1100686699",
+      "sbi": "107612508",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T14:26:47.043Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-07-05T14:27:24.258Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-07-05T16:03:50.631Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_PAY",
+        "createdBy": "Stanley, Iain",
+        "createdAt": "2024-07-19T09:35:25.904Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-07-19T09:35:41.958Z"
+      },
+      { "status": "IN_CHECK", "createdBy": "admin", "createdAt": "2024-09-19T09:42:59.430Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "f1a8ed6c-a28c-4632-8745-e06b30f66c27",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.121Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a26",
+    "reference": "AHWR-B571-6E86",
+    "createdAt": "2018-08-12T10:00:00.000Z",
+    "updatedAt": "2025-09-01T10:17:10.422Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-10-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106459953",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [
+      {
+        "id": "7cfe9151-5153-4689-bf00-0ec047ec7338",
+        "note": "testing",
+        "newValue": "false",
+        "oldValue": "true",
+        "createdAt": "2025-09-01T10:17:10.430Z",
+        "createdBy": "Berlin Bernadin (Equal Experts)",
+        "eventType": "application-eligiblePiiRedaction",
+        "updatedProperty": "eligiblePiiRedaction"
+      }
+    ],
+    "contactHistory": [
+      {
+        "id": "6e5252c2-03d3-4616-8382-8b430c0fc43f",
+        "field": "email",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:56:46.856Z"
+      },
+      {
+        "id": "f573c8d4-5754-4804-855b-9f9cc0c4e4ab",
+        "field": "orgEmail",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:56:46.856Z"
+      },
+      {
+        "id": "504f5e57-7d65-4729-9ee2-333da7bb4d4d",
+        "field": "address",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:56:46.856Z"
+      },
+      {
+        "id": "3a13fb90-cec2-444f-8667-831144178edd",
+        "field": "farmerName",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:56:46.857Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "267443a5-ede7-49ae-9a16-03769ff1c42a",
+        "note": "REDACTED_NOTE",
+        "deleted": true,
+        "createdAt": "2025-08-13T14:30:31.626Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-08-13T14:40:14.612Z",
+        "deletedBy": "admin",
+        "appliesToMh": false,
+        "deletedNote": "Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed."
+      },
+      {
+        "id": "6751dac6-8f49-4a7a-b82a-14bf8cd812f5",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.684Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "ae27c17a-f958-4f18-9b6c-01061cf584e7",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.704Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": false
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2d",
+    "reference": "AHWR-E165-582D",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.030Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2023-10-17T00:00:00.000Z",
+      "dateOfClaim": "2023-10-25T11:25:24.774Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "dairy",
+      "dateOfTesting": "2023-10-17T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1104542293",
+      "frn": "1101674261",
+      "sbi": "111606234",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-20T11:25:24.922Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-09-20T11:29:49.380Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "ad70f767-67df-4c31-93be-c0b3e155ac1f",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.118Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a16",
+    "reference": "AHWR-2D0E-B010",
+    "createdAt": "2022-08-12T10:00:00.000Z",
+    "updatedAt": "2025-08-13T14:40:14.499Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106980820",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "AGREED",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [
+      {
+        "id": "8c46e1b7-e228-4755-85fa-6e2ae9b1eb14",
+        "field": "email",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T08:26:37.760Z"
+      },
+      {
+        "id": "4a46d8fb-dcc0-45cc-b0b4-3477c86dc1e9",
+        "field": "orgEmail",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T08:26:37.760Z"
+      },
+      {
+        "id": "ba2f9a65-bbca-4661-859c-4541f96db18e",
+        "field": "address",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T08:26:37.761Z"
+      },
+      {
+        "id": "346df325-c83c-4462-82cd-44e72b882789",
+        "field": "farmerName",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2025-02-28T08:26:37.761Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "5fd15e66-3687-45ee-ab59-75b4ef92e9b5",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.610Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1a",
+    "reference": "AHWR-5C37-54D4",
+    "createdAt": "2023-12-11T13:09:31.701Z",
+    "updatedAt": "2025-10-16T11:33:21.719Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Hope",
+      "vetRcvs": "6456821",
+      "urnResult": "a159673",
+      "visitDate": "2024-01-18T00:00:00.000Z",
+      "dateOfClaim": "2024-02-02T18:52:17.543Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "5",
+      "dateOfTesting": "2023-12-19T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106734901",
+      "name": "Mr F Armer 2",
+      "email": "lucycharityj@ytirahcyculo.com.test",
+      "address": "Hopley,Shoscombe,Fewcott,54,THE OLD LONGHOUSE,NORTH STREET,COCKERMOUTH,TQ13 9UL,United Kingdom",
+      "orgEmail": "emsleymm@myelsmep.com.test",
+      "farmerName": "Lucy Charity"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [
+      {
+        "id": "1ce21348-2424-4175-b9b4-d167011d995d",
+        "field": "email",
+        "newValue": "johnmorgani@nagromnhojk.com.test",
+        "oldValue": "defra-vets-visits-testing@equalexperts.com",
+        "createdAt": "2025-03-12T11:49:21.918Z"
+      },
+      {
+        "id": "8db5f636-c98a-4de1-a925-5f630e593127",
+        "field": "orgEmail",
+        "newValue": "arrowmanagementmarketinglimitede@detimilgnitekramtnemeganamworrau.com.test",
+        "oldValue": "defra-vets-visits-testing@equalexperts.com",
+        "createdAt": "2025-03-12T11:49:21.920Z"
+      },
+      {
+        "id": "c60f221f-0053-4287-ad99-de2a8b1c2ada",
+        "field": "address",
+        "newValue": "Hazelhurst Farm,Masham,WILBURY HILLS FARM,NORTH STREET,BEAWORTHY,S60 5WG,United Kingdom",
+        "oldValue": "Mr F Armer Address 2,HG3 5JL,United Kingdom",
+        "createdAt": "2025-03-12T11:49:21.921Z"
+      },
+      {
+        "id": "dccbecb1-c86e-449d-9b4e-38e648df14a0",
+        "field": "farmerName",
+        "newValue": "John Morgan",
+        "oldValue": "Mr F Armer 2",
+        "createdAt": "2025-03-12T11:49:21.922Z"
+      },
+      {
+        "id": "6d2d72bc-8286-452d-8a87-f9e643a01f20",
+        "field": "email",
+        "newValue": "lucycharityj@ytirahcyculo.com.test",
+        "oldValue": "johnmorgani@nagromnhojk.com.test",
+        "createdAt": "2025-10-16T11:33:21.776Z"
+      },
+      {
+        "id": "187396e6-fca2-4a4c-b406-fd30dec696d3",
+        "field": "orgEmail",
+        "newValue": "emsleymm@myelsmep.com.test",
+        "oldValue": "arrowmanagementmarketinglimitede@detimilgnitekramtnemeganamworrau.com.test",
+        "createdAt": "2025-10-16T11:33:21.777Z"
+      },
+      {
+        "id": "3b6e0ead-f5a3-45f0-8778-639a872e9ca2",
+        "field": "address",
+        "newValue": "Hopley,Shoscombe,Fewcott,54,THE OLD LONGHOUSE,NORTH STREET,COCKERMOUTH,TQ13 9UL,United Kingdom",
+        "oldValue": "Hazelhurst Farm,Masham,WILBURY HILLS FARM,NORTH STREET,BEAWORTHY,S60 5WG,United Kingdom",
+        "createdAt": "2025-10-16T11:33:21.777Z"
+      },
+      {
+        "id": "a5b33237-01d9-4989-ac91-43871a67d4b0",
+        "field": "farmerName",
+        "newValue": "Lucy Charity",
+        "oldValue": "John Morgan",
+        "createdAt": "2025-10-16T11:33:21.777Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1f",
+    "reference": "AHWR-8EBD-230E",
+    "createdAt": "2022-08-11T00:00:00.000Z",
+    "updatedAt": "2025-08-13T15:14:44.093Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "sheep",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1102093580",
+      "frn": "1101949015",
+      "sbi": "106615360",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T14:17:17.914Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "b0ad23f1-89f0-4033-a98d-0bb2499e68e0",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:14:44.196Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a24",
+    "reference": "AHWR-B571-6E79",
+    "createdAt": "2023-09-21T21:11:02.776Z",
+    "updatedAt": "2024-11-20T13:51:24.283Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Mr CowWhisperer",
+      "vetRcvs": "1208642",
+      "urnResult": "355981",
+      "visitDate": "2023-11-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106546048",
+      "name": "Mr madeup",
+      "email": "karengilberta@trebligneraky.com.test",
+      "address": "Forest View Farm,PAYHEMBURY,CLAYTONS FARM,LITTLE LONDON,NEWBURY,GL3 4RA,United Kingdom",
+      "orgEmail": "burdassfrz@rfssadrubj.com.test",
+      "farmerName": "Karen Gilbert"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [
+      {
+        "id": "7e4dca92-2ee8-4420-8efc-eec7daafd26b",
+        "field": "email",
+        "newValue": "karengilberta@trebligneraky.com.test",
+        "oldValue": "notreal@madeitup.com",
+        "createdAt": "2024-11-20T13:51:24.291Z"
+      },
+      {
+        "id": "95598de8-c0fa-4ba2-bb8f-17bc746e305d",
+        "field": "orgEmail",
+        "newValue": "burdassfrz@rfssadrubj.com.test",
+        "oldValue": "notreal@madeitup.com",
+        "createdAt": "2024-11-20T13:51:24.291Z"
+      },
+      {
+        "id": "45a78b8f-3f88-424f-97cc-b223145098ae",
+        "field": "address",
+        "newValue": "Forest View Farm,PAYHEMBURY,CLAYTONS FARM,LITTLE LONDON,NEWBURY,GL3 4RA,United Kingdom",
+        "oldValue": "A road, a town,United Kingdom",
+        "createdAt": "2024-11-20T13:51:24.291Z"
+      },
+      {
+        "id": "c3098368-247c-4b5d-92d1-d9362021a72a",
+        "field": "farmerName",
+        "newValue": "Karen Gilbert",
+        "oldValue": "Tim Madeup",
+        "createdAt": "2024-11-20T13:51:24.291Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a30",
+    "reference": "AHWR-FDFE-30CA",
+    "createdAt": "2022-08-11T00:00:00.000Z",
+    "updatedAt": "2025-08-13T15:14:44.187Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-06T00:00:00.000Z",
+      "dateOfClaim": "2024-09-06T11:11:21.087Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "51",
+      "dateOfTesting": "2024-09-06T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1101814896",
+      "frn": "1100894586",
+      "sbi": "120271193",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "IN_CHECK",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:47:36.349Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-08-15T10:20:23.862Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Stanley, Iain",
+        "createdAt": "2024-08-15T10:21:40.352Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_PAY",
+        "createdBy": "Stanley, Iain",
+        "createdAt": "2024-08-15T10:21:58.005Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-08-15T10:22:30.671Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-08-15T10:22:30.846Z"
+      },
+      { "status": "IN_CHECK", "createdBy": "admin", "createdAt": "2024-09-06T11:11:21.114Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "a80e71c4-e6c6-468a-af60-f152250e698a",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:14:44.279Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a13",
+    "reference": "AHWR-014C-588E",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.037Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2023-05-16T00:00:00.000Z",
+      "dateOfClaim": "2023-07-10T19:33:22.781Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1104670259",
+      "sbi": "106899842",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "f9944e6f-07df-4f73-ba70-bc1665107fc3",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.115Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1d",
+    "reference": "AHWR-8082-A5A1",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.033Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-06T00:00:00.000Z",
+      "dateOfClaim": "2024-09-06T11:17:55.192Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "51",
+      "dateOfTesting": "2024-09-06T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1104542293",
+      "frn": "1102244139",
+      "sbi": "106510411",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:50:54.582Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-07-05T13:52:08.481Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-07-05T16:04:56.438Z"
+      },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T11:17:55.214Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-09T18:00:03.590Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "c9825f3f-b96b-448e-bfa1-7f4c47686cbc",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.119Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2c",
+    "reference": "AHWR-C673-7719",
+    "createdAt": "2023-09-21T13:41:39.775Z",
+    "updatedAt": "2023-09-21T13:41:39.775Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Iain Stanley",
+      "vetRcvs": "9876541",
+      "urnResult": "TEST",
+      "visitDate": "2023-11-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-10T11:05:10.047Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "dairy",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1102094595",
+      "frn": "1102516643",
+      "sbi": "106811927",
+      "name": "Mrs. G Knight",
+      "email": "aimeechapmano@nampahceemiaj.com.test",
+      "address": "CHICHESTER,WA16 9LD,United Kingdom",
+      "orgEmail": "mrsgknighte@thginkgsrmk.com.test",
+      "farmerName": "Aimee Chapman"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:41:39.775Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-07-30T11:07:41.244Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Stanley, Iain",
+        "createdAt": "2024-07-30T11:10:35.443Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_PAY",
+        "createdBy": "Stanley, Iain",
+        "createdAt": "2024-07-30T11:10:41.400Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-07-30T11:11:16.788Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Iain Stanley (Capgemini)",
+        "createdAt": "2024-07-30T11:11:16.881Z"
+      },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T11:05:10.075Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-06T18:00:01.106Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2e",
+    "reference": "AHWR-F174-D584",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.035Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-06T00:00:00.000Z",
+      "dateOfClaim": "2024-09-06T11:07:16.331Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "sheep",
+      "animalsTested": "11",
+      "dateOfTesting": "2024-09-06T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1102094595",
+      "frn": "1100140263",
+      "sbi": "106878255",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:44:05.933Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T11:07:16.361Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-09T18:00:03.247Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "bcff0fcc-e60f-458e-baee-dd3acf89a043",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.120Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a18",
+    "reference": "AHWR-517D-DDEB",
+    "createdAt": "2023-12-11T13:08:09.251Z",
+    "updatedAt": "2025-03-12T11:52:15.150Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Hope",
+      "vetRcvs": "6456821",
+      "urnResult": "x158007",
+      "visitDate": "2024-01-18T00:00:00.000Z",
+      "dateOfClaim": "2024-02-02T18:41:35.950Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "5",
+      "dateOfTesting": "2023-12-19T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106679425",
+      "name": "Mr F Armer 1",
+      "email": "johnmorgani@nagromnhojk.com.test",
+      "address": "PRESTON,CW11 2XE,United Kingdom",
+      "orgEmail": "jegreeneru@reneergejj.com.test",
+      "farmerName": "John Morgan"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [
+      {
+        "id": "1a701893-8276-43f3-ae2c-e6ab1515aef2",
+        "field": "email",
+        "newValue": "johnmorgani@nagromnhojk.com.test",
+        "oldValue": "defra-vets-visits-testing@equalexperts.com",
+        "createdAt": "2025-03-12T11:52:15.255Z"
+      },
+      {
+        "id": "24a6e462-13ae-4c28-908b-2b50ffa46e6c",
+        "field": "orgEmail",
+        "newValue": "jegreeneru@reneergejj.com.test",
+        "oldValue": "defra-vets-visits-testing@equalexperts.com",
+        "createdAt": "2025-03-12T11:52:15.255Z"
+      },
+      {
+        "id": "f01f4722-dc2d-4f7d-994f-6711ddbdcce2",
+        "field": "address",
+        "newValue": "PRESTON,CW11 2XE,United Kingdom",
+        "oldValue": "Mr F Armer Address 1,BD23 1UD,United Kingdom",
+        "createdAt": "2025-03-12T11:52:15.255Z"
+      },
+      {
+        "id": "4b399e79-56c7-4cd6-bd66-5b873318e146",
+        "field": "farmerName",
+        "newValue": "John Morgan",
+        "oldValue": "Mr F Armer 1",
+        "createdAt": "2025-03-12T11:52:15.256Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a19",
+    "reference": "AHWR-529C-281C",
+    "createdAt": "2018-08-12T10:00:00.000Z",
+    "updatedAt": "2025-08-13T14:40:14.583Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-20T00:00:00.000Z",
+      "dateOfClaim": "2024-09-20T10:55:34.385Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "animalsTested": "50",
+      "dateOfTesting": "2024-09-20T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100612297",
+      "frn": "1100201068",
+      "sbi": "113934428",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-09-19T09:23:32.368Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-20T10:55:34.420Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-09-20T10:55:53.593Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_PAY",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-09-20T10:56:01.367Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Sangadi, sridevi",
+        "createdAt": "2024-09-20T10:56:37.401Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "08d72915-1369-4b1a-85c5-9455c8feeba5",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.788Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "b09ddd0f-5c29-491c-be11-337690848b5d",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.781Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "b1cec849-b513-40c9-bc7f-c0d819e28d57",
+        "note": "REDACTED_NOTE",
+        "deleted": true,
+        "createdAt": "2025-08-13T14:30:31.625Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-08-13T14:40:14.677Z",
+        "deletedBy": "admin",
+        "appliesToMh": false,
+        "deletedNote": "Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed."
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1c",
+    "reference": "AHWR-7B07-6CBF",
+    "createdAt": "2024-07-05T14:20:25.486Z",
+    "updatedAt": "2024-10-14T18:00:01.260Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "mr abc",
+      "vetRcvs": "9875642",
+      "urnResult": "dwqadqa",
+      "visitDate": "2024-07-05T00:00:00.000Z",
+      "dateOfClaim": "2024-10-10T22:28:39.049Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "animalsTested": "51",
+      "dateOfTesting": "2024-07-05T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1101990104",
+      "frn": "1105189163",
+      "sbi": "200507949",
+      "name": "Ricik International Limited",
+      "email": "janetparishp@hsiraptenajw.com.test",
+      "address": "Dry Hillock Farm,The Common,TWIST FARM,SHEEPY ROAD,LAUNCESTON,NN12 8LQ,United Kingdom",
+      "orgEmail": "ricikinternationallimitedo@detimillanoitanretnikiciro.com.test",
+      "farmerName": "Janet Parish"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T14:20:25.486Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-10-10T22:28:39.187Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-10-14T18:00:01.260Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a20",
+    "reference": "AHWR-A271-8752",
+    "createdAt": "2024-01-04T07:50:04.000Z",
+    "updatedAt": "2024-12-06T16:37:46.000Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Mr Smith",
+      "vetRcvs": "7180896",
+      "urnResult": "A135465",
+      "visitDate": "2024-01-17T00:00:00.000Z",
+      "dateOfClaim": "2024-01-22T13:50:15.881Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "6",
+      "dateOfTesting": "2024-01-17T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1102819289",
+      "sbi": "107597689",
+      "name": "Parnham Estates Limited",
+      "email": "megancleasbyh@ybsaelcnagemi.com.test",
+      "address": "Willow Farm Bungalow,Storrington,West Walton,NEW HOUSE,FARNHAM LANE,RETFORD,EX14 4TP,United Kingdom",
+      "farmerName": "Megan Cleasby"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a25",
+    "reference": "AHWR-B571-6E85",
+    "createdAt": "2018-08-12T10:00:00.000Z",
+    "updatedAt": "2025-08-13T14:40:14.591Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-10-10T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "107151179",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [
+      {
+        "id": "ae0427b5-6a07-4e77-9ded-7d3be06ff802",
+        "note": "REDACTED_NOTE",
+        "newValue": "REDACTED_VETS_NAME",
+        "oldValue": "REDACTED_VETS_NAME",
+        "createdAt": "2025-04-25T13:10:47.023Z",
+        "createdBy": "Carroll, Aaron",
+        "eventType": "application-vetName",
+        "updatedProperty": "vetName"
+      }
+    ],
+    "contactHistory": [
+      {
+        "id": "98e06007-6f6b-42a2-929c-13a43094c049",
+        "field": "orgEmail",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:54:35.612Z"
+      },
+      {
+        "id": "aa4da0b8-e826-47e6-99a7-61239ac41389",
+        "field": "email",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:54:35.612Z"
+      },
+      {
+        "id": "c8c9d1b8-8449-48a4-b404-8bd5e915cda5",
+        "field": "address",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:54:35.612Z"
+      },
+      {
+        "id": "246dc2a1-fb95-443f-8572-0c82abdc6a57",
+        "field": "farmerName",
+        "newValue": "REDACTED_MULTI_TYPE_VALUE",
+        "oldValue": "REDACTED_MULTI_TYPE_VALUE",
+        "createdAt": "2024-11-20T13:54:35.613Z"
+      }
+    ],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "46ca52ea-5f06-4a9f-913c-bd645436b8aa",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.778Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "846f63f0-5e7d-4139-91d3-1137b91e5835",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T14:40:14.695Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      },
+      {
+        "id": "bf7e9511-3b7e-4ace-9426-1b417b5ecea5",
+        "note": "REDACTED_NOTE",
+        "deleted": true,
+        "createdAt": "2025-08-13T14:30:31.623Z",
+        "createdBy": "admin",
+        "deletedAt": "2025-08-13T14:40:14.611Z",
+        "deletedBy": "admin",
+        "appliesToMh": false,
+        "deletedNote": "Deleted to allow 'Redact PII' flag to be added, only one flag with appliesToMh=false allowed."
+      }
+    ],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a2f",
+    "reference": "AHWR-F181-A48B",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.038Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-05T00:00:00.000Z",
+      "dateOfClaim": "2024-09-05T10:57:49.727Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "animalsTested": "11",
+      "dateOfTesting": "2024-09-05T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1102093580",
+      "frn": "1102369187",
+      "sbi": "106696277",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:38:21.961Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-08-30T14:37:54.919Z" },
+      {
+        "status": "IN_CHECK",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-08-30T14:38:11.266Z"
+      },
+      {
+        "status": "RECOMMENDED_TO_PAY",
+        "createdBy": "Ellyse Malcolm (Capgemini)",
+        "createdAt": "2024-08-30T14:38:25.290Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Alex White (Capgemini)",
+        "createdAt": "2024-08-30T14:38:30.821Z"
+      },
+      {
+        "status": "READY_TO_PAY",
+        "createdBy": "Alex White (Capgemini)",
+        "createdAt": "2024-08-30T14:38:30.909Z"
+      },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T10:57:49.841Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-06T18:00:00.867Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "4228e1ed-6412-4c68-a4ac-6f4b04b39fd7",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.121Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a1e",
+    "reference": "AHWR-80F8-60E9",
+    "createdAt": "2018-08-13T10:00:00.000Z",
+    "updatedAt": "2025-08-13T15:39:51.029Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "REDACTED_VETS_NAME",
+      "vetRcvs": "REDACTED_VET_RCVS_NUMBER",
+      "urnResult": "REDACTED_LABORATORY_URN",
+      "visitDate": "2024-09-06T00:00:00.000Z",
+      "dateOfClaim": "2024-09-06T11:09:24.381Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "pigs",
+      "animalsTested": "51",
+      "dateOfTesting": "2024-09-06T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1101814896",
+      "frn": "1105949443",
+      "sbi": "200778446",
+      "name": "REDACTED_NAME",
+      "email": "redacted.email@example.com",
+      "address": "REDACTED_ADDRESS",
+      "orgEmail": "redacted.org.email@example.com",
+      "farmerName": "REDACTED_FARMER_NAME"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2024-07-05T13:45:11.871Z" },
+      { "status": "IN_CHECK", "createdBy": "admin", "createdAt": "2024-08-14T13:47:59.215Z" },
+      { "status": "ON_HOLD", "createdBy": "admin", "createdAt": "2024-09-06T11:09:24.410Z" },
+      { "status": "READY_TO_PAY", "createdBy": "admin", "createdAt": "2024-09-09T18:00:03.301Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [
+      {
+        "id": "75e5a952-5950-44a3-8868-824d40e02f29",
+        "note": "Application PII redacted",
+        "deleted": false,
+        "createdAt": "2025-08-13T15:39:51.117Z",
+        "createdBy": "admin",
+        "appliesToMh": false
+      }
+    ],
+    "claimed": true,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a22",
+    "reference": "AHWR-B571-6E72",
+    "createdAt": "2023-09-21T21:11:02.776Z",
+    "updatedAt": "2024-10-10T13:58:07.914Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Mr CowWhisperer",
+      "vetRcvs": "1208642",
+      "urnResult": "355981",
+      "visitDate": "2024-01-09T01:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "sheep",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "200761857",
+      "name": "Mr madeup",
+      "email": "lesliefryattv@ttayrfeilsela.com.test",
+      "address": "23 Wheatley Road,Dimmingsdale,Midsomer Norton,26,FOXHOLES COTTAGE,EAST PILTON FARM CRESCENT,LANGPORT,West Yorkshire,YO21 2RN,United Kingdom",
+      "orgEmail": "fosterajr@jaretsofe.com.test",
+      "farmerName": "Leslie Marcile Fryatt"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "690dc73317e3f39b41fe6a28",
+    "reference": "AHWR-B571-6E98",
+    "createdAt": "2023-09-21T21:11:02.776Z",
+    "updatedAt": "2024-10-11T07:50:51.482Z",
+    "createdBy": "admin",
+    "updatedBy": "admin",
+    "data": {
+      "vetName": "Mr CowWhisperer",
+      "vetRcvs": "1208642",
+      "urnResult": "355981",
+      "visitDate": "2023-09-22T00:00:00.000Z",
+      "dateOfClaim": "2023-11-23T20:17:43.694Z",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "whichReview": "beef",
+      "dateOfTesting": "2023-11-10T00:00:00.000Z",
+      "detailsCorrect": "yes",
+      "eligibleSpecies": "yes",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "sbi": "106779459",
+      "name": "Mr madeup",
+      "email": "johnfrencha@hcnerfnhojk.com.test",
+      "address": "Village Farm,Great Waltham,Shurdington,20,LEAFIELD FARM,WESTWOOD ROAD,SALISBURY,Surrey,OX13 5QQ,United Kingdom",
+      "orgEmail": "mabloisd@siolbamn.com.test",
+      "farmerName": "John French"
+    },
+    "status": "READY_TO_PAY",
+    "statusHistory": [],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "claimed": false,
+    "eligiblePiiRedaction": true
+  }
+]

@@ -31,7 +31,7 @@ export const createOWFlag = async (db, applicationReference, data) => {
 }
 
 export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
-  const result = await db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
+  return db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
     { 'flags.id': flagId },
     {
       $set: {
@@ -43,7 +43,6 @@ export const deleteOWFlag = async (db, flagId, user, deletedNote) => {
     },
     { returnDocument: 'after' }
   )
-  return result
 }
 
 export const updateOWApplication = async ({
@@ -81,6 +80,7 @@ export const updateOWApplication = async ({
   )
 }
 
+// TODO: Remove as part of AHWR-1472
 export const updateOWApplicationStatus = async ({ db, reference, status, user, updatedAt }) => {
   return db.collection(OW_APPLICATION_COLLECTION).findOneAndUpdate(
     { reference },

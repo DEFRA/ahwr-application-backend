@@ -47,7 +47,7 @@ export const getAllFlags = async (db) => {
 }
 
 export const redactPII = async (applicationReference) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   // await models.flag.update(
   //   {
   //     note: `${REDACT_PII_VALUES.REDACTED_NOTE}`,
@@ -64,7 +64,7 @@ export const redactPII = async (applicationReference) => {
 }
 
 export const createFlagForRedactPII = async (data) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   return {}
 
   // const existingAppliesToMhFlag = await getFlagByAppRef(

@@ -463,3 +463,14 @@ db.getCollection('owapplications').insertMany([
     eligiblePiiRedaction: true
   }
 ])
+
+const fs = require('fs')
+const raw = fs.readFileSync('/temp/DevNewWorldApplications.json')
+const rawOld = fs.readFileSync('/temp/DevOldWorldApplications.json')
+const rawClaims = fs.readFileSync('/temp/DevClaims.json')
+let docs = JSON.parse(raw)
+db.applications.insertMany(docs)
+docs = JSON.parse(rawOld)
+db.owapplications.insertMany(docs)
+docs = JSON.parse(rawClaims)
+db.claims.insertMany(docs)

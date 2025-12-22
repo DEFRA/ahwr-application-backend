@@ -1,10 +1,11 @@
 import { Server } from '@hapi/hapi'
-import { claimHandlers } from './claims-routes.js'
+import { claimsHandlers } from './claims-routes.js'
 import {
   createClaimHandler,
   isURNUniqueHandler,
   getClaimHandler,
-  updateClaimStatusHandler
+  updateClaimStatusHandler,
+  updateClaimDataHandler
 } from './claims-controller.js'
 
 jest.mock('./claims-controller.js')
@@ -26,7 +27,7 @@ describe('claims-routes', () => {
 
   beforeAll(async () => {
     server = new Server()
-    server.route(claimHandlers)
+    server.route(claimsHandlers)
     server.decorate('request', 'logger', mockLogger)
     server.decorate('request', 'db', mockDb)
     await server.initialize()
@@ -234,6 +235,54 @@ describe('claims-routes', () => {
           status: 9,
           user: 'admin'
         }
+      }
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(400)
+    })
+  })
+
+  describe('PUT /api/claims/{reference}/data', () => {
+    test('Update claim data call should pass request through to handler for valid request', async () => {
+      const options = {
+        method: 'PUT',
+        url: '/api/claims/FUBC-JTTU-SDQ7/data',
+        payload: { vetsName: 'New Vet', user: 'tester', note: 'Changed vet name' }
+      }
+
+      updateClaimDataHandler.mockImplementationOnce(async (_, h) => {
+        return h.response().code(200)
+      })
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(updateClaimDataHandler).toHaveBeenCalledTimes(1)
+    })
+
+    test('Update claim data call should pass request through to handler for valid request for alternate element', async () => {
+      const options = {
+        method: 'PUT',
+        url: '/api/claims/FUBC-JTTU-SDQ7/data',
+        payload: { vetRCVSNumber: '1234567', user: 'tester', note: 'Changed vet name' }
+      }
+
+      updateClaimDataHandler.mockImplementationOnce(async (_, h) => {
+        return h.response().code(200)
+      })
+
+      const res = await server.inject(options)
+
+      expect(res.statusCode).toBe(200)
+      expect(updateClaimDataHandler).toHaveBeenCalledTimes(1)
+    })
+
+    test('Update claim call should fail when required value is not provided', async () => {
+      const options = {
+        method: 'PUT',
+        url: '/api/claims/FUBC-JTTU-SDQ7/data',
+        payload: { vetRCVSNumber: '1234567', user: 'tester' }
       }
 
       const res = await server.inject(options)

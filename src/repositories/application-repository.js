@@ -1,7 +1,5 @@
 import { STATUS } from 'ffc-ahwr-common-library'
-// import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { startAndEndDate } from '../lib/date-utils.js'
-// import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
@@ -55,15 +53,6 @@ export const getApplication = async ({ db, reference, includeDeletedFlags = fals
 
 export const getApplicationWithFullFlags = async ({ db, reference }) => {
   return db.collection(APPLICATION_COLLECTION).findOne({ reference })
-}
-
-export const getByEmail = async (email) => {
-  // TODO 1182 impl
-  return {}
-  // return models.application.findOne({
-  //   order: [['createdAt', 'DESC']],
-  //   where: { 'data.organisation.email': email.toLowerCase() }
-  // })
 }
 
 export const evalSortField = (sort) => {
@@ -209,15 +198,6 @@ export const searchApplications = async (
   }
 }
 
-export const getAllApplications = async () => {
-  // TODO 1182 impl
-  return []
-  // const query = {
-  //   order: [['createdAt', 'DESC']]
-  // }
-  // return models.application.findAll(query)
-}
-
 export const updateApplication = async ({
   db,
   reference,
@@ -259,7 +239,7 @@ export const findApplication = async (db, reference) => {
 }
 
 export const getApplicationsToRedactOlderThan = async (years) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   return []
   // const now = new Date()
   // const cutoffDate = new Date(
@@ -290,7 +270,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
 }
 
 export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   return []
   // const now = new Date()
   // const cutoffDate = new Date(
@@ -318,7 +298,7 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
 }
 
 export const redactPII = async (agreementReference, logger) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   // const redactedValueByJSONPath = {
   //   'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
   //   'organisation,email': REDACT_PII_VALUES.REDACTED_EMAIL,
@@ -381,7 +361,7 @@ export const createFlag = async (db, applicationReference, data) => {
 }
 
 export const deleteFlag = async (db, flagId, user, deletedNote) => {
-  const result = await db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
+  return db.collection(APPLICATION_COLLECTION).findOneAndUpdate(
     { 'flags.id': flagId },
     {
       $set: {
@@ -393,7 +373,6 @@ export const deleteFlag = async (db, flagId, user, deletedNote) => {
     },
     { returnDocument: 'after' }
   )
-  return result
 }
 
 export const getRemindersToSend = async (

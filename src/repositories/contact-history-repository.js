@@ -37,7 +37,7 @@ export const updateApplicationValuesAndContactHistory = async ({
 }
 
 export const redactPII = async (applicationReference, logger) => {
-  // TODO 1182 impl
+  // TODO: 1495 impl
   return {}
 
   // const data = Sequelize.fn(

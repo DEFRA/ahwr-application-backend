@@ -2,8 +2,7 @@ import { health } from '../routes/health.js'
 import { latestContactDetailsHandlers } from '../routes/api/latest-contact-details.js'
 import { applicationHistoryHandlers } from '../routes/api/application-history.js'
 import { applicationEventsHandlers } from '../routes/api/application-events.js'
-import { claimHandlers } from '../routes/api/claims/claims-routes.js'
-import { claimsHandlers } from '../routes/api/claims.js'
+import { claimsHandlers } from '../routes/api/claims/claims-routes.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
 import { applicationHandlers } from '../routes/api/applications.js'
@@ -23,7 +22,6 @@ const router = {
         .concat(applicationHistoryHandlers)
         .concat(claimHistoryHandlers)
         .concat(applicationEventsHandlers)
-        .concat(claimHandlers)
         .concat(claimsHandlers)
         .concat(contactHistoryHandlers)
         .concat(flagHandlers)
