@@ -4,12 +4,17 @@ import {
   createClaimHandler,
   isURNUniqueHandler,
   getClaimHandler,
-  updateClaimStatusHandler
+  updateClaimStatusHandler,
+  updateClaimDataHandler
 } from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
-import { getClaimByReference, updateClaimStatus } from '../../../repositories/claim-repository.js'
+import {
+  getClaimByReference,
+  updateClaimData,
+  updateClaimStatus
+} from '../../../repositories/claim-repository.js'
 import { ObjectId } from 'mongodb'
-import { getApplication } from '../../../repositories/application-repository.js'
+import { findApplication, getApplication } from '../../../repositories/application-repository.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
 import {
@@ -17,12 +22,14 @@ import {
   publishStatusChangeEvent
 } from '../../../messaging/publish-outbound-notification.js'
 import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
+import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
 
 jest.mock('./claims-service.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../event-publisher/index.js')
 jest.mock('../../../messaging/publish-outbound-notification.js')
+jest.mock('../../../event-publisher/claim-data-update-event.js')
 jest.mock('../../../lib/context-helper.js')
 
 describe('createClaimHandler', () => {
@@ -705,5 +712,121 @@ describe('updateClaimStatusHandler', () => {
     expect(publishRequestForPaymentEvent).not.toHaveBeenCalled()
 
     expect(publishStatusChangeEvent).not.toHaveBeenCalled()
+  })
+})
+
+describe('updateClaimDataHandler', () => {
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis(),
+    takeover: jest.fn().mockReturnThis()
+  }
+
+  const mockLogger = { error: jest.fn(), info: jest.fn(), setBindings: jest.fn() }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+
+    getApplication.mockResolvedValueOnce({
+      organisation: {
+        sbi: '106705779',
+        crn: '1100014934',
+        frn: '1102569649'
+      }
+    })
+  })
+
+  test('should return 404 when claim is not found', async () => {
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      params: { reference: 'FUBC-JTTU-SDQ7' },
+      payload: {
+        vetsName: 'New Vet',
+        user: 'tester',
+        note: 'Changed vet name'
+      }
+    }
+    getClaimByReference.mockResolvedValue(null)
+
+    await updateClaimDataHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(404)
+  })
+
+  test('should return 204 when no data changes', async () => {
+    const mockDb = {}
+    const mockRequest = {
+      logger: mockLogger,
+      db: mockDb,
+      params: { reference: 'FUBC-JTTU-SDQ7' },
+      payload: {
+        vetsName: 'New Vet',
+        user: 'tester',
+        note: 'Changed vet name'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      data: { vetsName: 'New Vet' }
+    })
+
+    await updateClaimDataHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(204)
+    expect(updateClaimData).not.toHaveBeenCalled()
+    expect(claimDataUpdateEvent).not.toHaveBeenCalled()
+  })
+
+  test('should return 204 and update the claim when data has changed', async () => {
+    const mockDb = {}
+    const mockRequest = {
+      logger: mockLogger,
+      db: mockDb,
+      params: { reference: 'FUBC-JTTU-SDQ7' },
+      payload: {
+        vetsName: 'New Vet',
+        user: 'tester',
+        note: 'Changed vet name'
+      }
+    }
+
+    getClaimByReference.mockResolvedValue({
+      data: { vetsName: 'Old Vet' },
+      applicationReference: 'IAHW-G3CL-V59P'
+    })
+    updateClaimData.mockResolvedValue({
+      applicationReference: 'IAHW-G3CL-V59P'
+    })
+    findApplication.mockResolvedValue({
+      organisation: { sbi: '123456789' }
+    })
+
+    await updateClaimDataHandler(mockRequest, mockH)
+
+    expect(updateClaimData).toHaveBeenCalledWith({
+      db: mockDb,
+      reference: 'FUBC-JTTU-SDQ7',
+      updatedProperty: 'vetsName',
+      newValue: 'New Vet',
+      oldValue: 'Old Vet',
+      note: 'Changed vet name',
+      user: 'tester',
+      updatedAt: expect.any(Date)
+    })
+    expect(claimDataUpdateEvent).toHaveBeenCalledWith(
+      {
+        applicationReference: 'IAHW-G3CL-V59P',
+        reference: 'FUBC-JTTU-SDQ7',
+        updatedProperty: 'vetsName',
+        newValue: 'New Vet',
+        oldValue: 'Old Vet',
+        note: 'Changed vet name'
+      },
+      'claim-vetName',
+      'tester',
+      expect.any(Date),
+      '123456789'
+    )
+    expect(mockH.code).toHaveBeenCalledWith(204)
   })
 })

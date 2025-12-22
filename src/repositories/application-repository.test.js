@@ -243,4 +243,8 @@ describe('application-repository', () => {
       expect(result).toBe(updatedApplication)
     })
   })
+
+  describe('searchApplications', () => {
+    // TODO: Port tests from handler layer
+  })
 })

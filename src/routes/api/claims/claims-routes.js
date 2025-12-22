@@ -1,29 +1,26 @@
 import joi from 'joi'
 import {
-  piHunt,
-  piHuntAllAnimals,
-  testResults as testResultsConstant
-} from '../../../constants/index.js'
-import {
   getClaimByReference,
   getByApplicationReference
 } from '../../../repositories/claim-repository.js'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import { StatusCodes } from 'http-status-codes'
-import { claimType, getAmount, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
+import { TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 import {
   createClaimHandler,
   isURNUniqueHandler,
   getClaimHandler,
-  updateClaimStatusHandler
+  updateClaimStatusHandler,
+  updateClaimDataHandler
 } from './claims-controller.js'
 
-export const claimHandlers = [
+export const claimsHandlers = [
   {
     method: 'GET',
     path: '/api/claims/get-by-reference/{ref}',
     options: {
+      description: 'Get a claim by reference', // But wait that is what the handler below is for?
       validate: {
         params: joi.object({
           ref: joi.string().valid()
@@ -43,6 +40,7 @@ export const claimHandlers = [
     method: 'GET',
     path: '/api/claims/{reference}',
     options: {
+      description: 'Get a claim by reference',
       validate: {
         params: joi.object({
           reference: joi.string().required()
@@ -55,6 +53,7 @@ export const claimHandlers = [
     method: 'GET',
     path: '/api/claims/get-by-application-reference/{ref}',
     options: {
+      description: 'Get all claims for a given app ref, filtered by the livestock', // TODO: confirm if this is used - was not plugged in properly - believe it is replaced by @'/api/applications/{applicationReference}/claims'
       validate: {
         params: joi.object({
           ref: joi.string()
@@ -73,7 +72,11 @@ export const claimHandlers = [
       },
       handler: async (request, h) => {
         const { typeOfLivestock } = request.query
-        const claims = await getByApplicationReference(request.params.ref, typeOfLivestock)
+        const claims = await getByApplicationReference({
+          db: request.db,
+          applicationReference: request.params.ref,
+          typeOfLivestock
+        })
 
         return h.response(claims).code(StatusCodes.OK)
       }
@@ -83,6 +86,7 @@ export const claimHandlers = [
     method: 'POST',
     path: '/api/claims/search',
     options: {
+      description: 'Search for claims based on search criteria',
       validate: {
         payload: joi.object({
           ...searchPayloadSchema,
@@ -117,6 +121,7 @@ export const claimHandlers = [
     method: 'POST',
     path: '/api/claims/is-urn-unique',
     options: {
+      description: 'Check a claim URN is unique',
       validate: {
         payload: joi.object({
           sbi: joi.string().required(),
@@ -130,51 +135,15 @@ export const claimHandlers = [
     method: 'POST',
     path: '/api/claims',
     options: {
+      description: 'Create a new claim',
       handler: createClaimHandler
-    }
-  },
-  {
-    method: 'POST',
-    path: '/api/claims/get-amount',
-    options: {
-      validate: {
-        payload: joi.object({
-          typeOfLivestock: joi
-            .string()
-            .valid(
-              TYPE_OF_LIVESTOCK.BEEF,
-              TYPE_OF_LIVESTOCK.DAIRY,
-              TYPE_OF_LIVESTOCK.PIGS,
-              TYPE_OF_LIVESTOCK.SHEEP
-            )
-            .required(),
-          reviewTestResults: joi
-            .string()
-            .valid(testResultsConstant.positive, testResultsConstant.negative)
-            .optional(),
-          type: joi.string().valid(claimType.review, claimType.endemics).required(),
-          piHunt: joi.string().valid(piHunt.yes, piHunt.no).optional(),
-          piHuntAllAnimals: joi
-            .string()
-            .valid(piHuntAllAnimals.yes, piHuntAllAnimals.no)
-            .optional(),
-          dateOfVisit: joi.date().required()
-        }),
-        failAction: async (request, h, err) => {
-          request.logger.setBindings({ error: err })
-          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
-        }
-      },
-      handler: async (request, h) => {
-        const amount = await getAmount(request.payload)
-        return h.response(amount).code(StatusCodes.OK)
-      }
     }
   },
   {
     method: 'PUT',
     path: '/api/claims/update-by-reference',
     options: {
+      description: 'Update status for a claim',
       validate: {
         payload: joi.object({
           reference: joi.string().valid().required(),
@@ -190,5 +159,32 @@ export const claimHandlers = [
       },
       handler: updateClaimStatusHandler
     }
+  },
+  {
+    method: 'PUT',
+    path: '/api/claims/{reference}/data',
+    options: {
+      description: 'Update data items for a claim',
+      validate: {
+        params: joi.object({
+          reference: joi.string()
+        }),
+        payload: joi
+          .object({
+            vetsName: joi.string(),
+            dateOfVisit: joi.date(),
+            vetRCVSNumber: joi.string().pattern(/^\d{6}[\dX]$/i),
+            note: joi.string().required(),
+            user: joi.string().required()
+          })
+          .or('vetsName', 'dateOfVisit', 'vetRCVSNumber')
+          .required(),
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ error: err })
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
+        }
+      }
+    },
+    handler: updateClaimDataHandler
   }
 ]

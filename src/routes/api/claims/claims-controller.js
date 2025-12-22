@@ -1,8 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
-import { getClaimByReference, updateClaimStatus } from '../../../repositories/claim-repository.js'
-import { getApplication } from '../../../repositories/application-repository.js'
+import {
+  getClaimByReference,
+  updateClaimData,
+  updateClaimStatus
+} from '../../../repositories/claim-repository.js'
+import { findApplication, getApplication } from '../../../repositories/application-repository.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
 import {
   publishRequestForPaymentEvent,
@@ -11,6 +15,7 @@ import {
 import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import { piHunt } from '../../../constants/index.js'
 import { STATUS, TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
+import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
 
 export const createClaimHandler = async (request, h) => {
   try {
@@ -158,6 +163,78 @@ export const updateClaimStatusHandler = async (request, h) => {
   }
 
   return h.response().code(StatusCodes.OK)
+}
+
+export const updateClaimDataHandler = async (request, h) => {
+  const { reference } = request.params
+  const { note, user, ...dataPayload } = request.payload
+  const { db } = request
+
+  request.logger.setBindings({ reference, dataPayload })
+
+  const claim = await getClaimByReference(db, reference)
+  if (claim === null) {
+    return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
+  }
+
+  const [updatedProperty, newValue] = Object.entries(dataPayload)
+    .filter(([key, value]) =>
+      key === 'dateOfVisit'
+        ? value.getTime() !== claim.data.dateOfVisit?.getTime()
+        : value !== claim.data[key]
+    )
+    .flat()
+
+  if (updatedProperty === undefined && newValue === undefined) {
+    return h.response().code(StatusCodes.NO_CONTENT)
+  }
+
+  const oldValue = claim.data[updatedProperty]
+  const updatedAt = new Date()
+
+  const updatedClaim = await updateClaimData({
+    db,
+    reference,
+    updatedProperty,
+    newValue,
+    oldValue,
+    note,
+    user,
+    updatedAt
+  })
+
+  const application = await findApplication(db, updatedClaim.applicationReference)
+
+  const eventData = {
+    applicationReference: updatedClaim.applicationReference,
+    reference,
+    updatedProperty,
+    newValue,
+    oldValue,
+    note
+  }
+  await claimDataUpdateEvent(
+    eventData,
+    `claim-${convertUpdatedPropertyToStandardType(updatedProperty)}`,
+    user,
+    updatedAt,
+    application.organisation.sbi
+  )
+
+  return h.response().code(StatusCodes.NO_CONTENT)
+}
+
+const convertUpdatedPropertyToStandardType = (updatedProperty) => {
+  switch (updatedProperty) {
+    case 'vetsName':
+      return 'vetName'
+    case 'vetRCVSNumber':
+      return 'vetRcvs'
+    case 'dateOfVisit':
+      return 'visitDate'
+    default:
+      return updatedProperty
+  }
 }
 
 const getOptionalPiHuntValue = (claim) => {
