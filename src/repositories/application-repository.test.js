@@ -4,8 +4,10 @@ import {
   createApplication,
   getRemindersToSend,
   updateReminders,
-  updateApplication
+  updateApplication,
+  searchApplications
 } from './application-repository'
+import { flagNotDeletedFilter } from './common.js'
 
 describe('application-repository', () => {
   const dbMock = {
@@ -245,6 +247,383 @@ describe('application-repository', () => {
   })
 
   describe('searchApplications', () => {
-    // TODO: Port tests from handler layer
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    test.each([
+      { search: { text: '444444444', type: 'sbi' }, expectedMatch: 'organisation.sbi' },
+      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' },
+      {
+        search: { text: 'AHWR-555A-FD6E', type: 'ref' },
+        expectedMatch: 'reference',
+        filter: ['on hold', 'in check']
+      }
+    ])(
+      'Calls through to search database with expected query for simple criteria',
+      async ({ search, expectedMatch, filter }) => {
+        const foundApplications = [
+          {
+            reference: 'IAHW-8ZPZ-8CLI'
+          }
+        ]
+        collectionMock.toArray.mockResolvedValueOnce([
+          {
+            total: 1
+          }
+        ])
+        collectionMock.toArray.mockResolvedValueOnce(foundApplications)
+        const res = await searchApplications(dbMock, search.text, search.type, filter ?? [])
+
+        const expectedFilter = filter ? { status: { $in: filter } } : undefined
+        const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
+        if (expectedFilter) {
+          expectedMatchExpression.$match.status = { $in: filter }
+        }
+
+        expect(res).toEqual({
+          applications: foundApplications,
+          total: 1
+        })
+        expect(dbMock.collection).toHaveBeenCalledWith('applications')
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          expectedMatchExpression,
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [expectedMatchExpression]
+            }
+          },
+          { $count: 'total' }
+        ])
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          expectedMatchExpression,
+          {
+            $addFields: {
+              type: 'EE'
+            }
+          },
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [
+                expectedMatchExpression,
+                {
+                  $addFields: {
+                    type: 'VV'
+                  }
+                }
+              ]
+            }
+          },
+          { $sort: { createdAt: -1 } },
+          { $skip: 0 },
+          { $limit: 10 },
+          {
+            $addFields: {
+              flags: {
+                $filter: flagNotDeletedFilter
+              }
+            }
+          }
+        ])
+      }
+    )
+
+    test.each([
+      { search: { text: 'applied', type: 'status' }, expectedMatch: 'APPLIED' },
+      { search: { text: 'claimed', type: 'status' }, expectedMatch: 'CLAIMED' },
+      { search: { text: 'in check', type: 'status' }, expectedMatch: 'IN_CHECK' },
+      { search: { text: 'accepted', type: 'status' }, expectedMatch: 'ACCEPTED' },
+      { search: { text: 'rejected', type: 'status' }, expectedMatch: 'REJECTED' },
+      { search: { text: 'paid', type: 'status' }, expectedMatch: 'PAID' },
+      { search: { text: 'withdrawn', type: 'status' }, expectedMatch: 'WITHDRAWN' },
+      { search: { text: 'on hold', type: 'status' }, expectedMatch: 'ON_HOLD' },
+      { search: { text: 'ready to pay', type: 'status' }, expectedMatch: 'READY_TO_PAY' }
+    ])('returns success when searching for statuses', async ({ search, expectedMatch, filter }) => {
+      const foundApplications = [
+        {
+          reference: 'IAHW-8ZPZ-8CLI'
+        }
+      ]
+      collectionMock.toArray.mockResolvedValueOnce([
+        {
+          total: 1
+        }
+      ])
+      collectionMock.toArray.mockResolvedValueOnce(foundApplications)
+      const res = await searchApplications(dbMock, search.text, search.type, [])
+
+      expect(res).toEqual({
+        applications: foundApplications,
+        total: 1
+      })
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        {
+          $match: {
+            status: {
+              $regex: expectedMatch,
+              $options: 'i'
+            }
+          }
+        },
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [
+              {
+                $match: {
+                  status: {
+                    $regex: expectedMatch,
+                    $options: 'i'
+                  }
+                }
+              }
+            ]
+          }
+        },
+        { $count: 'total' }
+      ])
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        {
+          $match: {
+            status: {
+              $regex: expectedMatch,
+              $options: 'i'
+            }
+          }
+        },
+        {
+          $addFields: {
+            type: 'EE'
+          }
+        },
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [
+              {
+                $match: {
+                  status: {
+                    $regex: expectedMatch,
+                    $options: 'i'
+                  }
+                }
+              },
+              {
+                $addFields: {
+                  type: 'VV'
+                }
+              }
+            ]
+          }
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: 0 },
+        { $limit: 10 },
+        {
+          $addFields: {
+            flags: {
+              $filter: flagNotDeletedFilter
+            }
+          }
+        }
+      ])
+    })
+
+    test.each([
+      {
+        search: { text: '19/12/2025', type: 'date' },
+        expectedStart: new Date(2025, 11, 19),
+        expectedEnd: new Date(2025, 11, 20)
+      },
+      {
+        search: { text: '31/03/2025', type: 'date' },
+        expectedStart: new Date(2025, 2, 31),
+        expectedEnd: new Date(2025, 3, 1)
+      }
+    ])(
+      'returns success when searching for date',
+      async ({ search, expectedStart, expectedEnd }) => {
+        const foundApplications = [
+          {
+            reference: 'IAHW-8ZPZ-8CLI'
+          }
+        ]
+        collectionMock.toArray.mockResolvedValueOnce([
+          {
+            total: 1
+          }
+        ])
+        collectionMock.toArray.mockResolvedValueOnce(foundApplications)
+        const res = await searchApplications(dbMock, search.text, search.type, [])
+
+        expect(res).toEqual({
+          applications: foundApplications,
+          total: 1
+        })
+        expect(dbMock.collection).toHaveBeenCalledWith('applications')
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          {
+            $match: {
+              createdAt: { $gte: expectedStart, $lt: expectedEnd }
+            }
+          },
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [
+                {
+                  $match: {
+                    createdAt: { $gte: expectedStart, $lt: expectedEnd }
+                  }
+                }
+              ]
+            }
+          },
+          { $count: 'total' }
+        ])
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          {
+            $match: {
+              createdAt: { $gte: expectedStart, $lt: expectedEnd }
+            }
+          },
+          {
+            $addFields: {
+              type: 'EE'
+            }
+          },
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [
+                {
+                  $match: {
+                    createdAt: { $gte: expectedStart, $lt: expectedEnd }
+                  }
+                },
+                {
+                  $addFields: {
+                    type: 'VV'
+                  }
+                }
+              ]
+            }
+          },
+          { $sort: { createdAt: -1 } },
+          { $skip: 0 },
+          { $limit: 10 },
+          {
+            $addFields: {
+              flags: {
+                $filter: flagNotDeletedFilter
+              }
+            }
+          }
+        ])
+      }
+    )
+
+    test.each([
+      { search: { text: 'terrys', type: 'organisation' } },
+      { search: { text: 'chocolate', type: 'organisation' } }
+    ])('returns success when searching for organisation', async ({ search }) => {
+      const foundApplications = [
+        {
+          reference: 'IAHW-8ZPZ-8CLI'
+        }
+      ]
+      collectionMock.toArray.mockResolvedValueOnce([
+        {
+          total: 1
+        }
+      ])
+      collectionMock.toArray.mockResolvedValueOnce(foundApplications)
+      const res = await searchApplications(dbMock, search.text, search.type, [])
+
+      expect(res).toEqual({
+        applications: foundApplications,
+        total: 1
+      })
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        {
+          $match: {
+            'organisation.name': { $regex: search.text, $options: 'i' }
+          }
+        },
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [
+              {
+                $match: {
+                  'organisation.name': { $regex: search.text, $options: 'i' }
+                }
+              }
+            ]
+          }
+        },
+        { $count: 'total' }
+      ])
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        {
+          $match: {
+            'organisation.name': { $regex: search.text, $options: 'i' }
+          }
+        },
+        {
+          $addFields: {
+            type: 'EE'
+          }
+        },
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [
+              {
+                $match: {
+                  'organisation.name': { $regex: search.text, $options: 'i' }
+                }
+              },
+              {
+                $addFields: {
+                  type: 'VV'
+                }
+              }
+            ]
+          }
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: 0 },
+        { $limit: 10 },
+        {
+          $addFields: {
+            flags: {
+              $filter: flagNotDeletedFilter
+            }
+          }
+        }
+      ])
+    })
+
+    test('returns successful result when no data found', async () => {
+      collectionMock.toArray.mockResolvedValueOnce([
+        {
+          total: 0
+        }
+      ])
+
+      const res = await searchApplications(dbMock, 'aaaaa', 'ref', [])
+
+      expect(res).toEqual({
+        applications: [],
+        total: 0
+      })
+
+      expect(collectionMock.aggregate).toHaveBeenCalledTimes(1)
+    })
   })
 })

@@ -1,7 +1,5 @@
 import { STATUS } from 'ffc-ahwr-common-library'
-// import { raiseApplicationStatusEvent } from '../event-publisher/index.js'
 import { startAndEndDate } from '../lib/date-utils.js'
-// import { claimDataUpdateEvent } from '../event-publisher/claim-data-update-event.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import { v4 as uuid } from 'uuid'
