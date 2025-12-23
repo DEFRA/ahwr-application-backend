@@ -15,6 +15,8 @@ import {
 import { updateApplication } from '../../../repositories/application-repository.js'
 import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
 
+const FAILED_SAVE_CATEGORY = 'failed-save'
+const FAILED_RETRIEVE_CATEGORY = 'failed-retrieve'
 export const createApplicationHandler = async (request, h) => {
   try {
     const application = await createApplication({
@@ -30,7 +32,7 @@ export const createApplicationHandler = async (request, h) => {
         event: {
           type: 'exception',
           severity: 'error',
-          category: 'failed-save'
+          category: FAILED_SAVE_CATEGORY
         }
       },
       'Failed to create application'
@@ -58,7 +60,7 @@ export const getApplicationsHandler = async (request, h) => {
         event: {
           type: 'exception',
           severity: 'error',
-          category: 'failed-retrieve'
+          category: FAILED_RETRIEVE_CATEGORY
         }
       },
       'Failed to get applications'
@@ -91,7 +93,7 @@ export const getApplicationClaimsHandler = async (request, h) => {
         event: {
           type: 'exception',
           severity: 'error',
-          category: 'failed-retrieve'
+          category: FAILED_RETRIEVE_CATEGORY
         }
       },
       'Failed to get application claims'
@@ -124,7 +126,7 @@ export const getApplicationHerdsHandler = async (request, h) => {
         event: {
           type: 'exception',
           severity: 'error',
-          category: 'failed-retrieve'
+          category: FAILED_RETRIEVE_CATEGORY
         }
       },
       'Failed to get application herds'
@@ -155,7 +157,7 @@ export const getApplicationHandler = async (request, h) => {
         event: {
           type: 'exception',
           severity: 'error',
-          category: 'failed-retrieve'
+          category: FAILED_RETRIEVE_CATEGORY
         }
       },
       'Failed to get application'
