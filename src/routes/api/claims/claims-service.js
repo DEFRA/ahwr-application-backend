@@ -38,8 +38,17 @@ export const processClaim = async ({ payload, logger, db }) => {
   const { value: validatedPayload, error } = validateClaim(AHWR_SCHEME, payload, flags)
   if (error) {
     logger.setBindings({ error })
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-validation'
+        }
+      },
+      'Create claim validation error'
+    )
     throw Boom.badRequest(error.message)
   }
 

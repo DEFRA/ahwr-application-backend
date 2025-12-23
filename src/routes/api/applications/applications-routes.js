@@ -28,11 +28,19 @@ export const applicationRoutes = [
       handler: createApplicationHandler,
       validate: {
         payload: newApplicationSchema,
-        failAction: async (request, _h, err) => {
-          request.logger.error(err, 'Create application validation error')
-          // TODO
-          // appInsights.defaultClient.trackException({ exception: err })
-          throw Boom.badRequest(err)
+        failAction: async (request, _h, error) => {
+          request.logger.error(
+            {
+              error,
+              event: {
+                type: 'exception',
+                severity: 'error',
+                category: 'failed-validation'
+              }
+            },
+            'Create application validation error'
+          )
+          throw Boom.badRequest(error)
         }
       }
     }

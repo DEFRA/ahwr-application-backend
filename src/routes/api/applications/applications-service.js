@@ -88,15 +88,14 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     raisedOn: application.createdAt
   })
 
-  // TODO
-  // appInsights.defaultClient.trackEvent({
-  //     name: 'process-application-api',
-  //     properties: {
-  //         status: application.data.offerStatus,
-  //         reference: application.data.applicationReference,
-  //         sbi: application.organisation.sbi
-  //     }
-  // })
+  logger.info({
+    event: {
+      type: 'process-application-api',
+      reference: application.reference,
+      outcome: true,
+      category: `status: ${application.data.offerStatus} sbi:${application.organisation.sbi}`
+    }
+  })
 
   return {
     applicationReference: application.reference

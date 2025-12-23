@@ -21,7 +21,14 @@ describe('applicationRoutes', () => {
           Boom.badRequest(mockError)
         )
         expect(mockLogger.error).toHaveBeenCalledWith(
-          mockError,
+          {
+            error: mockError,
+            event: {
+              category: 'failed-validation',
+              severity: 'error',
+              type: 'exception'
+            }
+          },
           'Create application validation error'
         )
       })

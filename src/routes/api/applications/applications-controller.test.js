@@ -97,7 +97,14 @@ describe('applications-controller', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+        {
+          error: mockError,
+          event: {
+            type: 'exception',
+            severity: 'error',
+            category: 'failed-save'
+          }
+        },
         'Failed to create application'
       )
     })
@@ -137,7 +144,14 @@ describe('applications-controller', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+        {
+          error: mockError,
+          event: {
+            type: 'exception',
+            severity: 'error',
+            category: 'failed-retrieve'
+          }
+        },
         'Failed to get applications'
       )
     })
@@ -181,7 +195,14 @@ describe('applications-controller', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+        {
+          error: mockError,
+          event: {
+            type: 'exception',
+            severity: 'error',
+            category: 'failed-retrieve'
+          }
+        },
         'Failed to get application claims'
       )
     })
@@ -242,7 +263,14 @@ describe('applications-controller', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+        {
+          error: mockError,
+          event: {
+            type: 'exception',
+            severity: 'error',
+            category: 'failed-retrieve'
+          }
+        },
         'Failed to get application herds'
       )
     })
@@ -304,7 +332,14 @@ describe('applications-controller', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+        {
+          error: mockError,
+          event: {
+            type: 'exception',
+            severity: 'error',
+            category: 'failed-retrieve'
+          }
+        },
         'Failed to get application'
       )
     })

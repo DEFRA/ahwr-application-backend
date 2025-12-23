@@ -24,9 +24,17 @@ export const createApplicationHandler = async (request, h) => {
     })
     return h.response(application).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to create application')
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: err })
+    request.logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-save'
+        }
+      },
+      'Failed to create application'
+    )
 
     if (Boom.isBoom(error)) {
       throw error
@@ -44,9 +52,17 @@ export const getApplicationsHandler = async (request, h) => {
     })
     return h.response(applications).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to get applications')
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    request.logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-retrieve'
+        }
+      },
+      'Failed to get applications'
+    )
 
     if (Boom.isBoom(error)) {
       throw error
@@ -69,9 +85,17 @@ export const getApplicationClaimsHandler = async (request, h) => {
 
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to get application claims')
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    request.logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-retrieve'
+        }
+      },
+      'Failed to get application claims'
+    )
 
     if (Boom.isBoom(error)) {
       throw error
@@ -94,9 +118,17 @@ export const getApplicationHerdsHandler = async (request, h) => {
 
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to get application herds')
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    request.logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-retrieve'
+        }
+      },
+      'Failed to get application herds'
+    )
 
     if (Boom.isBoom(error)) {
       throw error
@@ -117,9 +149,17 @@ export const getApplicationHandler = async (request, h) => {
 
     return h.response(application).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error({ error }, 'Failed to get application')
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    request.logger.error(
+      {
+        error,
+        event: {
+          type: 'exception',
+          severity: 'error',
+          category: 'failed-retrieve'
+        }
+      },
+      'Failed to get application'
+    )
 
     if (Boom.isBoom(error)) {
       throw error

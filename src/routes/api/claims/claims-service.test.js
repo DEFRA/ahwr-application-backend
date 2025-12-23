@@ -25,7 +25,7 @@ jest.mock('@hapi/boom', () => ({
 }))
 
 describe('processClaim', () => {
-  const mockLogger = { setBindings: jest.fn() }
+  const mockLogger = { setBindings: jest.fn(), error: jest.fn() }
   const mockDb = {}
   const payload = {
     applicationReference: 'IAHW-AAAA-AAAA',
