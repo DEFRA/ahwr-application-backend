@@ -1,12 +1,14 @@
-import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository'
-import { publishStatusChangeEvent } from '../publish-outbound-notification'
-import { setPaymentStatusToPaid } from './set-payment-status-to-paid'
-import { raiseClaimEvents } from '../../event-publisher'
+import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository.js'
+import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
+import { setPaymentStatusToPaid } from './set-payment-status-to-paid.js'
+import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { ObjectId } from 'mongodb'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
-jest.mock('../../repositories/claim-repository')
-jest.mock('../publish-outbound-notification')
-jest.mock('../../event-publisher')
+jest.mock('../../repositories/claim-repository.js')
+jest.mock('../publish-outbound-notification.js')
+jest.mock('../../event-publisher/index.js')
+jest.mock('../../common/helpers/metrics.js')
 
 describe('handler function for setting payment status to paid for claims', () => {
   const mockLogger = { error: jest.fn(), info: jest.fn() }
@@ -76,6 +78,7 @@ describe('handler function for setting payment status to paid for claims', () =>
       typeOfLivestock: claimFromDb.data.typeOfLivestock
     })
     expect(mockLogger.error).toHaveBeenCalledTimes(0)
+    expect(metricsCounter).toHaveBeenCalledWith('set_payment_status_to_paid_events_received')
   })
 
   test('validation fails because of incorrect message input', async () => {
@@ -92,7 +95,7 @@ describe('handler function for setting payment status to paid for claims', () =>
     expect(publishStatusChangeEvent).not.toHaveBeenCalled()
   })
 
-  test('happy path for a claim being updated to paid, but its herdless as it was for a preMH visit', async () => {
+  test('happy path for a claim being updated to paid, but it is herd-less as it was for a preMH visit', async () => {
     const herdlessClaimFromDb = {
       applicationReference: 'IAHW-RWE2-G8S7',
       reference: 'REBC-ABCD-1234',
@@ -125,5 +128,6 @@ describe('handler function for setting payment status to paid for claims', () =>
       typeOfLivestock: 'beef'
     })
     expect(mockLogger.error).toHaveBeenCalledTimes(0)
+    expect(metricsCounter).toHaveBeenCalledWith('set_payment_status_to_paid_events_received')
   })
 })

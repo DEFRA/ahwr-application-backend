@@ -6,6 +6,7 @@ import {
 } from './publish-outbound-notification.js'
 import { publishMessage, setupClient } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
+import { metricsCounter } from '../common/helpers/metrics.js'
 
 jest.mock('ffc-ahwr-common-library')
 const mockLogger = {
@@ -13,6 +14,7 @@ const mockLogger = {
   error: jest.fn(),
   setBindings: jest.fn()
 }
+jest.mock('../common/helpers/metrics.js')
 
 describe('publish outbound notification', () => {
   beforeAll(() => {
@@ -52,6 +54,7 @@ describe('publish outbound notification', () => {
         },
         'arn:aws:sns:eu-west-2:1:document-requested'
       )
+      expect(metricsCounter).toHaveBeenCalledWith('notification_published-document-request')
     })
 
     test('skips setting up client and then publishes event on subsequent call', async () => {
@@ -80,6 +83,7 @@ describe('publish outbound notification', () => {
         },
         'arn:aws:sns:eu-west-2:1:document-requested'
       )
+      expect(metricsCounter).toHaveBeenCalledWith('notification_published-document-request')
     })
   })
 
@@ -106,6 +110,7 @@ describe('publish outbound notification', () => {
         },
         'arn:aws:sns:eu-west-2:1:status-change'
       )
+      expect(metricsCounter).toHaveBeenCalledWith('notification_published-claim-status-change')
     })
   })
 
@@ -133,6 +138,7 @@ describe('publish outbound notification', () => {
         },
         'arn:aws:sns:eu-west-2:1:payment-request'
       )
+      expect(metricsCounter).toHaveBeenCalledWith('notification_published-payment-request')
     })
   })
 
@@ -154,6 +160,7 @@ describe('publish outbound notification', () => {
         },
         'arn:aws:sns:eu-west-2:1:reminder-request'
       )
+      expect(metricsCounter).toHaveBeenCalledWith('notification_published-reminder-request')
     })
   })
 })
