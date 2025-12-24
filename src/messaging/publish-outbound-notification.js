@@ -1,6 +1,7 @@
 import { publishMessage, setupClient } from 'ffc-ahwr-common-library'
 import { config } from '../config/config.js'
 import { getLogger } from '../logging/logger.js'
+import { metricsCounter } from '../common/helpers/metrics.js'
 
 const {
   applicationDocRequestMsgType,
@@ -20,6 +21,7 @@ export async function publishDocumentRequestEvent(logger, messageBody) {
   await publishMessage(messageBody, attributes, config.get('sns.documentRequestedTopicArn'))
 
   logger.info('Document request event published')
+  await metricsCounter('notification_published-document-request')
 }
 
 export async function publishStatusChangeEvent(logger, messageBody) {
@@ -32,6 +34,7 @@ export async function publishStatusChangeEvent(logger, messageBody) {
   await publishMessage(messageBody, attributes, config.get('sns.statusChangeTopicArn'))
 
   logger.info('Status change event published')
+  await metricsCounter('notification_published-claim-status-change')
 }
 
 export async function publishRequestForPaymentEvent(logger, messageBody) {
@@ -44,6 +47,7 @@ export async function publishRequestForPaymentEvent(logger, messageBody) {
   await publishMessage(messageBody, attributes, config.get('sns.paymentRequestTopicArn'))
 
   logger.info('Payment request event published')
+  await metricsCounter('notification_published-payment-request')
 }
 
 export async function publishReminderEvent(logger, messageBody) {
@@ -56,6 +60,7 @@ export async function publishReminderEvent(logger, messageBody) {
   await publishMessage(messageBody, attributes, config.get('sns.reminderRequestedTopicArn'))
 
   logger.info('Reminder event published')
+  await metricsCounter('notification_published-reminder-request')
 }
 
 function configureClient() {

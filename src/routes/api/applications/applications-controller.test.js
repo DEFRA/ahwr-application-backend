@@ -22,11 +22,13 @@ import {
   updateOWApplication
 } from '../../../repositories/ow-application-repository.js'
 import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
+import { trackError } from '../../../logging/logger.js'
 
 jest.mock('./applications-service.js')
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../event-publisher/claim-data-update-event.js')
+jest.mock('../../../logging/logger.js')
 
 describe('applications-controller', () => {
   const mockLogger = {
@@ -96,8 +98,10 @@ describe('applications-controller', () => {
         Boom.internal(mockError)
       )
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+      expect(trackError).toHaveBeenCalledWith(
+        mockLogger,
+        mockError,
+        'failed-save',
         'Failed to create application'
       )
     })
@@ -136,8 +140,10 @@ describe('applications-controller', () => {
         Boom.internal(mockError)
       )
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+      expect(trackError).toHaveBeenCalledWith(
+        mockLogger,
+        mockError,
+        'failed-retrieve',
         'Failed to get applications'
       )
     })
@@ -180,8 +186,10 @@ describe('applications-controller', () => {
         Boom.internal(mockError)
       )
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+      expect(trackError).toHaveBeenCalledWith(
+        mockLogger,
+        mockError,
+        'failed-retrieve',
         'Failed to get application claims'
       )
     })
@@ -241,8 +249,10 @@ describe('applications-controller', () => {
         Boom.internal(mockError)
       )
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+      expect(trackError).toHaveBeenCalledWith(
+        mockLogger,
+        mockError,
+        'failed-retrieve',
         'Failed to get application herds'
       )
     })
@@ -303,8 +313,10 @@ describe('applications-controller', () => {
         Boom.internal(mockError)
       )
 
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        { error: mockError },
+      expect(trackError).toHaveBeenCalledWith(
+        mockLogger,
+        mockError,
+        'failed-retrieve',
         'Failed to get application'
       )
     })

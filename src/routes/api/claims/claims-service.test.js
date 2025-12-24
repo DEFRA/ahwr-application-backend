@@ -12,6 +12,7 @@ import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
 import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
 import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
+import { trackError } from '../../../logging/logger.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
@@ -19,13 +20,14 @@ jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../lib/create-reference.js')
 jest.mock('../../../processing/claim/validation.js')
 jest.mock('../../../processing/claim/ahwr/processor.js')
+jest.mock('../../../logging/logger.js')
 jest.mock('@hapi/boom', () => ({
   notFound: jest.fn((msg) => new Error(`NotFound: ${msg}`)),
   badRequest: jest.fn((msg) => new Error(`BadRequest: ${JSON.stringify(msg)}`))
 }))
 
 describe('processClaim', () => {
-  const mockLogger = { setBindings: jest.fn() }
+  const mockLogger = { setBindings: jest.fn(), error: jest.fn() }
   const mockDb = {}
   const payload = {
     applicationReference: 'IAHW-AAAA-AAAA',
@@ -122,13 +124,20 @@ describe('processClaim', () => {
       flags: [],
       organisation: { sbi: '123456789' }
     })
-    validateClaim.mockReturnValue({ error: new Error('Invalid claim') })
+    const validationError = new Error('Invalid claim')
+    validateClaim.mockReturnValue({ error: validationError })
 
     await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
       'BadRequest'
     )
 
     expect(validateClaim).toHaveBeenCalledWith(AHWR_SCHEME, payload, [])
+    expect(trackError).toHaveBeenCalledWith(
+      mockLogger,
+      validationError,
+      'failed-validation',
+      'Create claim validation error'
+    )
   })
 
   test('throws BadRequest when URN number is not unique', async () => {

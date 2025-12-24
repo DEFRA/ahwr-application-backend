@@ -15,6 +15,7 @@ import {
   generateEventsAndComms
 } from '../../../processing/claim/ahwr/processor.js'
 import Boom from '@hapi/boom'
+import { trackError } from '../../../logging/logger.js'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
 
@@ -38,8 +39,7 @@ export const processClaim = async ({ payload, logger, db }) => {
   const { value: validatedPayload, error } = validateClaim(AHWR_SCHEME, payload, flags)
   if (error) {
     logger.setBindings({ error })
-    // TODO
-    // appInsights.defaultClient.trackException({ exception: error })
+    trackError(logger, error, 'failed-validation', 'Create claim validation error')
     throw Boom.badRequest(error.message)
   }
 

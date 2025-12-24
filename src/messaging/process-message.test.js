@@ -1,11 +1,13 @@
 import { config } from '../config/config.js'
 import { processApplicationMessage } from './process-message.js'
 import { setPaymentStatusToPaid } from './application/set-payment-status-to-paid.js'
+import { metricsCounter } from '../common/helpers/metrics.js'
 const { moveClaimToPaidMsgType } = config.get('messageTypes')
 
 jest.mock('./application/set-payment-status-to-paid.js')
 jest.mock('./application/process-redact-pii.js')
 jest.mock('./application/process-reminder-email.js')
+jest.mock('../common/helpers/metrics.js')
 
 describe('Process Message test', () => {
   const mockDb = {}
@@ -31,6 +33,9 @@ describe('Process Message test', () => {
 
     expect(setPaymentStatusToPaid).toHaveBeenCalledTimes(1)
     expect(setPaymentStatusToPaid).toHaveBeenCalledWith(message, mockDb, mockLogger)
+    expect(metricsCounter).toHaveBeenCalledWith(
+      'application_message_received-uk.gov.ffc.ahwr.set.paid.status'
+    )
   })
 
   test('unknown message calls nothing', async () => {
@@ -44,5 +49,6 @@ describe('Process Message test', () => {
     await processApplicationMessage(message, mockDb, mockLogger, attributes)
 
     expect(mockLogger.warn).toHaveBeenCalledTimes(1)
+    expect(metricsCounter).toHaveBeenCalledWith('application_message_received-unknown')
   })
 })

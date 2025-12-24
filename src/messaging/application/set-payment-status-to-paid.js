@@ -3,8 +3,10 @@ import { getClaimByReference, updateClaimStatus } from '../../repositories/claim
 import { TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD, STATUS } from 'ffc-ahwr-common-library'
 import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
 import { raiseClaimEvents } from '../../event-publisher/index.js'
+import { metricsCounter } from '../../common/helpers/metrics.js'
 
 export const setPaymentStatusToPaid = async (message, db, logger) => {
+  await metricsCounter('set_payment_status_to_paid_events_received')
   try {
     if (validateClaimStatusToPaidEvent(message, logger)) {
       const { claimRef, sbi } = message

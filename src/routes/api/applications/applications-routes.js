@@ -18,6 +18,7 @@ import Joi from 'joi'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { searchApplications } from '../../../repositories/application-repository.js'
+import { trackError } from '../../../logging/logger.js'
 
 export const applicationRoutes = [
   {
@@ -28,11 +29,14 @@ export const applicationRoutes = [
       handler: createApplicationHandler,
       validate: {
         payload: newApplicationSchema,
-        failAction: async (request, _h, err) => {
-          request.logger.error(err, 'Create application validation error')
-          // TODO
-          // appInsights.defaultClient.trackException({ exception: err })
-          throw Boom.badRequest(err)
+        failAction: async (request, _h, error) => {
+          trackError(
+            request.logger,
+            error,
+            'failed-validation',
+            'Create application validation error'
+          )
+          throw Boom.badRequest(error)
         }
       }
     }

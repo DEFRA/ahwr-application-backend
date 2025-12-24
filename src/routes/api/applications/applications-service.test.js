@@ -22,7 +22,8 @@ jest.mock('../../../event-publisher/index.js')
 describe('applications-service', () => {
   const mockLogger = {
     setBindings: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
+    info: jest.fn()
   }
 
   beforeEach(() => {
@@ -238,6 +239,14 @@ describe('applications-service', () => {
           userType: 'newUser',
           scheme: 'ahwr'
         })
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: accepted sbi:118409263',
+            outcome: true,
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
       })
 
       it('should create application when previous application exists but is not relevant in repo', async () => {
@@ -294,6 +303,14 @@ describe('applications-service', () => {
           userType: 'newUser',
           scheme: 'ahwr'
         })
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: accepted sbi:118409263',
+            outcome: true,
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
       })
 
       it('should create application in database, but not notify for document generation when not accepted', async () => {
@@ -344,6 +361,14 @@ describe('applications-service', () => {
           raisedOn: expect.any(Date)
         })
         expect(publishDocumentRequestEvent).toHaveBeenCalledTimes(0)
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: rejected sbi:118409263',
+            outcome: true,
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
       })
     })
   })
