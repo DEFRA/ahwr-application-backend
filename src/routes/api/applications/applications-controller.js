@@ -14,6 +14,7 @@ import {
 } from '../../../repositories/ow-application-repository.js'
 import { updateApplication } from '../../../repositories/application-repository.js'
 import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
+import { trackError } from '../../../logging/logger.js'
 
 const FAILED_SAVE_CATEGORY = 'failed-save'
 const FAILED_RETRIEVE_CATEGORY = 'failed-retrieve'
@@ -26,17 +27,7 @@ export const createApplicationHandler = async (request, h) => {
     })
     return h.response(application).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error(
-      {
-        error,
-        event: {
-          type: 'exception',
-          severity: 'error',
-          category: FAILED_SAVE_CATEGORY
-        }
-      },
-      'Failed to create application'
-    )
+    trackError(request.logger, error, FAILED_SAVE_CATEGORY, 'Failed to create application')
 
     if (Boom.isBoom(error)) {
       throw error
@@ -54,17 +45,7 @@ export const getApplicationsHandler = async (request, h) => {
     })
     return h.response(applications).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error(
-      {
-        error,
-        event: {
-          type: 'exception',
-          severity: 'error',
-          category: FAILED_RETRIEVE_CATEGORY
-        }
-      },
-      'Failed to get applications'
-    )
+    trackError(request.logger, error, FAILED_RETRIEVE_CATEGORY, 'Failed to get applications')
 
     if (Boom.isBoom(error)) {
       throw error
@@ -87,17 +68,7 @@ export const getApplicationClaimsHandler = async (request, h) => {
 
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error(
-      {
-        error,
-        event: {
-          type: 'exception',
-          severity: 'error',
-          category: FAILED_RETRIEVE_CATEGORY
-        }
-      },
-      'Failed to get application claims'
-    )
+    trackError(request.logger, error, FAILED_RETRIEVE_CATEGORY, 'Failed to get application claims')
 
     if (Boom.isBoom(error)) {
       throw error
@@ -120,17 +91,7 @@ export const getApplicationHerdsHandler = async (request, h) => {
 
     return h.response(claims).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error(
-      {
-        error,
-        event: {
-          type: 'exception',
-          severity: 'error',
-          category: FAILED_RETRIEVE_CATEGORY
-        }
-      },
-      'Failed to get application herds'
-    )
+    trackError(request.logger, error, FAILED_RETRIEVE_CATEGORY, 'Failed to get application herds')
 
     if (Boom.isBoom(error)) {
       throw error
@@ -151,17 +112,7 @@ export const getApplicationHandler = async (request, h) => {
 
     return h.response(application).code(StatusCodes.OK)
   } catch (error) {
-    request.logger.error(
-      {
-        error,
-        event: {
-          type: 'exception',
-          severity: 'error',
-          category: FAILED_RETRIEVE_CATEGORY
-        }
-      },
-      'Failed to get application'
-    )
+    trackError(request.logger, error, FAILED_RETRIEVE_CATEGORY, 'Failed to get application')
 
     if (Boom.isBoom(error)) {
       throw error

@@ -2,8 +2,10 @@ import Boom from '@hapi/boom'
 import { applicationRoutes } from './applications-routes.js'
 import { searchApplications } from '../../../repositories/application-repository.js'
 import { StatusCodes } from 'http-status-codes'
+import { trackError } from '../../../logging/logger.js'
 
 jest.mock('../../../repositories/application-repository.js')
+jest.mock('../../../logging/logger.js')
 
 describe('applicationRoutes', () => {
   describe('POST /api/applications', () => {
@@ -20,15 +22,10 @@ describe('applicationRoutes', () => {
         expect(postRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toEqual(
           Boom.badRequest(mockError)
         )
-        expect(mockLogger.error).toHaveBeenCalledWith(
-          {
-            error: mockError,
-            event: {
-              category: 'failed-validation',
-              severity: 'error',
-              type: 'exception'
-            }
-          },
+        expect(trackError).toHaveBeenCalledWith(
+          mockLogger,
+          mockError,
+          'failed-validation',
           'Create application validation error'
         )
       })
