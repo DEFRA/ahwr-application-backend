@@ -30,23 +30,26 @@ export const setDbClient = (client) => {
   dbClient = client
 }
 
+const lockLifetime = 120000 // 2 minutes in ms
+const backoffDelay = 30000 // 30 seconds in ms
+
 pulse.define(
   jobs.PROCESS_ON_HOLD_CLAIMS,
   async (_job) => {
     const todayIsHoliday = await isTodayHoliday()
 
-    if (!todayIsHoliday) {
+    if (todayIsHoliday) {
+      getLogger().info('NOT processing on hold claims as today is holiday.')
+    } else {
       getLogger().info('Processing on hold claims...')
       await processOnHoldClaims(dbClient)
-    } else {
-      getLogger().info('NOT processing on hold claims as today is holiday.')
     }
   },
   {
-    lockLifetime: 2 * 60 * 1000, // 2 minutes
+    lockLifetime,
     priority: 'high',
     attempts: 4,
-    backoff: { type: 'exponential', delay: 30 * 1000 },
+    backoff: { type: 'exponential', delay: backoffDelay },
     shouldSaveResult: false
   }
 )
@@ -67,12 +70,12 @@ function time() {
   return new Date().toTimeString().split(' ')[0]
 }
 
-export const startPulseScheduling = async (dbClient) => {
+export const startPulseScheduling = async (databaseClient) => {
   getLogger().info('Starting Pulse scheduling...')
   await pulse.start()
   await pulse.every(config.get('scheduledJobs.processOnHold'), jobs.PROCESS_ON_HOLD_CLAIMS)
 
-  setDbClient(dbClient)
+  setDbClient(databaseClient)
   getLogger().info(`Pulse started and ${Object.keys(jobs).length} job(s) scheduled`)
 }
 
