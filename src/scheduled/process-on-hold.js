@@ -10,7 +10,7 @@ export const processOnHoldClaims = async (db) => {
   const onHoldClaimReferences = onHoldClaims.map((claim) => claim.reference)
 
   if (onHoldClaimReferences.length) {
-    await updateClaimStatuses({
+    const { updatedRecordCount } = await updateClaimStatuses({
       db,
       references: onHoldClaimReferences,
       status: STATUS.READY_TO_PAY,
@@ -18,7 +18,9 @@ export const processOnHoldClaims = async (db) => {
       updatedAt: new Date()
     })
 
-    getLogger().info(`Moved ${onHoldClaimReferences.length} claims from on hold to ready to pay.`)
+    getLogger().info(
+      `Of ${onHoldClaimReferences.length} claims in hold, ${updatedRecordCount} updated to ready to pay.`
+    )
   } else {
     getLogger().info('No claims to move from on hold to ready to pay.')
   }

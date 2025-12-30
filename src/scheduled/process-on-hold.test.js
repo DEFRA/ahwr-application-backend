@@ -20,7 +20,7 @@ describe('processOnHoldClaims', () => {
   it('moves claims from on hold to ready to pay when there are on hold claims', async () => {
     const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
     findOnHoldClaims.mockResolvedValue(fakeClaims)
-    updateClaimStatuses.mockResolvedValue({ modifiedCount: 2 })
+    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
 
     await processOnHoldClaims(mockDb)
 
@@ -34,7 +34,7 @@ describe('processOnHoldClaims', () => {
         updatedAt: expect.any(Date)
       })
     )
-    expect(mockInfo).toHaveBeenCalledWith('Moved 2 claims from on hold to ready to pay.')
+    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims in hold, 2 updated to ready to pay.')
   })
 
   it('does nothing when there are no hold claims', async () => {

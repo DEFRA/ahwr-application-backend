@@ -68,7 +68,7 @@ export const updateClaimStatuses = async ({ db, references, status, user, update
     }
   )
 
-  return result
+  return { updatedRecordCount: result.modifiedCount }
 }
 
 export const findOnHoldClaims = async ({ db, beforeDate, limit = 500 }) => {
