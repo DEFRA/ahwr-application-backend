@@ -3,7 +3,7 @@ import { claimDataUpdateEvent } from './claim-data-update-event.js'
 const mockPublishEvent = jest.fn()
 
 jest.mock('../messaging/fcp-messaging-service.js', () => ({
-  getEventPublisher: () => ({
+  getFcpEventPublisher: () => ({
     publishEvent: mockPublishEvent
   })
 }))

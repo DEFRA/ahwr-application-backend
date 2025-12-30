@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { getEventPublisher } from '../messaging/fcp-messaging-service.js'
+import { getFcpEventPublisher } from '../messaging/fcp-messaging-service.js'
 import { config } from '../config/config.js'
 
 const serviceName = config.get('serviceName')
@@ -8,7 +8,7 @@ export const SEND_SESSION_EVENT = 'send-session-event'
 export const APPLICATION_STATUS_EVENT = 'application-status-event'
 
 export const raiseApplicationStatusEvent = async (event) => {
-  await getEventPublisher().publishEvent({
+  await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: `${event.application.id}`,
     sbi: `${event.application.organisation.sbi}`,
@@ -27,7 +27,7 @@ export const raiseApplicationStatusEvent = async (event) => {
 }
 
 export const raiseClaimEvents = async (event, sbi = 'none') => {
-  await getEventPublisher().publishEvent({
+  await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: `${event.claim.id}`,
     sbi,
@@ -47,7 +47,7 @@ export const raiseClaimEvents = async (event, sbi = 'none') => {
 }
 
 export const raiseApplicationFlaggedEvent = async (event, sbi) => {
-  await getEventPublisher().publishEvent({
+  await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: randomUUID(),
     sbi,
@@ -68,7 +68,7 @@ export const raiseApplicationFlaggedEvent = async (event, sbi) => {
 }
 
 export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
-  await getEventPublisher().publishEvent({
+  await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: randomUUID(),
     sbi,
@@ -89,7 +89,7 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
 }
 
 export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
-  await getEventPublisher().publishEvent({
+  await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: randomUUID(),
     sbi,

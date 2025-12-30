@@ -1,4 +1,7 @@
-import { configureAndStart, stopSubscriber } from './application-message-queue-subscriber.js'
+import {
+  configureAndStartMessaging,
+  stopMessageSubscriber
+} from './application-message-queue-subscriber.js'
 import { SqsSubscriber } from 'ffc-ahwr-common-library'
 import { getLogger } from '../logging/logger.js'
 import { config } from '../config/config.js'
@@ -19,13 +22,13 @@ describe('MessageRequestQueueSubscriber', () => {
     config.set('aws.endpointUrl', 'http://localhost:4576')
   })
 
-  describe('configureAndStart', () => {
+  describe('configureAndStartMessaging', () => {
     it('should configure and start the SQS subscriber', async () => {
       const mockLogger = jest.fn()
       getLogger.mockReturnValueOnce(mockLogger)
       const mockDb = {}
 
-      await configureAndStart(mockDb)
+      await configureAndStartMessaging(mockDb)
 
       expect(SqsSubscriber).toHaveBeenCalledTimes(1)
       expect(SqsSubscriber).toHaveBeenCalledWith({
@@ -44,7 +47,7 @@ describe('MessageRequestQueueSubscriber', () => {
       processApplicationMessage.mockResolvedValueOnce()
       const mockDb = {}
 
-      const onMessage = await configureAndStart(mockDb)
+      const onMessage = await configureAndStartMessaging(mockDb)
 
       await onMessage({ claimRef: 'ABC123', sbi: '123456789' }, {})
 
@@ -53,15 +56,15 @@ describe('MessageRequestQueueSubscriber', () => {
     })
   })
 
-  describe('stopSubscriber', () => {
+  describe('stopMessageSubscriber', () => {
     it('should stop the SQS subscriber', async () => {
       const mockLogger = jest.fn()
       getLogger.mockReturnValueOnce(mockLogger)
       const mockDb = {}
 
-      await configureAndStart(mockDb)
+      await configureAndStartMessaging(mockDb)
 
-      await stopSubscriber()
+      await stopMessageSubscriber()
 
       const subscriberInstance = SqsSubscriber.mock.instances[0]
 
@@ -72,7 +75,7 @@ describe('MessageRequestQueueSubscriber', () => {
       const mockLogger = jest.fn()
       getLogger.mockReturnValueOnce(mockLogger)
 
-      await stopSubscriber()
+      await stopMessageSubscriber()
 
       const subscriberInstance = SqsSubscriber.mock.instances[0]
 

@@ -1,3 +1,5 @@
+import { getHolidayCalendarForEngland } from '../external-api/holidays.js'
+
 const parseDate = (date) => {
   const [day, month, year] = date.split('/')
   return new Date(year, month - 1, day)
@@ -17,4 +19,12 @@ export const isAtLeastMonthsOld = (dateToCheck, months) => {
   )
 
   return dateToCheck <= comparisonDate
+}
+
+export const isTodayHoliday = async () => {
+  const holidays = await getHolidayCalendarForEngland()
+  const today = new Date().toISOString().split('T')[0] // Format today's date as YYYY-MM-DD
+  const isHoliday = holidays?.some((holiday) => holiday.date === today)
+
+  return Boolean(isHoliday)
 }

@@ -25,7 +25,7 @@
       "piHuntRecommended": "yes",
       "reviewTestResults": "negative"
     },
-    "status": "IN_CHECK",
+    "status": "ON_HOLD",
     "statusHistory": [
       { "status": "IN_CHECK", "createdBy": "admin", "createdAt": "2025-08-15T09:00:53.422Z" }
     ],

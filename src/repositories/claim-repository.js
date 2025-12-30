@@ -1,3 +1,4 @@
+import { STATUS } from 'ffc-ahwr-common-library'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { v4 as uuid } from 'uuid'
@@ -42,6 +43,48 @@ export const updateClaimStatus = async ({ db, reference, status, user, updatedAt
     },
     { returnDocument: 'after' }
   )
+}
+
+export const updateClaimStatuses = async ({ db, references, status, user, updatedAt }) => {
+  if (!Array.isArray(references) || references.length === 0) {
+    throw new Error('references must be a non-empty array')
+  }
+
+  const result = await db.collection(CLAIMS_COLLECTION).updateMany(
+    { reference: { $in: references } },
+    {
+      $set: {
+        status,
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        statusHistory: {
+          status,
+          createdAt: updatedAt,
+          createdBy: user
+        }
+      }
+    }
+  )
+
+  return result
+}
+
+export const findOnHoldClaims = async ({ db, beforeDate, limit = 500 }) => {
+  return db
+    .collection(CLAIMS_COLLECTION)
+    .find(
+      {
+        status: STATUS.ON_HOLD,
+        updatedAt: { $lte: beforeDate }
+      },
+      {
+        projection: { reference: 1 }
+      }
+    )
+    .limit(limit)
+    .toArray()
 }
 
 export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) => {

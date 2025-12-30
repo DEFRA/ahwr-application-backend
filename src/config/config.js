@@ -290,6 +290,14 @@ const config = convict({
     format: Number,
     default: 5000,
     env: 'REMINDER_EMAIL_MAX_BATCH_SIZE'
+  },
+  scheduledJobs: {
+    processOnHold: {
+      doc: 'Schedule on which to process on hold claims',
+      format: String,
+      default: !isProduction && '*/2 * * * *',
+      env: 'PROCESS_ON_HOLD_SCHEDULE'
+    }
   }
 })
 

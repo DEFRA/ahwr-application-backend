@@ -3,7 +3,7 @@ import { config } from '../../config/config.js'
 import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { getRemindersToSend, updateReminders } from '../../repositories/application-repository.js'
 import { isAtLeastMonthsOld } from '../../lib/date-utils.js'
-import { getEventPublisher } from '../../messaging/fcp-messaging-service.js'
+import { getFcpEventPublisher } from '../../messaging/fcp-messaging-service.js'
 import { SEND_SESSION_EVENT } from '../../event-publisher/index.js'
 
 const serviceName = config.get('serviceName')
@@ -215,7 +215,7 @@ const sendApplicationSessionEvent = async ({ sbi, reference, reminderType }) => 
     }
   }
 
-  await getEventPublisher().publishEvent(event)
+  await getFcpEventPublisher().publishEvent(event)
 }
 
 const saveLastReminderSent = async ({ reference, reminderType, reminders }, db, logger) => {
