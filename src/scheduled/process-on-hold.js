@@ -19,7 +19,7 @@ export const processOnHoldClaims = async (db) => {
     })
 
     getLogger().info(
-      `Of ${onHoldClaimReferences.length} claims in hold, ${updatedRecordCount} updated to ready to pay.`
+      `Of ${onHoldClaimReferences.length} claims on hold, ${updatedRecordCount} updated to ready to pay.`
     )
   } else {
     getLogger().info('No claims to move from on hold to ready to pay.')

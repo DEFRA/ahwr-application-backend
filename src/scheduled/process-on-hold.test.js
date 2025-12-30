@@ -34,7 +34,7 @@ describe('processOnHoldClaims', () => {
         updatedAt: expect.any(Date)
       })
     )
-    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims in hold, 2 updated to ready to pay.')
+    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims on hold, 2 updated to ready to pay.')
   })
 
   it('does nothing when there are no hold claims', async () => {
