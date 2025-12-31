@@ -9,6 +9,7 @@ const jobs = {
 }
 
 const buildMongoUri = (baseUri, databaseName) => {
+  getLogger().info(baseUri)
   const [uriWithoutQuery, query] = baseUri.split('?', 2)
 
   const normalisedBase = uriWithoutQuery.endsWith('/')
