@@ -17,9 +17,9 @@ const pulse = new Pulse(
   },
   (error, collection) => {
     if (error) {
-      console.error('Pulse Mongo connection error:', error)
+      getLogger().error(`Pulse Mongo connection error: ${error}`)
     } else {
-      getLogger().info('Pulse connected to collection:', collection.collectionName)
+      getLogger().info(`Pulse connected to collection: ${collection.collectionName}`)
     }
   }
 )
@@ -63,7 +63,7 @@ pulse.on('success', (job) => {
 })
 
 pulse.on('fail', (error, job) => {
-  getLogger().info(error, `Job <${job.attrs.name}> failed at ${time()}`)
+  getLogger().error(error, `Job <${job.attrs.name}> failed at ${time()}`)
 })
 
 function time() {
