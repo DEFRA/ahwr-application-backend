@@ -8,10 +8,22 @@ const jobs = {
   PROCESS_ON_HOLD_CLAIMS: 'process on hold claims'
 }
 
+const buildMongoUri = (baseUri, databaseName) => {
+  const [uriWithoutQuery, query] = baseUri.split('?', 2)
+
+  const normalisedBase = uriWithoutQuery.endsWith('/')
+    ? uriWithoutQuery.slice(0, -1)
+    : uriWithoutQuery
+
+  const withDb = `${normalisedBase}/${databaseName}`
+
+  return query ? `${withDb}?${query}` : withDb
+}
+
 const pulse = new Pulse(
   {
     db: {
-      address: `${config.get('mongo.mongoUrl')}${config.get('mongo.databaseName')}`,
+      address: buildMongoUri(config.get('mongo.mongoUrl'), config.get('mongo.databaseName')),
       collection: 'scheduledjobs'
     }
   },
