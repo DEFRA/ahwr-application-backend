@@ -1,7 +1,9 @@
 import wreck from '@hapi/wreck'
+import { getLogger } from '../logging/logger.js'
 
-export const getHolidayCalendarForEngland = async (logger) => {
+export const getHolidayCalendarForEngland = async () => {
   const endpoint = 'https://www.gov.uk/bank-holidays.json'
+
   try {
     const { payload } = await wreck.get(endpoint, { json: true })
 
@@ -11,7 +13,7 @@ export const getHolidayCalendarForEngland = async (logger) => {
 
     return payload['england-and-wales'].events // Returns only the events for England and Wales
   } catch (err) {
-    logger.error({ err })
+    getLogger().error({ err })
     throw err
   }
 }

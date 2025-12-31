@@ -63,7 +63,7 @@ pulse.on('success', (job) => {
 })
 
 pulse.on('fail', (error, job) => {
-  getLogger().info(`Job <${job.attrs.name}> failed at ${time()}`, error)
+  getLogger().info(error, `Job <${job.attrs.name}> failed at ${time()}`)
 })
 
 function time() {

@@ -1,13 +1,12 @@
 import wreck from '@hapi/wreck'
 import { getHolidayCalendarForEngland } from './holidays.js'
+import { getLogger } from '../logging/logger.js'
 
 jest.mock('@hapi/wreck')
+jest.mock('../logging/logger.js')
 
 describe('getHolidayCalendarForEngland', () => {
-  let logger
-
   beforeEach(() => {
-    logger = { error: jest.fn() }
     jest.resetAllMocks()
   })
 
@@ -18,7 +17,7 @@ describe('getHolidayCalendarForEngland', () => {
     ]
     wreck.get.mockResolvedValue({ payload: { 'england-and-wales': { events: fakeEvents } } })
 
-    const result = await getHolidayCalendarForEngland(logger)
+    const result = await getHolidayCalendarForEngland()
 
     expect(result).toEqual(fakeEvents)
     expect(wreck.get).toHaveBeenCalledWith('https://www.gov.uk/bank-holidays.json', { json: true })
@@ -26,27 +25,36 @@ describe('getHolidayCalendarForEngland', () => {
 
   it('throws an error if payload is missing england-and-wales', async () => {
     wreck.get.mockResolvedValue({ payload: {} })
+    const mockErrorFn = jest.fn()
+    const mockLogger = { error: mockErrorFn }
+    getLogger.mockReturnValue(mockLogger)
 
-    await expect(getHolidayCalendarForEngland(logger)).rejects.toThrow(
+    await expect(getHolidayCalendarForEngland()).rejects.toThrow(
       'bank holidays response missing events'
     )
-    expect(logger.error).toHaveBeenCalled()
+    expect(mockErrorFn).toHaveBeenCalled()
   })
 
   it('throws an error if payload.england-and-wales.events is missing', async () => {
     wreck.get.mockResolvedValue({ payload: { 'england-and-wales': {} } })
+    const mockErrorFn = jest.fn()
+    const mockLogger = { error: mockErrorFn }
+    getLogger.mockReturnValue(mockLogger)
 
-    await expect(getHolidayCalendarForEngland(logger)).rejects.toThrow(
+    await expect(getHolidayCalendarForEngland()).rejects.toThrow(
       'bank holidays response missing events'
     )
-    expect(logger.error).toHaveBeenCalled()
+    expect(mockErrorFn).toHaveBeenCalled()
   })
 
   it('logs and rethrows an error if wreck.get throws', async () => {
     const fakeError = new Error('network failed')
     wreck.get.mockRejectedValue(fakeError)
+    const mockErrorFn = jest.fn()
+    const mockLogger = { error: mockErrorFn }
+    getLogger.mockReturnValue(mockLogger)
 
-    await expect(getHolidayCalendarForEngland(logger)).rejects.toThrow(fakeError)
-    expect(logger.error).toHaveBeenCalledWith({ err: fakeError })
+    await expect(getHolidayCalendarForEngland()).rejects.toThrow(fakeError)
+    expect(mockErrorFn).toHaveBeenCalledWith({ err: fakeError })
   })
 })
