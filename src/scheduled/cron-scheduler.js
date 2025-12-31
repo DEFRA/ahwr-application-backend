@@ -11,7 +11,7 @@ const jobs = {
 const pulse = new Pulse(
   {
     db: {
-      address: config.get('mongo.mongoUrl'),
+      address: `${config.get('mongo.mongoUrl')}${config.get('mongo.databaseName')}`,
       collection: 'scheduledjobs'
     }
   },
