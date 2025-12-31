@@ -17,6 +17,7 @@ import {
   stopFcpMessagingService
 } from './messaging/fcp-messaging-service.js'
 import { startPulseScheduling, stopPulseScheduling } from './scheduled/cron-scheduler.js'
+import { getLogger } from './logging/logger.js'
 
 async function createServer() {
   setupProxy()
@@ -67,7 +68,7 @@ async function createServer() {
 
   server.events.on('start', async () => {
     await startPulseScheduling(server.db)
-    await startFcpMessagingService()
+    await startFcpMessagingService(getLogger())
     await configureAndStartMessaging(server.db)
   })
 
