@@ -1,4 +1,7 @@
-import { startAndEndDate, isAtLeastMonthsOld } from './date-utils.js'
+import { startAndEndDate, isAtLeastMonthsOld, isTodayHoliday } from './date-utils.js'
+import { getHolidayCalendarForEngland } from '../external-api/holidays.js'
+
+jest.mock('../external-api/holidays.js')
 
 describe('date utils', () => {
   describe('startandEndDate', () => {
@@ -43,6 +46,42 @@ describe('date utils', () => {
     test('returns false when date is in the future', () => {
       const futureDate = new Date('2026-01-01')
       expect(isAtLeastMonthsOld(futureDate, 1)).toBe(false)
+    })
+  })
+
+  describe('isTodayHoliday', () => {
+    const xmasEve = new Date('2025-12-24T12:00:00Z')
+
+    beforeAll(() => {
+      jest.useFakeTimers('modern')
+      jest.setSystemTime(xmasEve)
+    })
+
+    afterAll(() => {
+      jest.useRealTimers()
+    })
+
+    afterEach(() => {
+      jest.resetAllMocks()
+    })
+
+    it('returns true if today is a holiday', async () => {
+      getHolidayCalendarForEngland.mockResolvedValue([
+        { title: 'Christmas Eve (newly a bank holiday!)', date: '2025-12-24' }
+      ])
+
+      const result = await isTodayHoliday()
+      expect(result).toBe(true)
+    })
+
+    it('returns false if today is not a holiday', async () => {
+      getHolidayCalendarForEngland.mockResolvedValue([
+        { title: 'Christmas', date: '2025-12-25' },
+        { title: 'Boxing Day', date: '2025-12-26' }
+      ])
+
+      const result = await isTodayHoliday()
+      expect(result).toBe(false)
     })
   })
 })

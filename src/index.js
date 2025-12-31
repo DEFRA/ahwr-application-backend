@@ -1,6 +1,5 @@
 import process from 'node:process'
-import { stopMessagingService } from './messaging/fcp-messaging-service.js'
-
+import { stopFcpMessagingService } from './messaging/fcp-messaging-service.js'
 import { getLogger } from './logging/logger.js'
 import { startServer } from './common/helpers/start-server.js'
 
@@ -13,7 +12,7 @@ process.on('unhandledRejection', async (error) => {
   const logger = getLogger()
   logger.info('Unhandled rejection')
   logger.error(error)
-  await stopMessagingService()
+  await stopFcpMessagingService()
 
   process.exitCode = 1
 })

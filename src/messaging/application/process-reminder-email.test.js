@@ -15,7 +15,7 @@ const mockPublishEvent = jest.fn()
 // }))
 jest.mock('../../repositories/application-repository.js')
 jest.mock('../../messaging/fcp-messaging-service.js', () => ({
-  getEventPublisher: jest.fn().mockImplementation(() => ({
+  getFcpEventPublisher: jest.fn().mockImplementation(() => ({
     publishEvent: mockPublishEvent
   }))
 }))

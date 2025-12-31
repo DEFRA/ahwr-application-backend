@@ -4,7 +4,7 @@ import { config } from '../config/config.js'
 let fcpMessageClient
 let eventPublisher
 
-export const startMessagingService = async (logger) => {
+export const startFcpMessagingService = async (logger) => {
   fcpMessageClient = createServiceBusClient({
     host: config.get('azure.eventQueue.host'),
     username: config.get('azure.eventQueue.username'),
@@ -19,12 +19,12 @@ export const startMessagingService = async (logger) => {
   )
 }
 
-export const stopMessagingService = async () => {
+export const stopFcpMessagingService = async () => {
   if (fcpMessageClient) {
     await fcpMessageClient.close()
   }
 }
 
-export const getEventPublisher = () => {
+export const getFcpEventPublisher = () => {
   return eventPublisher
 }

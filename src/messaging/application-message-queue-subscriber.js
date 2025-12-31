@@ -5,7 +5,7 @@ import { processApplicationMessage } from './process-message.js'
 
 let applicationMessageSubscriber
 
-export async function configureAndStart(db) {
+export async function configureAndStartMessaging(db) {
   const onMessage = async (message, attributes) => {
     getLogger().info(attributes, 'Received incoming message')
     await processApplicationMessage(message, db, getLogger(), attributes)
@@ -21,7 +21,7 @@ export async function configureAndStart(db) {
   return onMessage
 }
 
-export async function stopSubscriber() {
+export async function stopMessageSubscriber() {
   if (applicationMessageSubscriber) {
     await applicationMessageSubscriber.stop()
   }

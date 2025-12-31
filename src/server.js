@@ -9,10 +9,14 @@ import { pulse } from './common/helpers/pulse.js'
 import { requestTracing } from './common/helpers/request-tracing.js'
 import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
 import {
-  configureAndStart,
-  stopSubscriber
+  configureAndStartMessaging,
+  stopMessageSubscriber
 } from './messaging/application-message-queue-subscriber.js'
-import { startMessagingService, stopMessagingService } from './messaging/fcp-messaging-service.js'
+import {
+  startFcpMessagingService,
+  stopFcpMessagingService
+} from './messaging/fcp-messaging-service.js'
+import { startPulseScheduling, stopPulseScheduling } from './scheduled/cron-scheduler.js'
 
 async function createServer() {
   setupProxy()
@@ -62,13 +66,15 @@ async function createServer() {
   ])
 
   server.events.on('start', async () => {
-    await startMessagingService()
-    await configureAndStart(server.db)
+    await startPulseScheduling(server.db)
+    await startFcpMessagingService()
+    await configureAndStartMessaging(server.db)
   })
 
   server.events.on('stop', async () => {
-    await stopSubscriber()
-    await stopMessagingService()
+    await stopMessageSubscriber()
+    await stopFcpMessagingService()
+    await stopPulseScheduling()
   })
 
   return server
