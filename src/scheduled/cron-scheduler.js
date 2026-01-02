@@ -128,8 +128,9 @@ pulse.on('success', (job) => {
   getLogger().info(`Job <${job.attrs.name}> succeeded at ${time()}`)
 })
 
-pulse.on('fail', (error, job) => {
+pulse.on('fail', async (error, job) => {
   getLogger().error(error, `Job <${job.attrs.name}> failed at ${time()}`)
+  await emitMetricEvent(`${job.attrs.name}_failed`)
 })
 
 function time() {
