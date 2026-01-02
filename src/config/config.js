@@ -292,11 +292,35 @@ const config = convict({
     env: 'REMINDER_EMAIL_MAX_BATCH_SIZE'
   },
   scheduledJobs: {
-    processOnHold: {
+    processOnHoldSchedule: {
       doc: 'Schedule on which to process on hold claims',
       format: String,
       default: !isProduction && '*/2 * * * *',
       env: 'PROCESS_ON_HOLD_SCHEDULE'
+    },
+    dataRedactionEnabled: {
+      doc: 'Data redaction scheduled job is enabled',
+      format: Boolean,
+      default: process.env.DATA_REDACTION_SCHEDULED_JOB_ENABLED === 'true'
+    },
+    dataRedactionSchedule: {
+      doc: 'Schedule on which to process data redaction',
+      format: String,
+      env: 'DATA_REDACTION_SCHEDULE',
+      nullable: true,
+      default: null
+    },
+    reminderEmailsEnabled: {
+      doc: 'Reminder emails scheduled job is enabled',
+      format: Boolean,
+      default: process.env.REMINDER_EMAILS_SCHEDULED_JOB_ENABLED === 'true'
+    },
+    reminderEmailsSchedule: {
+      doc: 'Schedule on which to send out reminder emails',
+      format: String,
+      env: 'REMINDER_EMAILS_SCHEDULE',
+      nullable: true,
+      default: null
     }
   }
 })
