@@ -5,6 +5,7 @@ import { processOnHoldClaims } from './process-on-hold.js'
 import { getLogger } from '../logging/logger.js'
 import { processReminderEmailRequest } from '../messaging/application/process-reminder-email.js'
 import { processRedactPiiRequest } from '../messaging/application/process-redact-pii.js'
+import { metricsCounter } from '../common/helpers/metrics.js'
 
 const jobs = {
   PROCESS_ON_HOLD_CLAIMS: {
@@ -35,6 +36,11 @@ const buildMongoUri = () => {
   }
 
   return `${mongoUri}${dbName}`
+}
+
+const emitMetricEvent = async (jobName) => {
+  const formattedJobName = jobName.replaceAll(' ', '-')
+  await metricsCounter(`scheduledjobs_${formattedJobName}`)
 }
 
 const pulse = new Pulse(
@@ -70,27 +76,27 @@ const defaultJobSettings = {
   shouldSaveResult: false
 }
 
-if (jobs.PROCESS_ON_HOLD_CLAIMS.enabled) {
-  pulse.define(
-    jobs.PROCESS_ON_HOLD_CLAIMS.name,
-    async (_job) => {
-      const todayIsHoliday = await isTodayHoliday()
+pulse.define(
+  jobs.PROCESS_ON_HOLD_CLAIMS.name,
+  async (job) => {
+    await emitMetricEvent(job.attrs.name)
+    const todayIsHoliday = await isTodayHoliday()
 
-      if (todayIsHoliday) {
-        getLogger().info('NOT processing on hold claims as today is holiday.')
-      } else {
-        getLogger().info('Processing on hold claims...')
-        await processOnHoldClaims(dbClient)
-      }
-    },
-    defaultJobSettings
-  )
-}
+    if (todayIsHoliday) {
+      getLogger().info('NOT processing on hold claims as today is holiday.')
+    } else {
+      getLogger().info('Processing on hold claims...')
+      await processOnHoldClaims(dbClient)
+    }
+  },
+  defaultJobSettings
+)
 
 if (jobs.DATA_REDACTION.enabled) {
   pulse.define(
     jobs.DATA_REDACTION.name,
-    async (_job) => {
+    async (job) => {
+      await emitMetricEvent(job.attrs.name)
       getLogger().info('Starting data redaction scheduled job...')
       const logger = getLogger()
       const message = { requestedDate: new Date() }
@@ -103,7 +109,8 @@ if (jobs.DATA_REDACTION.enabled) {
 if (jobs.REMINDER_EMAILS.enabled) {
   pulse.define(
     jobs.REMINDER_EMAILS.name,
-    async (_job) => {
+    async (job) => {
+      await emitMetricEvent(job.attrs.name)
       getLogger().info('Starting reminder emails scheduled job...')
       const message = { requestedDate: new Date(), maxBatchSize: 5000 }
       const logger = getLogger()
