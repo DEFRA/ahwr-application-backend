@@ -3,17 +3,38 @@ import { config } from '../config/config.js'
 import { isTodayHoliday } from '../lib/date-utils.js'
 import { processOnHoldClaims } from './process-on-hold.js'
 import { getLogger } from '../logging/logger.js'
+import { processReminderEmailRequest } from '../messaging/application/process-reminder-email.js'
+import { processRedactPiiRequest } from '../messaging/application/process-redact-pii.js'
 
 const jobs = {
-  PROCESS_ON_HOLD_CLAIMS: 'process on hold claims'
+  PROCESS_ON_HOLD_CLAIMS: {
+    enabled: true,
+    name: 'process on hold claims',
+    schedule: config.get('scheduledJobs.processOnHoldSchedule')
+  },
+  DATA_REDACTION: {
+    enabled: config.get('scheduledJobs.dataRedactionEnabled'),
+    name: 'data redaction',
+    schedule: config.get('scheduledJobs.dataRedactionSchedule')
+  },
+  REMINDER_EMAILS: {
+    enabled: config.get('scheduledJobs.reminderEmailsEnabled'),
+    name: 'reminder emails',
+    schedule: config.get('scheduledJobs.reminderEmailsSchedule')
+  }
 }
 
 const buildMongoUri = () => {
   const mongoUri = config.get('mongo.mongoUrl')
   const dbName = config.get('mongo.databaseName')
-  const replacedUri = mongoUri.replace('admin', dbName)
 
-  return replacedUri
+  if (mongoUri.includes('/admin')) {
+    const replacedUri = mongoUri.replace('/admin', `/${dbName}`)
+
+    return replacedUri
+  }
+
+  return `${mongoUri}${dbName}`
 }
 
 const pulse = new Pulse(
@@ -41,26 +62,56 @@ export const setDbClient = (client) => {
 const lockLifetime = 120000 // 2 minutes in ms
 const backoffDelay = 30000 // 30 seconds in ms
 
-pulse.define(
-  jobs.PROCESS_ON_HOLD_CLAIMS,
-  async (_job) => {
-    const todayIsHoliday = await isTodayHoliday()
+const defaultJobSettings = {
+  lockLifetime,
+  priority: 'high',
+  attempts: 4,
+  backoff: { type: 'exponential', delay: backoffDelay },
+  shouldSaveResult: false
+}
 
-    if (todayIsHoliday) {
-      getLogger().info('NOT processing on hold claims as today is holiday.')
-    } else {
-      getLogger().info('Processing on hold claims...')
-      await processOnHoldClaims(dbClient)
-    }
-  },
-  {
-    lockLifetime,
-    priority: 'high',
-    attempts: 4,
-    backoff: { type: 'exponential', delay: backoffDelay },
-    shouldSaveResult: false
-  }
-)
+if (jobs.PROCESS_ON_HOLD_CLAIMS.enabled) {
+  pulse.define(
+    jobs.PROCESS_ON_HOLD_CLAIMS.name,
+    async (_job) => {
+      const todayIsHoliday = await isTodayHoliday()
+
+      if (todayIsHoliday) {
+        getLogger().info('NOT processing on hold claims as today is holiday.')
+      } else {
+        getLogger().info('Processing on hold claims...')
+        await processOnHoldClaims(dbClient)
+      }
+    },
+    defaultJobSettings
+  )
+}
+
+if (jobs.DATA_REDACTION.enabled) {
+  pulse.define(
+    jobs.DATA_REDACTION.name,
+    async (_job) => {
+      getLogger().info('Starting data redaction scheduled job...')
+      const logger = getLogger()
+      const message = { requestedDate: new Date() }
+      await processRedactPiiRequest(message, logger)
+    },
+    defaultJobSettings
+  )
+}
+
+if (jobs.REMINDER_EMAILS.enabled) {
+  pulse.define(
+    jobs.REMINDER_EMAILS.name,
+    async (_job) => {
+      getLogger().info('Starting reminder emails scheduled job...')
+      const message = { requestedDate: new Date(), maxBatchSize: 5000 }
+      const logger = getLogger()
+      await processReminderEmailRequest(message, dbClient, logger)
+    },
+    defaultJobSettings
+  )
+}
 
 pulse.on('start', (job) => {
   getLogger().info(`Job <${job.attrs.name}> starting at ${time()}`)
@@ -79,12 +130,28 @@ function time() {
 }
 
 export const startPulseScheduling = async (databaseClient) => {
+  setDbClient(databaseClient)
   getLogger().info('Starting Pulse scheduling...')
   await pulse.start()
-  await pulse.every(config.get('scheduledJobs.processOnHold'), jobs.PROCESS_ON_HOLD_CLAIMS)
 
-  setDbClient(databaseClient)
-  getLogger().info(`Pulse started and ${Object.keys(jobs).length} job(s) scheduled`)
+  let enabledJobCount = 0
+
+  if (jobs.PROCESS_ON_HOLD_CLAIMS.enabled) {
+    await pulse.every(jobs.PROCESS_ON_HOLD_CLAIMS.schedule, jobs.PROCESS_ON_HOLD_CLAIMS.name)
+    enabledJobCount += 1
+  }
+
+  if (jobs.REMINDER_EMAILS.enabled) {
+    await pulse.every(jobs.REMINDER_EMAILS.schedule, jobs.REMINDER_EMAILS.name)
+    enabledJobCount += 1
+  }
+
+  if (jobs.DATA_REDACTION.enabled) {
+    await pulse.every(jobs.DATA_REDACTION.schedule, jobs.DATA_REDACTION.name)
+    enabledJobCount += 1
+  }
+
+  getLogger().info(`Pulse started and ${enabledJobCount} job(s) scheduled`)
 }
 
 export const stopPulseScheduling = async () => {
