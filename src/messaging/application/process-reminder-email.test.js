@@ -21,18 +21,14 @@ jest.mock('../../messaging/fcp-messaging-service.js', () => ({
 }))
 
 const subtractMonthsUTC = (date, months) => {
-  const year = date.getUTCFullYear()
-  const month = date.getUTCMonth()
-  const day = date.getUTCDate()
+  const d = new Date(date) // clone to avoid mutating original
+  const year = d.getUTCFullYear()
+  const month = d.getUTCMonth()
 
-  const result = new Date(Date.UTC(year, month - months, day))
+  // Set year/month in UTC
+  d.setUTCFullYear(year, month - months)
 
-  // Handle month rollover (e.g. 31st → Feb)
-  if (result.getUTCDate() !== day) {
-    result.setUTCDate(0)
-  }
-
-  return result
+  return d
 }
 
 const getPreviousQuarterDates = (date) => ({
