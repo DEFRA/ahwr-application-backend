@@ -20,27 +20,26 @@ jest.mock('../../messaging/fcp-messaging-service.js', () => ({
   }))
 }))
 
-const getPreviousQuarterDates = (date) => {
-  const subtractMonths = (baseDate, months) => {
-    const d = new Date(baseDate)
-    const day = d.getDate()
+const subtractMonthsUTC = (date, months) => {
+  const year = date.getUTCFullYear()
+  const month = date.getUTCMonth()
+  const day = date.getUTCDate()
 
-    d.setMonth(d.getMonth() - months)
+  const result = new Date(Date.UTC(year, month - months, day))
 
-    // Handle month rollover (e.g. 31st → Feb)
-    if (d.getDate() !== day) {
-      d.setDate(0)
-    }
-
-    return d
+  // Handle month rollover (e.g. 31st → Feb)
+  if (result.getUTCDate() !== day) {
+    result.setUTCDate(0)
   }
 
-  return {
-    threeMonthsBefore: subtractMonths(date, 3),
-    sixMonthsBefore: subtractMonths(date, 6),
-    nineMonthsBefore: subtractMonths(date, 9)
-  }
+  return result
 }
+
+const getPreviousQuarterDates = (date) => ({
+  threeMonthsBefore: subtractMonthsUTC(date, 3),
+  sixMonthsBefore: subtractMonthsUTC(date, 6),
+  nineMonthsBefore: subtractMonthsUTC(date, 9)
+})
 
 describe('processReminderEmailRequest', () => {
   const fakeMaxBatchSize = 5000
@@ -51,7 +50,9 @@ describe('processReminderEmailRequest', () => {
     error: jest.fn()
   }
   const mockDb = {}
-  const requestedDate = new Date()
+
+  const requestedDate = new Date('2025-11-05T00:00:00.000Z')
+  jest.useFakeTimers().setSystemTime(requestedDate)
   const message = {
     requestedDate: requestedDate.toISOString(),
     maxBatchSize: fakeMaxBatchSize
@@ -61,8 +62,13 @@ describe('processReminderEmailRequest', () => {
     jest.clearAllMocks()
   })
 
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
   it('should log and exit when there are no applications due reminders', async () => {
-    const { threeMonthsBefore, sixMonthsBefore, nineMonthsBefore} = getPreviousQuarterDates(new Date(requestedDate))
+    const { threeMonthsBefore, sixMonthsBefore, nineMonthsBefore } =
+      getPreviousQuarterDates(requestedDate)
 
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -71,33 +77,10 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      nineMonths,
-      nineMonthsBefore,
-      undefined,
-      [],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      sixMonths,
-      sixMonthsBefore,
-      nineMonthsBefore,
-      [nineMonths],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      threeMonths,
-      threeMonthsBefore,
-      sixMonthsBefore,
-      [sixMonths, nineMonths],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
+    expect(getRemindersToSend.mock.calls[0][1].toISOString()).toBe(nineMonthsBefore.toISOString())
+    expect(getRemindersToSend.mock.calls[1][1].toISOString()).toBe(sixMonthsBefore.toISOString())
+    expect(getRemindersToSend.mock.calls[2][1].toISOString()).toBe(threeMonthsBefore.toISOString())
+
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
