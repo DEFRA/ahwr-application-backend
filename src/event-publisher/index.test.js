@@ -123,7 +123,5 @@ describe('FCP Event Raising Functions', () => {
         type: 'herd-update'
       })
     )
-
-    jest.useRealTimers()
   })
 })

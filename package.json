@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": ">=22.16.0"
+    "node": ">=22.21.1"
   },
   "scripts": {
     "dev": "NODE_ENV=development npm run server:watch",
@@ -66,7 +66,8 @@
     "standard": {
       "json5": "2.2.2"
     },
-    "semver": "7.5.2"
+    "semver": "7.5.2",
+    "brace-expansion": "2.0.2"
   },
   "devDependencies": {
     "@babel/core": "7.27.4",

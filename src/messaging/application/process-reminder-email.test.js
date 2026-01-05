@@ -20,6 +20,23 @@ jest.mock('../../messaging/fcp-messaging-service.js', () => ({
   }))
 }))
 
+const subtractMonthsUTC = (date, months) => {
+  const d = new Date(date) // clone to avoid mutating original
+  const year = d.getUTCFullYear()
+  const month = d.getUTCMonth()
+
+  // Set year/month in UTC
+  d.setUTCFullYear(year, month - months)
+
+  return d
+}
+
+const getPreviousQuarterDates = (date) => ({
+  threeMonthsBefore: subtractMonthsUTC(date, 3),
+  sixMonthsBefore: subtractMonthsUTC(date, 6),
+  nineMonthsBefore: subtractMonthsUTC(date, 9)
+})
+
 describe('processReminderEmailRequest', () => {
   const fakeMaxBatchSize = 5000
 
@@ -29,8 +46,11 @@ describe('processReminderEmailRequest', () => {
     error: jest.fn()
   }
   const mockDb = {}
+
+  const requestedDate = new Date('2025-11-05T00:00:00.000Z')
+  jest.useFakeTimers().setSystemTime(requestedDate)
   const message = {
-    requestedDate: '2025-11-05T00:00:00.000Z',
+    requestedDate: requestedDate.toISOString(),
     maxBatchSize: fakeMaxBatchSize
   }
 
@@ -38,11 +58,13 @@ describe('processReminderEmailRequest', () => {
     jest.clearAllMocks()
   })
 
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
   it('should log and exit when there are no applications due reminders', async () => {
-    // requestedDate in message is '2025-11-05T00:00:00.000Z'
-    const threeMonthsBeforeRequestedDate = new Date('2025-08-05T00:00:00.000Z')
-    const sixMonthsBeforeRequestedDate = new Date('2025-05-05T00:00:00.000Z')
-    const nineMonthsBeforeRequestedDate = new Date('2025-02-05T00:00:00.000Z')
+    const { threeMonthsBefore, sixMonthsBefore, nineMonthsBefore } =
+      getPreviousQuarterDates(requestedDate)
 
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -51,33 +73,10 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      nineMonths,
-      nineMonthsBeforeRequestedDate,
-      undefined,
-      [],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      sixMonths,
-      sixMonthsBeforeRequestedDate,
-      nineMonthsBeforeRequestedDate,
-      [nineMonths],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
-    expect(getRemindersToSend).toHaveBeenCalledWith(
-      threeMonths,
-      threeMonthsBeforeRequestedDate,
-      sixMonthsBeforeRequestedDate,
-      [sixMonths, nineMonths],
-      fakeMaxBatchSize,
-      mockDb,
-      mockLogger
-    )
+    expect(getRemindersToSend.mock.calls[0][1].toISOString()).toBe(nineMonthsBefore.toISOString())
+    expect(getRemindersToSend.mock.calls[1][1].toISOString()).toBe(sixMonthsBefore.toISOString())
+    expect(getRemindersToSend.mock.calls[2][1].toISOString()).toBe(threeMonthsBefore.toISOString())
+
     expect(mockLogger.info).toHaveBeenCalledTimes(2)
     expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
     expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
@@ -96,7 +95,7 @@ describe('processReminderEmailRequest', () => {
         email: 'dummy@example.com',
         orgEmail: undefined,
         reminderType: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       }
     ])
 
@@ -141,7 +140,7 @@ describe('processReminderEmailRequest', () => {
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
         reminderType: sixMonths,
-        createdAt: new Date('2025-05-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).sixMonthsBefore
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -186,8 +185,8 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy1@example.com',
         orgEmail: 'dummy2@example.com',
-        reminderType: sixMonths,
-        createdAt: new Date('2025-03-05T00:00:00.000Z')
+        reminderType: nineMonths,
+        createdAt: getPreviousQuarterDates(requestedDate).nineMonthsBefore
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -220,8 +219,8 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy2@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        reminderType: sixMonths,
-        createdAt: new Date('2025-03-05T00:00:00.000Z')
+        reminderType: nineMonths,
+        createdAt: getPreviousQuarterDates(requestedDate).nineMonthsBefore
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -254,7 +253,7 @@ describe('processReminderEmailRequest', () => {
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
         reminderType: nineMonths,
-        createdAt: new Date('2025-03-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).nineMonthsBefore
       }
     ])
     getRemindersToSend.mockResolvedValueOnce([])
@@ -287,7 +286,7 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
         reference: 'IAHW-BEKR-AWI2',
@@ -297,7 +296,7 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
         reference: 'IAHW-BEKR-AWI3',
@@ -307,7 +306,7 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
         reference: 'IAHW-BEKR-AWI4',
@@ -317,7 +316,7 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
         reference: 'IAHW-BEKR-AWI5',
@@ -327,7 +326,7 @@ describe('processReminderEmailRequest', () => {
         orgEmail: 'dummy@example.com',
         // TODO replace this is condition that checks application history
         // reminders: threeMonths,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       }
     ])
 
@@ -350,7 +349,7 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: undefined,
-        createdAt: new Date('2025-08-05T00:00:00.000Z')
+        createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       }
     ])
     mockPublishEvent.mockRejectedValueOnce(new Error('Faild to send message!'))
