@@ -1,6 +1,7 @@
 import {
   PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE,
-  MULTIPLE_HERDS_RELEASE_DATE
+  MULTIPLE_HERDS_RELEASE_DATE,
+  PIGS_AND_PAYMENTS_RELEASE_DATE
 } from '../constants/index.js'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
@@ -21,3 +22,7 @@ export const isMultipleHerdsUserJourney = (dateOfVisit, agreementFlags) => {
 }
 
 export const isOWAppRef = (applicationReference) => applicationReference.startsWith('AHWR')
+
+export const isPigsAndPaymentsUserJourney = (dateOfVisit) => {
+  return new Date(dateOfVisit) >= PIGS_AND_PAYMENTS_RELEASE_DATE
+}

@@ -381,6 +381,7 @@ describe('updateClaimStatusHandler', () => {
         whichReview: 'sheep',
         isEndemics: true,
         claimType: 'REVIEW',
+        dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
         reviewTestResults: 'positive',
         frn: '1102569649',
         optionalPiHuntValue: 'noPiHunt'
@@ -483,6 +484,7 @@ describe('updateClaimStatusHandler', () => {
       whichReview: 'sheep',
       isEndemics: true,
       claimType: 'FOLLOW_UP',
+      dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
       reviewTestResults: 'positive',
       frn: '1102569649',
       optionalPiHuntValue: 'yesPiHunt'
@@ -552,6 +554,7 @@ describe('updateClaimStatusHandler', () => {
       whichReview: 'sheep',
       isEndemics: true,
       claimType: 'FOLLOW_UP',
+      dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
       reviewTestResults: 'negative',
       frn: '1102569649',
       optionalPiHuntValue: 'yesPiHunt'
@@ -612,6 +615,7 @@ describe('updateClaimStatusHandler', () => {
       whichReview: 'sheep',
       isEndemics: true,
       claimType: 'FOLLOW_UP',
+      dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
       reviewTestResults: 'positive',
       frn: '1102569649',
       optionalPiHuntValue: 'noPiHunt'
@@ -669,6 +673,7 @@ describe('updateClaimStatusHandler', () => {
       whichReview: 'sheep',
       isEndemics: true,
       claimType: 'FOLLOW_UP',
+      dateOfVisit: new Date('2025-04-24T00:00:00.000Z'),
       reviewTestResults: 'positive',
       frn: '1102569649'
     })
