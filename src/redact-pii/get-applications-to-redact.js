@@ -9,6 +9,7 @@ import {
 } from '../repositories/application-redact-repository.js'
 import {
   getApplicationsToRedactOlderThan,
+  getApplicationsBySbi,
   getOWApplicationsToRedactLastUpdatedBefore
 } from '../repositories/application-repository.js'
 import {
@@ -43,22 +44,19 @@ const createApplicationsToRedact = async (requestedDate) => {
   const uniqueAgreements = new Map()
 
   ;[...agreementsWithNoPayment, ...agreementsWithPayment].forEach((a) => {
-    uniqueAgreements.set(a.reference, {
-      ...a,
-      requestedDate,
-      status: GOT_APPLICATIONS_TO_REDACT
-    })
+    uniqueAgreements.set(a.reference, { ...a, requestedDate, status: GOT_APPLICATIONS_TO_REDACT })
   })
 
   const agreementsToRedact = Array.from(uniqueAgreements.values())
 
-  // TODO 1182 impl
-  return agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
-  // return sequelize.transaction(async () =>
-  //   Promise.all(
-  //     agreementsToRedact.map((agreement) => createApplicationRedact(agreement))
-  //   )
-  // )
+  // return sequelize.transaction(async () => {
+  const createdAgreementsToRedact = []
+  for (const agreement of agreementsToRedact) {
+    const agreementToRedact = await createApplicationRedact(agreement)
+    createdAgreementsToRedact.push(agreementToRedact)
+  }
+  return createdAgreementsToRedact
+  // })
 }
 
 const getStatus = (agreementsToRedact) => {
@@ -82,15 +80,21 @@ const getApplicationsToRedactWithNoPaymentOlderThanThreeYears = async () => {
 
   return agreementsToRedactWithNoPayment
 }
-const buildApplicationRedact = (reference, sbi, claimReferences) => ({
-  reference,
-  data: {
-    sbi,
-    claims: claimReferences.map((claimReference) => ({
-      reference: claimReference
-    }))
+const buildApplicationRedact = async (reference, sbi, claimReferences) => {
+  const applications = await getApplicationsBySbi(sbi)
+
+  const index = applications.findIndex((application) => application.reference === reference)
+
+  return {
+    reference,
+    data: {
+      sbi,
+      startDate: applications.length ? applications[index].createdAt : undefined,
+      endDate: applications.length ? applications[index + 1]?.createdAt : undefined,
+      claims: claimReferences.map((claimReference) => ({ reference: claimReference }))
+    }
   }
-})
+}
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid
@@ -127,8 +131,10 @@ const getApplicationsToRedactWithPaymentOlderThanSevenYears = async () => {
   )
 
   const owApplications = await getOWApplicationsToRedactLastUpdatedBefore(SEVEN_YEARS)
-  const owAppRedacts = owApplications.map(({ reference, dataValues: { sbi } }) =>
-    buildApplicationRedact(reference, sbi, [reference])
+  const owAppRedacts = await Promise.all(
+    owApplications.map(({ reference, dataValues: { sbi } }) =>
+      buildApplicationRedact(reference, sbi, [reference])
+    )
   )
 
   const agreementsToRedact = [...nwAppRedacts, ...owAppRedacts]
