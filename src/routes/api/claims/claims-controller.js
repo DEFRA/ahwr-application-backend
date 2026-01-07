@@ -156,6 +156,7 @@ export const updateClaimStatusHandler = async (request, h) => {
       whichReview: typeOfLivestock,
       isEndemics: true,
       claimType: claim.type,
+      dateOfVisit: claim.data.dateOfVisit,
       reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
       frn,
       optionalPiHuntValue
