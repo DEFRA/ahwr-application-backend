@@ -1,7 +1,5 @@
-import {
-  PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE,
-  MULTIPLE_HERDS_RELEASE_DATE
-} from '../constants/index.js'
+import { MULTIPLE_HERDS_RELEASE_DATE } from '../constants/index.js'
+import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from 'ffc-ahwr-common-library'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   const dateOfVisitParsed = new Date(dateOfVisit)

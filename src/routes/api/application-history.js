@@ -96,8 +96,7 @@ export const applicationHistoryHandlers = [
         } = request
 
         const application = await getOWApplication(db, oldWorldAppRef)
-        const { statusHistory, updateHistory } = application
-        const flags = application.flags
+        const { statusHistory, updateHistory, flags } = application
 
         const normalisedStatusHistory = statusHistory.map(normaliseStatusHistory)
         const normalisedUpdateHistory = updateHistory.map(normaliseUpdateHistory)
