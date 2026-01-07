@@ -1,6 +1,5 @@
 import { claimType, TYPE_OF_LIVESTOCK } from 'ffc-ahwr-common-library'
 
-export const PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE = new Date('2025-01-21T00:00:00')
 export const MULTIPLE_HERDS_RELEASE_DATE = new Date('2025-06-26T00:00:00')
 export const PIGS_AND_PAYMENTS_RELEASE_DATE = new Date('2026-01-22T00:00:00')
 
