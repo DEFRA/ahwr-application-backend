@@ -13,7 +13,6 @@ export const trackError = (loggerInstance, error, category, message) => {
       error,
       event: {
         type: 'exception',
-        severity: 'error',
         category
       }
     },
