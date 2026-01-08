@@ -31,7 +31,7 @@ export const getHerdsByAppRefAndSpecies = async ({ db, applicationReference, spe
 }
 
 // TODO: 1495 impl
-export const redactPII = async (applicationReference) => {
+export const redactHerdPII = async (applicationReference) => {
   return {}
 
   // await models.herd.update(

@@ -1,8 +1,8 @@
-import { redactPII as redactClaimPII } from '../repositories/claim-repository.js'
-import { redactPII as redactContactHistoryPII } from '../repositories/contact-history-repository.js'
-import { redactPII as redactFlagPII } from '../repositories/flag-repository.js'
-import { redactPII as redactHerdPII } from '../repositories/herd-repository.js'
-import { redactPII as redactApplicationPII } from '../repositories/application-repository.js'
+import { redactClaimPII } from '../repositories/claim-repository.js'
+import { redactContactHistoryPII } from '../repositories/contact-history-repository.js'
+import { redactFlagPII } from '../repositories/flag-repository.js'
+import { redactHerdPII } from '../repositories/herd-repository.js'
+import { redactApplicationPII } from '../repositories/application-repository.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
 import pLimit from 'p-limit'
 

@@ -46,7 +46,7 @@ export const getAllFlags = async (db) => {
     .toArray()
 }
 
-export const redactPII = async (applicationReference) => {
+export const redactFlagPII = async (applicationReference) => {
   // TODO: 1495 impl
   // await models.flag.update(
   //   {

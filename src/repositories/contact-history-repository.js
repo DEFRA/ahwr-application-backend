@@ -36,7 +36,7 @@ export const updateApplicationValuesAndContactHistory = async ({
   )
 }
 
-export const redactPII = async (applicationReference, logger) => {
+export const redactContactHistoryPII = async (applicationReference, logger) => {
   // TODO: 1495 impl
   return {}
 
