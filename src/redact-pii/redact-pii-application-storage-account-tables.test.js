@@ -1,8 +1,8 @@
-import { redactPII as redactStatusPII } from '../azure-storage/application-status-repository.js'
-import { redactPII as redactIneligibilityPII } from '../azure-storage/application-ineligibility-repository.js'
-import { redactPII as redactApplicationEventPII } from '../azure-storage/application-eventstore-repository.js'
+import { redactStatusPII } from '../azure-storage/application-status-repository.js'
+import { redactIneligibilityPII } from '../azure-storage/application-ineligibility-repository.js'
+import { redactApplicationEventPII } from '../azure-storage/application-eventstore-repository.js'
 import { updateApplicationRedactRecords } from '../redact-pii/update-application-redact-records.js'
-import { redactPII } from '../redact-pii/redact-pii-application-storage-account-tables.js'
+import { redactApplicationStorageAccountTablesPII } from '../redact-pii/redact-pii-application-storage-account-tables.js'
 
 jest.mock('../azure-storage/application-status-repository.js')
 jest.mock('../azure-storage/application-ineligibility-repository.js')
@@ -41,7 +41,11 @@ describe('redactPII', () => {
   })
 
   it('should redact PII for all agreements and claims successfully', async () => {
-    await redactPII(agreementsToRedact, ['applications-to-redact', 'documents'], mockLogger)
+    await redactApplicationStorageAccountTablesPII(
+      agreementsToRedact,
+      ['applications-to-redact', 'documents'],
+      mockLogger
+    )
 
     expect(redactApplicationEventPII).toHaveBeenCalledTimes(2)
     expect(redactApplicationEventPII).toHaveBeenCalledWith(
@@ -84,7 +88,11 @@ describe('redactPII', () => {
     redactApplicationEventPII.mockRejectedValueOnce(testError)
 
     await expect(
-      redactPII(agreementsToRedact, ['applications-to-redact', 'documents'], mockLogger)
+      redactApplicationStorageAccountTablesPII(
+        agreementsToRedact,
+        ['applications-to-redact', 'documents'],
+        mockLogger
+      )
     ).rejects.toThrow('Redaction failed')
 
     expect(mockLogger.setBindings).toHaveBeenCalledWith({ error: testError })

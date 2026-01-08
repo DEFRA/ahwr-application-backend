@@ -1,5 +1,5 @@
 import wreck from '@hapi/wreck'
-import { redactPII } from './redact-pii-message-generator'
+import { redactMessageGeneratorPII } from './redact-pii-message-generator'
 import { updateApplicationRedactRecords } from './update-application-redact-records'
 
 jest.mock('@hapi/wreck', () => ({
@@ -26,7 +26,7 @@ describe('redact-pii-message-generator', () => {
   it('should successfully call message generator redact pii api with the correct payload', async () => {
     wreck.post.mockResolvedValueOnce({})
 
-    await redactPII(agreementsToRedact, redactProgress, logger)
+    await redactMessageGeneratorPII(agreementsToRedact, redactProgress, logger)
 
     expect(wreck.post).toHaveBeenCalledWith(endpoint, {
       json: true,
@@ -42,9 +42,9 @@ describe('redact-pii-message-generator', () => {
     const testError = new Error('API failure')
     wreck.post.mockRejectedValueOnce(testError)
 
-    await expect(redactPII(agreementsToRedact, redactProgress, logger)).rejects.toThrow(
-      'API failure'
-    )
+    await expect(
+      redactMessageGeneratorPII(agreementsToRedact, redactProgress, logger)
+    ).rejects.toThrow('API failure')
 
     expect(logger.setBindings).toHaveBeenCalledWith({
       err: testError,

@@ -3,7 +3,7 @@ import { redactContactHistoryPII } from '../repositories/contact-history-reposit
 import { redactFlagPII } from '../repositories/flag-repository.js'
 import { redactHerdPII } from '../repositories/herd-repository.js'
 import { redactApplicationPII } from '../repositories/application-repository.js'
-import { redactPII } from '../redact-pii/redact-pii-application-database'
+import { redactApplicationDatabasePII } from '../redact-pii/redact-pii-application-database'
 import { updateApplicationRedactRecords } from '../redact-pii/update-application-redact-records'
 
 jest.mock('../repositories/claim-repository.js')
@@ -35,7 +35,7 @@ describe('redact-pii-application-database', () => {
   it('should call all redact functions for each agreement and log success', async () => {
     const agreements = [{ reference: 'AG-001' }, { reference: 'AG-002' }]
 
-    await redactPII(agreements, 'progressId', mockLogger)
+    await redactApplicationDatabasePII(agreements, 'progressId', mockLogger)
 
     expect(redactHerdPII).toHaveBeenCalledTimes(2)
     expect(redactFlagPII).toHaveBeenCalledTimes(2)
@@ -62,9 +62,9 @@ describe('redact-pii-application-database', () => {
 
     redactFlagPII.mockRejectedValueOnce(testError)
 
-    await expect(redactPII(agreements, 'progressId', mockLogger)).rejects.toThrow(
-      'Redaction failed'
-    )
+    await expect(
+      redactApplicationDatabasePII(agreements, 'progressId', mockLogger)
+    ).rejects.toThrow('Redaction failed')
 
     expect(mockLogger.setBindings).toHaveBeenCalledWith({ error: testError })
     expect(updateApplicationRedactRecords).toHaveBeenCalledWith(agreements, true, 'progressId', 'N')

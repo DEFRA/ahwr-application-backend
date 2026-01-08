@@ -4,7 +4,7 @@ import wreck from '@hapi/wreck'
 
 const { sfdMessagingProxyApiUri } = config.get('uris')
 
-export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
+export const redactSFDMessagingProxyPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${sfdMessagingProxyApiUri}/redact/pii`
   const agreementsToRedactPayload = agreementsToRedact.map(({ reference }) => {
     return { reference }

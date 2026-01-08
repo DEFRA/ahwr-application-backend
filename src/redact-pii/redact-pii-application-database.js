@@ -8,7 +8,7 @@ import pLimit from 'p-limit'
 
 const CONCURRENCY = 20
 
-export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
+export const redactApplicationDatabasePII = async (agreementsToRedact, redactProgress, logger) => {
   try {
     const limit = pLimit(CONCURRENCY)
 

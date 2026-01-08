@@ -1,6 +1,6 @@
 import wreck from '@hapi/wreck'
 import { updateApplicationRedactRecords } from './update-application-redact-records'
-import { redactPII } from './redact-pii-sfd-messaging-proxy'
+import { redactSFDMessagingProxyPII } from './redact-pii-sfd-messaging-proxy'
 
 jest.mock('@hapi/wreck')
 jest.mock('./update-application-redact-records')
@@ -21,7 +21,7 @@ describe('callSfdMessagingProxyRedactPII', () => {
   it('should successfully call sfd message proxy redact pii api with the correct payload', async () => {
     wreck.post.mockResolvedValueOnce({})
 
-    await redactPII(agreementsToRedact, redactProgress, mockLogger)
+    await redactSFDMessagingProxyPII(agreementsToRedact, redactProgress, mockLogger)
 
     expect(wreck.post).toHaveBeenCalledWith(endpoint, {
       json: true,
@@ -38,9 +38,9 @@ describe('callSfdMessagingProxyRedactPII', () => {
     const mockError = new Error('API failure')
     wreck.post.mockRejectedValueOnce(mockError)
 
-    await expect(redactPII(agreementsToRedact, redactProgress, mockLogger)).rejects.toThrow(
-      'API failure'
-    )
+    await expect(
+      redactSFDMessagingProxyPII(agreementsToRedact, redactProgress, mockLogger)
+    ).rejects.toThrow('API failure')
 
     expect(mockLogger.setBindings).toHaveBeenCalledWith({ err: mockError, endpoint })
     expect(updateApplicationRedactRecords).toHaveBeenCalledWith(
