@@ -1,0 +1,60 @@
+import wreck from '@hapi/wreck'
+import { redactMessageGeneratorPII } from './redact-pii-message-generator'
+import { updateApplicationRedactRecords } from './update-application-redact-records'
+
+jest.mock('@hapi/wreck', () => ({
+  post: jest.fn()
+}))
+jest.mock('./update-application-redact-records.js', () => ({
+  updateApplicationRedactRecords: jest.fn()
+}))
+
+describe('redact-pii-message-generator', () => {
+  const endpoint = `http://localhost:3002/redact/pii`
+  const redactProgress = ['applications-to-redact', 'message-generator']
+  let logger, agreementsToRedact
+
+  beforeEach(() => {
+    agreementsToRedact = [
+      { reference: 'AHWR-123', data: { sbi: 'SBI001' } },
+      { reference: 'AHWR-456', data: { sbi: 'SBI002' } }
+    ]
+    logger = { setBindings: jest.fn() }
+    jest.clearAllMocks()
+  })
+
+  it('should successfully call message generator redact pii api with the correct payload', async () => {
+    wreck.post.mockResolvedValueOnce({})
+
+    await redactMessageGeneratorPII(agreementsToRedact, redactProgress, logger)
+
+    expect(wreck.post).toHaveBeenCalledWith(endpoint, {
+      json: true,
+      payload: {
+        agreementsToRedact: [{ reference: 'AHWR-123' }, { reference: 'AHWR-456' }]
+      }
+    })
+    expect(updateApplicationRedactRecords).not.toHaveBeenCalled()
+    expect(logger.setBindings).not.toHaveBeenCalled()
+  })
+
+  it('should update application redact status to failed when api error occurs', async () => {
+    const testError = new Error('API failure')
+    wreck.post.mockRejectedValueOnce(testError)
+
+    await expect(
+      redactMessageGeneratorPII(agreementsToRedact, redactProgress, logger)
+    ).rejects.toThrow('API failure')
+
+    expect(logger.setBindings).toHaveBeenCalledWith({
+      err: testError,
+      endpoint
+    })
+    expect(updateApplicationRedactRecords).toHaveBeenCalledWith(
+      agreementsToRedact,
+      true,
+      redactProgress,
+      'N'
+    )
+  })
+})

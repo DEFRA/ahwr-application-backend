@@ -4,7 +4,7 @@ import wreck from '@hapi/wreck'
 
 const { messageGeneratorApiUri } = config.get('uris')
 
-export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
+export const redactMessageGeneratorPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${messageGeneratorApiUri}/redact/pii`
   const agreementsToRedactPayload = agreementsToRedact.map(({ reference }) => {
     return { reference }

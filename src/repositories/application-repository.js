@@ -297,7 +297,7 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
   // })
 }
 
-export const redactPII = async (agreementReference, logger) => {
+export const redactApplicationPII = async (agreementReference, logger) => {
   // TODO: 1495 impl
   // const redactedValueByJSONPath = {
   //   'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,

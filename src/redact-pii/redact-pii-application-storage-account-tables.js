@@ -1,17 +1,21 @@
-import { redactPII as redactStatusPII } from '../azure-storage/application-status-repository.js'
-import { redactPII as redactIneligibilityPII } from '../azure-storage/application-ineligibility-repository.js'
-import { redactPII as redactApplicationEventPII } from '../azure-storage/application-eventstore-repository.js'
+import { redactStatusPII } from '../azure-storage/application-status-repository.js'
+import { redactIneligibilityPII } from '../azure-storage/application-ineligibility-repository.js'
+import { redactApplicationEventPII } from '../azure-storage/application-eventstore-repository.js'
 import { updateApplicationRedactRecords } from './update-application-redact-records.js'
 
-export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
+export const redactApplicationStorageAccountTablesPII = async (
+  agreementsToRedact,
+  redactProgress,
+  logger
+) => {
   try {
     logger.info(
       `applicationStorageAccountTablesRedactPII with: ${JSON.stringify(agreementsToRedact)}`
     )
     for (const { data } of agreementsToRedact) {
-      const { sbi, claims } = data
-      await redactApplicationEventPII(sbi, logger)
-      await redactIneligibilityPII(sbi, logger)
+      const { sbi, claims, startDate, endDate } = data
+      await redactApplicationEventPII(sbi, logger, startDate, endDate)
+      await redactIneligibilityPII(sbi, logger, startDate, endDate)
       await Promise.all(claims.map(({ reference }) => redactStatusPII(reference, logger)))
     }
   } catch (err) {

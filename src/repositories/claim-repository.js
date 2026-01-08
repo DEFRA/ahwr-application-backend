@@ -161,7 +161,7 @@ export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, d
   )
 }
 
-export const redactPII = async (applicationReference, logger) => {
+export const redactClaimPII = async (applicationReference, logger) => {
   // TODO: 1495 impl
   // const redactedValueByField = {
   //   vetsName: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,

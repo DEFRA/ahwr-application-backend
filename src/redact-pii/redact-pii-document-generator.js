@@ -4,7 +4,7 @@ import wreck from '@hapi/wreck'
 
 const { documentGeneratorApiUri } = config.get('uris')
 
-export const redactPII = async (agreementsToRedact, redactProgress, logger) => {
+export const redactDocumentGeneratorPII = async (agreementsToRedact, redactProgress, logger) => {
   const endpoint = `${documentGeneratorApiUri}/redact/pii`
   const agreementsToRedactPayload = agreementsToRedact.map(({ reference, data }) => {
     return { reference, sbi: data.sbi }
