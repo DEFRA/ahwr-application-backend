@@ -61,7 +61,8 @@ const addClaimAndHerdToDatabase = async ({
         herd: claimHerdData,
         createdAt,
         statusHistory: [{ status, createdBy: claimPayload.createdBy, createdAt }],
-        updateHistory: []
+        updateHistory: [],
+        updatedAt: createdAt
       }
       const result = await createClaim(db, claim)
       await raiseClaimEvents(
