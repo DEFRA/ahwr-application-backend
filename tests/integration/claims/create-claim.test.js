@@ -87,7 +87,8 @@ describe('Create claim', () => {
         }
       ],
       updateHistory: [],
-      type: 'REVIEW'
+      type: 'REVIEW',
+      updatedAt: expect.any(String)
     })
   })
 

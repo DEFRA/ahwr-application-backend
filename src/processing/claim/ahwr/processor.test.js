@@ -91,9 +91,6 @@ describe('saveClaimAndRelatedData', () => {
     expect(getAmount).toHaveBeenCalledWith({ ...claimPayload.data, type: claimPayload.type })
     expect(isMultipleHerdsUserJourney).toHaveBeenCalledWith(claimPayload.data.dateOfVisit, [])
     expect(processHerd).toHaveBeenCalled()
-    createClaim.mockResolvedValue({
-      insertedId: '6916f837292fe87d2bac0d5c'
-    })
     const expectedClaim = {
       applicationReference: 'IAHW-8ZPZ-8CLI',
       createdAt: expect.any(Date),
@@ -122,7 +119,8 @@ describe('saveClaimAndRelatedData', () => {
       updateHistory: [],
       reference: 'RESH-O9UD-0025',
       status: 'PENDING',
-      type: 'REVIEW'
+      type: 'REVIEW',
+      updatedAt: expect.any(Date)
     }
     expect(result).toEqual({
       claim: expectedClaim,
@@ -171,6 +169,7 @@ describe('saveClaimAndRelatedData', () => {
     createClaim.mockResolvedValue({
       insertedId: '6916f837292fe87d2bac0d5c'
     })
+
     const result = await saveClaimAndRelatedData({
       db: mockDb,
       sbi: '123456789',
