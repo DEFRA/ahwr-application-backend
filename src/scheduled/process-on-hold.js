@@ -60,9 +60,7 @@ export const processOnHoldClaims = async (db) => {
 
       // We add here sending of the message to the queue using publishRequestForPaymentEvent
       const optionalPiHuntValue = isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)
-        ? claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
-          ? 'yesPiHunt'
-          : 'noPiHunt'
+        ? checkForPiHunt(claim)
         : undefined
 
       await publishRequestForPaymentEvent(getLogger(), {
@@ -83,5 +81,11 @@ export const processOnHoldClaims = async (db) => {
     )
   } else {
     getLogger().info('No claims to move from on hold to ready to pay.')
+  }
+
+  function checkForPiHunt(claim) {
+    return claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
+      ? 'yesPiHunt'
+      : 'noPiHunt'
   }
 }
