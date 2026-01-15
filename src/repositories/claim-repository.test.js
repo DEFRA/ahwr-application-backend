@@ -427,7 +427,10 @@ describe('claim-repository', () => {
     })
 
     it('returns an array of claim references matching ON_HOLD and beforeDate', async () => {
-      const fakeClaims = [{ reference: 'RESH-FDRE-2234' }, { reference: 'FUBC-1LAG-RMC1' }]
+      const fakeClaims = [
+        { reference: 'RESH-FDRE-2234', something: 'else' },
+        { reference: 'FUBC-1LAG-RMC1', something: 'else' }
+      ]
       mockCursor.toArray.mockResolvedValue(fakeClaims)
 
       const result = await findOnHoldClaims({ db: mockDb, beforeDate })

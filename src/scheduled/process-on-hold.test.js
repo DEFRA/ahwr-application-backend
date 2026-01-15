@@ -1,9 +1,5 @@
 import { processOnHoldClaims } from './process-on-hold.js'
-import {
-  findOnHoldClaims,
-  getClaimByReference,
-  updateClaimStatuses
-} from '../repositories/claim-repository.js'
+import { findOnHoldClaims, updateClaimStatuses } from '../repositories/claim-repository.js'
 import { getLogger } from '../logging/logger.js'
 import { STATUS } from 'ffc-ahwr-common-library'
 import {
@@ -67,18 +63,13 @@ describe('processOnHoldClaims', () => {
   })
 
   it('moves claims from on hold to ready to pay when there are on hold claims', async () => {
-    const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
-
     const organisation = {
       sbi: '106705779',
       crn: '1100014934',
       frn: '1102569649'
     }
 
-    getClaimByReference.mockResolvedValueOnce(claimsFromDb[0])
-    getClaimByReference.mockResolvedValueOnce(claimsFromDb[1])
-
-    findOnHoldClaims.mockResolvedValue(fakeClaims)
+    findOnHoldClaims.mockResolvedValue(claimsFromDb)
     updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
 
     getApplication.mockResolvedValue({
@@ -91,7 +82,7 @@ describe('processOnHoldClaims', () => {
     expect(updateClaimStatuses).toHaveBeenCalledWith(
       expect.objectContaining({
         db: mockDb,
-        references: [fakeClaims[0].reference, fakeClaims[1].reference],
+        references: [claimsFromDb[0].reference, claimsFromDb[1].reference],
         status: STATUS.READY_TO_PAY,
         user: 'admin',
         updatedAt: expect.any(Date)
@@ -168,11 +159,7 @@ describe('processOnHoldClaims', () => {
   })
 
   it('works without organization information', async () => {
-    const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
-    getClaimByReference.mockResolvedValueOnce(claimsFromDb[0])
-    getClaimByReference.mockResolvedValueOnce(claimsFromDb[1])
-
-    findOnHoldClaims.mockResolvedValue(fakeClaims)
+    findOnHoldClaims.mockResolvedValue(claimsFromDb)
     updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
 
     getApplication.mockResolvedValue({
@@ -185,7 +172,7 @@ describe('processOnHoldClaims', () => {
     expect(updateClaimStatuses).toHaveBeenCalledWith(
       expect.objectContaining({
         db: mockDb,
-        references: [fakeClaims[0].reference, fakeClaims[1].reference],
+        references: [claimsFromDb[0].reference, claimsFromDb[1].reference],
         status: STATUS.READY_TO_PAY,
         user: 'admin',
         updatedAt: expect.any(Date)

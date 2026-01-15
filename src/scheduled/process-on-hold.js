@@ -1,9 +1,5 @@
 import { STATUS } from 'ffc-ahwr-common-library'
-import {
-  updateClaimStatuses,
-  findOnHoldClaims,
-  getClaimByReference
-} from '../repositories/claim-repository.js'
+import { updateClaimStatuses, findOnHoldClaims } from '../repositories/claim-repository.js'
 import { getLogger } from '../logging/logger.js'
 import {
   publishRequestForPaymentEvent,
@@ -30,8 +26,7 @@ export const processOnHoldClaims = async (db) => {
       updatedAt
     })
 
-    for (const reference of onHoldClaimReferences) {
-      const claim = await getClaimByReference(db, reference)
+    for (const claim of onHoldClaims) {
       const application = await getApplication({
         db,
         reference: claim.applicationReference
@@ -64,7 +59,7 @@ export const processOnHoldClaims = async (db) => {
         : undefined
 
       await publishRequestForPaymentEvent(getLogger(), {
-        reference,
+        reference: claim.reference,
         sbi,
         whichReview: claim.data.typeOfLivestock,
         // Seems to be true everywhere?
