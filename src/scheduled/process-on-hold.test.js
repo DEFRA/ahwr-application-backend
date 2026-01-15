@@ -142,6 +142,111 @@ describe('processOnHoldClaims', () => {
     expect(mockInfo).toHaveBeenCalledWith('Of 2 claims on hold, 2 updated to ready to pay.')
   })
 
+  it('works without organization information', async () => {
+    const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
+    const claimsFromDb = [
+      {
+        applicationReference: 'IAHW-RWE2-G8S7',
+        reference: 'REBC-DJ32-LDNF',
+        status: 'READY_TO_PAY',
+        type: 'REVIEW',
+        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
+        herd: { name: 'Beefers' },
+        _id: new ObjectId('507f191e810c19729de860ea')
+      },
+      {
+        applicationReference: 'IAHW-RWE2-G8S7',
+        reference: 'FUSH-HD33-P99I',
+        status: 'READY_TO_PAY',
+        type: 'REVIEW',
+        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
+        herd: { name: 'Beefers' },
+        _id: new ObjectId('507f191e810c19729de860ea')
+      }
+    ]
+
+    getClaimByReference.mockResolvedValueOnce(claimsFromDb[0])
+    getClaimByReference.mockResolvedValueOnce(claimsFromDb[1])
+
+    findOnHoldClaims.mockResolvedValue(fakeClaims)
+    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
+
+    getApplication.mockResolvedValue({
+      organisation: undefined
+    })
+
+    await processOnHoldClaims(mockDb)
+
+    expect(findOnHoldClaims).toHaveBeenCalledWith(expect.objectContaining({ db: mockDb }))
+    expect(updateClaimStatuses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        db: mockDb,
+        references: [fakeClaims[0].reference, fakeClaims[1].reference],
+        status: STATUS.READY_TO_PAY,
+        user: 'admin',
+        updatedAt: expect.any(Date)
+      })
+    )
+
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        sbi: undefined,
+        agreementReference: claimsFromDb[0].applicationReference,
+        claimReference: claimsFromDb[0].reference,
+        claimStatus: 'READY_TO_PAY',
+        claimType: claimsFromDb[0].type,
+        dateTime: expect.any(Date),
+        herdName: claimsFromDb[0].herd.name,
+        typeOfLivestock: claimsFromDb[0].data.typeOfLivestock
+      }
+    )
+
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        sbi: undefined,
+        agreementReference: claimsFromDb[1].applicationReference,
+        claimReference: claimsFromDb[1].reference,
+        claimStatus: 'READY_TO_PAY',
+        claimType: claimsFromDb[1].type,
+        dateTime: expect.any(Date),
+        herdName: claimsFromDb[1].herd.name,
+        typeOfLivestock: claimsFromDb[1].data.typeOfLivestock
+      }
+    )
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        reference: claimsFromDb[0].reference,
+        sbi: undefined,
+        whichReview: claimsFromDb[0].data.typeOfLivestock,
+        isEndemics: true,
+        claimType: claimsFromDb[0].type,
+        dateOfVisit: expect.any(Date),
+        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
+        frn: undefined
+      }
+    )
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        reference: claimsFromDb[1].reference,
+        sbi: undefined,
+        whichReview: claimsFromDb[1].data.typeOfLivestock,
+        isEndemics: true,
+        claimType: claimsFromDb[1].type,
+        dateOfVisit: expect.any(Date),
+        reviewTestResults: claimsFromDb[1].data.reviewTestResults,
+        frn: undefined
+      }
+    )
+
+    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims on hold, 2 updated to ready to pay.')
+  })
+
   it('does nothing when there are no hold claims', async () => {
     const fakeClaims = []
     findOnHoldClaims.mockResolvedValue(fakeClaims)
