@@ -5,7 +5,11 @@ import {
   getClaimByReference
 } from '../repositories/claim-repository.js'
 import { getLogger } from '../logging/logger.js'
-import { publishStatusChangeEvent } from '../messaging/publish-outbound-notification.js'
+import {
+  publishRequestForPaymentEvent,
+  publishStatusChangeEvent
+} from '../messaging/publish-outbound-notification.js'
+import { getApplication } from '../repositories/application-repository.js'
 
 export const processOnHoldClaims = async (db) => {
   const now = new Date()
@@ -26,9 +30,15 @@ export const processOnHoldClaims = async (db) => {
 
     for (const reference of onHoldClaimReferences) {
       const claim = await getClaimByReference(db, reference)
+      const application = await getApplication({
+        db,
+        reference: claim.applicationReference
+      })
+
+      const { frn, sbi } = application.organisation || {}
 
       await publishStatusChangeEvent(getLogger(), {
-        // sbi, where is this from? is it needed?
+        sbi,
         agreementReference: claim.applicationReference,
         claimReference: claim.reference,
         // This is setup straight to ready to pay in case
@@ -43,6 +53,17 @@ export const processOnHoldClaims = async (db) => {
       })
 
       // We add here sending of the message to the queue using publishRequestForPaymentEvent
+      await publishRequestForPaymentEvent(getLogger(), {
+        reference,
+        sbi,
+        whichReview: claim.data.typeOfLivestock,
+        // Seems to be true everywhere?
+        isEndemics: true,
+        claimType: claim.type,
+        dateOfVisit: claim.data.dateOfVisit,
+        reviewTestResults: claim.data.reviewTestResults,
+        frn
+      })
     }
     getLogger().info(
       `Of ${onHoldClaimReferences.length} claims on hold, ${updatedRecordCount} updated to ready to pay.`

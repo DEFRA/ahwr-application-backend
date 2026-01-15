@@ -6,10 +6,15 @@ import {
 } from '../repositories/claim-repository.js'
 import { getLogger } from '../logging/logger.js'
 import { STATUS } from 'ffc-ahwr-common-library'
-import { publishStatusChangeEvent } from '../messaging/publish-outbound-notification.js'
+import {
+  publishRequestForPaymentEvent,
+  publishStatusChangeEvent
+} from '../messaging/publish-outbound-notification.js'
 import { ObjectId } from 'mongodb'
+import { getApplication } from '../repositories/application-repository.js'
 
 jest.mock('../messaging/publish-outbound-notification.js')
+jest.mock('../repositories/application-repository.js')
 jest.mock('../repositories/claim-repository.js')
 jest.mock('../logging/logger.js')
 
@@ -34,7 +39,7 @@ describe('processOnHoldClaims', () => {
         reference: 'REBC-DJ32-LDNF',
         status: 'READY_TO_PAY',
         type: 'REVIEW',
-        data: { typeOfLivestock: 'beef' },
+        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
         herd: { name: 'Beefers' },
         _id: new ObjectId('507f191e810c19729de860ea')
       },
@@ -43,16 +48,27 @@ describe('processOnHoldClaims', () => {
         reference: 'FUSH-HD33-P99I',
         status: 'READY_TO_PAY',
         type: 'REVIEW',
-        data: { typeOfLivestock: 'beef' },
+        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
         herd: { name: 'Beefers' },
         _id: new ObjectId('507f191e810c19729de860ea')
       }
     ]
+
+    const organisation = {
+      sbi: '106705779',
+      crn: '1100014934',
+      frn: '1102569649'
+    }
+
     getClaimByReference.mockResolvedValueOnce(claimsFromDb[0])
     getClaimByReference.mockResolvedValueOnce(claimsFromDb[1])
 
     findOnHoldClaims.mockResolvedValue(fakeClaims)
     updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
+
+    getApplication.mockResolvedValue({
+      organisation
+    })
 
     await processOnHoldClaims(mockDb)
 
@@ -70,7 +86,7 @@ describe('processOnHoldClaims', () => {
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
-        //sbi: where it should come from?
+        sbi: organisation.sbi,
         agreementReference: claimsFromDb[0].applicationReference,
         claimReference: claimsFromDb[0].reference,
         claimStatus: 'READY_TO_PAY',
@@ -84,7 +100,7 @@ describe('processOnHoldClaims', () => {
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
-        //sbi: where it should come from?
+        sbi: organisation.sbi,
         agreementReference: claimsFromDb[1].applicationReference,
         claimReference: claimsFromDb[1].reference,
         claimStatus: 'READY_TO_PAY',
@@ -92,6 +108,34 @@ describe('processOnHoldClaims', () => {
         dateTime: expect.any(Date),
         herdName: claimsFromDb[1].herd.name,
         typeOfLivestock: claimsFromDb[1].data.typeOfLivestock
+      }
+    )
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        reference: claimsFromDb[0].reference,
+        sbi: organisation.sbi,
+        whichReview: claimsFromDb[0].data.typeOfLivestock,
+        isEndemics: true,
+        claimType: claimsFromDb[0].type,
+        dateOfVisit: expect.any(Date),
+        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
+        frn: organisation.frn
+      }
+    )
+
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        reference: claimsFromDb[1].reference,
+        sbi: organisation.sbi,
+        whichReview: claimsFromDb[1].data.typeOfLivestock,
+        isEndemics: true,
+        claimType: claimsFromDb[1].type,
+        dateOfVisit: expect.any(Date),
+        reviewTestResults: claimsFromDb[1].data.reviewTestResults,
+        frn: organisation.frn
       }
     )
 
