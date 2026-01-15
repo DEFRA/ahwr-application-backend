@@ -10,6 +10,8 @@ import {
   publishStatusChangeEvent
 } from '../messaging/publish-outbound-notification.js'
 import { getApplication } from '../repositories/application-repository.js'
+import { piHunt, piHuntAllAnimals } from '../constants/index.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../lib/context-helper.js'
 
 export const processOnHoldClaims = async (db) => {
   const now = new Date()
@@ -57,6 +59,12 @@ export const processOnHoldClaims = async (db) => {
       })
 
       // We add here sending of the message to the queue using publishRequestForPaymentEvent
+      const optionalPiHuntValue = isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)
+        ? claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
+          ? 'yesPiHunt'
+          : 'noPiHunt'
+        : undefined
+
       await publishRequestForPaymentEvent(getLogger(), {
         reference,
         sbi,
@@ -66,7 +74,8 @@ export const processOnHoldClaims = async (db) => {
         claimType: claim.type,
         dateOfVisit: claim.data.dateOfVisit,
         reviewTestResults: claim.data.reviewTestResults,
-        frn
+        frn,
+        optionalPiHuntValue
       })
     }
     getLogger().info(

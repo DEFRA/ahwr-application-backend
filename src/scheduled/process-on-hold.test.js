@@ -33,8 +33,9 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: 'beef',
         reviewTestResults: 'positive',
         dateOfVisit: new Date(),
-        piHuntRecommended: 'recomended',
-        piHuntAllAnimals: false
+        piHunt: 'no',
+        piHuntRecommended: 'no',
+        piHuntAllAnimals: 'no'
       },
       herd: { name: 'Beefers' },
       _id: new ObjectId('507f191e810c19729de860ea')
@@ -48,8 +49,9 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: 'beef',
         reviewTestResults: 'positive',
         dateOfVisit: new Date(),
-        piHuntRecommended: 'recomended',
-        piHuntAllAnimals: false
+        piHunt: 'yes',
+        piHuntRecommended: 'yes',
+        piHuntAllAnimals: 'yes'
       },
       herd: { name: 'Beefers' },
       _id: new ObjectId('507f191e810c19729de860ea')
@@ -142,7 +144,8 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[0].type,
         dateOfVisit: expect.any(Date),
         reviewTestResults: claimsFromDb[0].data.reviewTestResults,
-        frn: organisation.frn
+        frn: organisation.frn,
+        optionalPiHuntValue: 'noPiHunt'
       }
     )
 
@@ -156,7 +159,8 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[1].type,
         dateOfVisit: expect.any(Date),
         reviewTestResults: claimsFromDb[1].data.reviewTestResults,
-        frn: organisation.frn
+        frn: organisation.frn,
+        optionalPiHuntValue: 'yesPiHunt'
       }
     )
 
@@ -218,9 +222,9 @@ describe('processOnHoldClaims', () => {
         dateTime: expect.any(Date),
         herdName: claimsFromDb[1].herd.name,
         typeOfLivestock: claimsFromDb[1].data.typeOfLivestock,
-        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
-        piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
-        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
+        reviewTestResults: claimsFromDb[1].data.reviewTestResults,
+        piHuntRecommended: claimsFromDb[1].data.piHuntRecommended,
+        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals
       }
     )
 
@@ -234,7 +238,8 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[0].type,
         dateOfVisit: expect.any(Date),
         reviewTestResults: claimsFromDb[0].data.reviewTestResults,
-        frn: undefined
+        frn: undefined,
+        optionalPiHuntValue: 'noPiHunt'
       }
     )
 
@@ -248,7 +253,8 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[1].type,
         dateOfVisit: expect.any(Date),
         reviewTestResults: claimsFromDb[1].data.reviewTestResults,
-        frn: undefined
+        frn: undefined,
+        optionalPiHuntValue: 'yesPiHunt'
       }
     )
 
