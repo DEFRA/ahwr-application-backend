@@ -35,9 +35,10 @@ export const processOnHoldClaims = async (db) => {
         reference: claim.applicationReference
       })
 
-      const { frn, sbi } = application.organisation || {}
+      const { crn, frn, sbi } = application.organisation || {}
 
       await publishStatusChangeEvent(getLogger(), {
+        crn,
         sbi,
         agreementReference: claim.applicationReference,
         claimReference: claim.reference,
@@ -49,7 +50,10 @@ export const processOnHoldClaims = async (db) => {
         // This is setup straight to udpatedat in case
         // Mongo is slow updating
         dateTime: updatedAt,
-        herdName: claim.herd.name
+        herdName: claim.herd.name,
+        reviewTestResults: claim.data.reviewTestResults,
+        piHuntRecommended: claim.data.piHuntRecommended,
+        piHuntAllAnimals: claim.data.piHuntAllAnimals
       })
 
       // We add here sending of the message to the queue using publishRequestForPaymentEvent

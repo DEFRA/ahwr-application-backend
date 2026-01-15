@@ -23,6 +23,39 @@ describe('processOnHoldClaims', () => {
   let mockInfo
   let mockError
 
+  const claimsFromDb = [
+    {
+      applicationReference: 'IAHW-RWE2-G8S7',
+      reference: 'REBC-DJ32-LDNF',
+      status: 'READY_TO_PAY',
+      type: 'REVIEW',
+      data: {
+        typeOfLivestock: 'beef',
+        reviewTestResults: 'positive',
+        dateOfVisit: new Date(),
+        piHuntRecommended: 'recomended',
+        piHuntAllAnimals: false
+      },
+      herd: { name: 'Beefers' },
+      _id: new ObjectId('507f191e810c19729de860ea')
+    },
+    {
+      applicationReference: 'IAHW-RWE2-G8S7',
+      reference: 'FUSH-HD33-P99I',
+      status: 'READY_TO_PAY',
+      type: 'REVIEW',
+      data: {
+        typeOfLivestock: 'beef',
+        reviewTestResults: 'positive',
+        dateOfVisit: new Date(),
+        piHuntRecommended: 'recomended',
+        piHuntAllAnimals: false
+      },
+      herd: { name: 'Beefers' },
+      _id: new ObjectId('507f191e810c19729de860ea')
+    }
+  ]
+
   beforeEach(() => {
     jest.resetAllMocks()
     mockDb = {}
@@ -33,26 +66,6 @@ describe('processOnHoldClaims', () => {
 
   it('moves claims from on hold to ready to pay when there are on hold claims', async () => {
     const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
-    const claimsFromDb = [
-      {
-        applicationReference: 'IAHW-RWE2-G8S7',
-        reference: 'REBC-DJ32-LDNF',
-        status: 'READY_TO_PAY',
-        type: 'REVIEW',
-        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
-        herd: { name: 'Beefers' },
-        _id: new ObjectId('507f191e810c19729de860ea')
-      },
-      {
-        applicationReference: 'IAHW-RWE2-G8S7',
-        reference: 'FUSH-HD33-P99I',
-        status: 'READY_TO_PAY',
-        type: 'REVIEW',
-        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
-        herd: { name: 'Beefers' },
-        _id: new ObjectId('507f191e810c19729de860ea')
-      }
-    ]
 
     const organisation = {
       sbi: '106705779',
@@ -86,6 +99,7 @@ describe('processOnHoldClaims', () => {
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
+        crn: organisation.crn,
         sbi: organisation.sbi,
         agreementReference: claimsFromDb[0].applicationReference,
         claimReference: claimsFromDb[0].reference,
@@ -93,13 +107,17 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[0].type,
         dateTime: expect.any(Date),
         herdName: claimsFromDb[0].herd.name,
-        typeOfLivestock: claimsFromDb[0].data.typeOfLivestock
+        typeOfLivestock: claimsFromDb[0].data.typeOfLivestock,
+        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
+        piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
+        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
       }
     )
 
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
+        crn: organisation.crn,
         sbi: organisation.sbi,
         agreementReference: claimsFromDb[1].applicationReference,
         claimReference: claimsFromDb[1].reference,
@@ -107,7 +125,10 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[1].type,
         dateTime: expect.any(Date),
         herdName: claimsFromDb[1].herd.name,
-        typeOfLivestock: claimsFromDb[1].data.typeOfLivestock
+        typeOfLivestock: claimsFromDb[1].data.typeOfLivestock,
+        reviewTestResults: claimsFromDb[1].data.reviewTestResults,
+        piHuntRecommended: claimsFromDb[1].data.piHuntRecommended,
+        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals
       }
     )
 
@@ -144,27 +165,6 @@ describe('processOnHoldClaims', () => {
 
   it('works without organization information', async () => {
     const fakeClaims = [{ reference: 'REBC-DJ32-LDNF' }, { reference: 'FUSH-HD33-P99I' }]
-    const claimsFromDb = [
-      {
-        applicationReference: 'IAHW-RWE2-G8S7',
-        reference: 'REBC-DJ32-LDNF',
-        status: 'READY_TO_PAY',
-        type: 'REVIEW',
-        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
-        herd: { name: 'Beefers' },
-        _id: new ObjectId('507f191e810c19729de860ea')
-      },
-      {
-        applicationReference: 'IAHW-RWE2-G8S7',
-        reference: 'FUSH-HD33-P99I',
-        status: 'READY_TO_PAY',
-        type: 'REVIEW',
-        data: { typeOfLivestock: 'beef', reviewTestResults: 'positive', dateOfVisit: new Date() },
-        herd: { name: 'Beefers' },
-        _id: new ObjectId('507f191e810c19729de860ea')
-      }
-    ]
-
     getClaimByReference.mockResolvedValueOnce(claimsFromDb[0])
     getClaimByReference.mockResolvedValueOnce(claimsFromDb[1])
 
@@ -191,6 +191,7 @@ describe('processOnHoldClaims', () => {
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
+        crn: undefined,
         sbi: undefined,
         agreementReference: claimsFromDb[0].applicationReference,
         claimReference: claimsFromDb[0].reference,
@@ -198,13 +199,17 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[0].type,
         dateTime: expect.any(Date),
         herdName: claimsFromDb[0].herd.name,
-        typeOfLivestock: claimsFromDb[0].data.typeOfLivestock
+        typeOfLivestock: claimsFromDb[0].data.typeOfLivestock,
+        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
+        piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
+        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
       }
     )
 
     expect(publishStatusChangeEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
+        crn: undefined,
         sbi: undefined,
         agreementReference: claimsFromDb[1].applicationReference,
         claimReference: claimsFromDb[1].reference,
@@ -212,7 +217,10 @@ describe('processOnHoldClaims', () => {
         claimType: claimsFromDb[1].type,
         dateTime: expect.any(Date),
         herdName: claimsFromDb[1].herd.name,
-        typeOfLivestock: claimsFromDb[1].data.typeOfLivestock
+        typeOfLivestock: claimsFromDb[1].data.typeOfLivestock,
+        reviewTestResults: claimsFromDb[0].data.reviewTestResults,
+        piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
+        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
       }
     )
 
