@@ -8,6 +8,7 @@ import {
 import { getApplication } from '../repositories/application-repository.js'
 import { piHunt, piHuntAllAnimals } from '../constants/index.js'
 import { isVisitDateAfterPIHuntAndDairyGoLive } from '../lib/context-helper.js'
+import { raiseClaimEvents } from '../event-publisher/index.js'
 
 export const processOnHoldClaims = async (db) => {
   const now = new Date()
@@ -33,6 +34,17 @@ export const processOnHoldClaims = async (db) => {
       })
 
       const { crn, frn, sbi } = application.organisation || {}
+
+      await raiseClaimEvents(
+        {
+          message: 'Claim has been updated',
+          claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
+          note: 'Automatic update',
+          raisedBy: 'admin',
+          raisedOn: updatedAt
+        },
+        sbi
+      )
 
       await publishStatusChangeEvent(getLogger(), {
         crn,
