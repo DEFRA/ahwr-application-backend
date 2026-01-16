@@ -34,7 +34,8 @@ describe('processOnHoldClaims', () => {
         dateOfVisit: new Date(),
         piHunt: 'no',
         piHuntRecommended: 'no',
-        piHuntAllAnimals: 'no'
+        piHuntAllAnimals: 'no',
+        amount: 300
       },
       herd: { name: 'Beefers' },
       _id: new ObjectId(objectIdString)
@@ -50,7 +51,8 @@ describe('processOnHoldClaims', () => {
         dateOfVisit: new Date(),
         piHunt: 'yes',
         piHuntRecommended: 'yes',
-        piHuntAllAnimals: 'yes'
+        piHuntAllAnimals: 'yes',
+        amount: 300
       },
       herd: { name: 'Beefers' },
       _id: new ObjectId(objectIdString)
@@ -108,7 +110,8 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: claimsFromDb[0].data.typeOfLivestock,
         reviewTestResults: claimsFromDb[0].data.reviewTestResults,
         piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
-        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
+        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals,
+        claimAmount: 300
       }
     )
 
@@ -126,7 +129,8 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: claimsFromDb[1].data.typeOfLivestock,
         reviewTestResults: claimsFromDb[1].data.reviewTestResults,
         piHuntRecommended: claimsFromDb[1].data.piHuntRecommended,
-        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals
+        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals,
+        claimAmount: 300
       }
     )
 
@@ -222,7 +226,8 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: claimsFromDb[0].data.typeOfLivestock,
         reviewTestResults: claimsFromDb[0].data.reviewTestResults,
         piHuntRecommended: claimsFromDb[0].data.piHuntRecommended,
-        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals
+        piHuntAllAnimals: claimsFromDb[0].data.piHuntAllAnimals,
+        claimAmount: 300
       }
     )
 
@@ -240,7 +245,8 @@ describe('processOnHoldClaims', () => {
         typeOfLivestock: claimsFromDb[1].data.typeOfLivestock,
         reviewTestResults: claimsFromDb[1].data.reviewTestResults,
         piHuntRecommended: claimsFromDb[1].data.piHuntRecommended,
-        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals
+        piHuntAllAnimals: claimsFromDb[1].data.piHuntAllAnimals,
+        claimAmount: 300
       }
     )
 

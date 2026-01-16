@@ -51,6 +51,7 @@ export const processOnHoldClaims = async (db) => {
         sbi,
         agreementReference: claim.applicationReference,
         claimReference: claim.reference,
+        claimAmount: claim.data.amount,
         // This is setup straight to ready to pay in case
         // Mongo is slow updating
         claimStatus: STATUS.READY_TO_PAY,
