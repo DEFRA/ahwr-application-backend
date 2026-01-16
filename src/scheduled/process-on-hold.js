@@ -1,6 +1,14 @@
 import { STATUS } from 'ffc-ahwr-common-library'
 import { updateClaimStatuses, findOnHoldClaims } from '../repositories/claim-repository.js'
 import { getLogger } from '../logging/logger.js'
+import {
+  publishRequestForPaymentEvent,
+  publishStatusChangeEvent
+} from '../messaging/publish-outbound-notification.js'
+import { getApplication } from '../repositories/application-repository.js'
+import { piHunt, piHuntAllAnimals } from '../constants/index.js'
+import { isVisitDateAfterPIHuntAndDairyGoLive } from '../lib/context-helper.js'
+import { raiseClaimEvents } from '../event-publisher/index.js'
 
 export const processOnHoldClaims = async (db) => {
   const now = new Date()
@@ -9,19 +17,83 @@ export const processOnHoldClaims = async (db) => {
   const onHoldClaims = await findOnHoldClaims({ db, beforeDate: date24HrsAgo })
   const onHoldClaimReferences = onHoldClaims.map((claim) => claim.reference)
 
+  const updatedAt = new Date()
   if (onHoldClaimReferences.length) {
     const { updatedRecordCount } = await updateClaimStatuses({
       db,
       references: onHoldClaimReferences,
       status: STATUS.READY_TO_PAY,
       user: 'admin',
-      updatedAt: new Date()
+      updatedAt
     })
 
+    for (const claim of onHoldClaims) {
+      const application = await getApplication({
+        db,
+        reference: claim.applicationReference
+      })
+
+      const { crn, frn, sbi } = application.organisation || {}
+
+      await raiseClaimEvents(
+        {
+          message: 'Claim has been updated',
+          claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
+          note: 'Automatic update',
+          raisedBy: 'admin',
+          raisedOn: updatedAt
+        },
+        sbi
+      )
+
+      await publishStatusChangeEvent(getLogger(), {
+        crn,
+        sbi,
+        agreementReference: claim.applicationReference,
+        claimReference: claim.reference,
+        claimAmount: claim.data.amount,
+        // This is setup straight to ready to pay in case
+        // Mongo is slow updating
+        claimStatus: STATUS.READY_TO_PAY,
+        claimType: claim.type,
+        typeOfLivestock: claim.data.typeOfLivestock,
+        // This is setup straight to udpatedat in case
+        // Mongo is slow updating
+        dateTime: updatedAt,
+        herdName: claim.herd.name,
+        reviewTestResults: claim.data.reviewTestResults,
+        piHuntRecommended: claim.data.piHuntRecommended,
+        piHuntAllAnimals: claim.data.piHuntAllAnimals
+      })
+
+      // We add here sending of the message to the queue using publishRequestForPaymentEvent
+      const optionalPiHuntValue = isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)
+        ? checkForPiHunt(claim)
+        : undefined
+
+      await publishRequestForPaymentEvent(getLogger(), {
+        reference: claim.reference,
+        sbi,
+        whichReview: claim.data.typeOfLivestock,
+        // Seems to be true everywhere?
+        isEndemics: true,
+        claimType: claim.type,
+        dateOfVisit: claim.data.dateOfVisit,
+        reviewTestResults: claim.data.reviewTestResults,
+        frn,
+        optionalPiHuntValue
+      })
+    }
     getLogger().info(
       `Of ${onHoldClaimReferences.length} claims on hold, ${updatedRecordCount} updated to ready to pay.`
     )
   } else {
     getLogger().info('No claims to move from on hold to ready to pay.')
   }
+}
+
+function checkForPiHunt(claim) {
+  return claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
+    ? 'yesPiHunt'
+    : 'noPiHunt'
 }
