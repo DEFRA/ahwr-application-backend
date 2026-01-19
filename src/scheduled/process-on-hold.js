@@ -6,8 +6,11 @@ import {
   publishStatusChangeEvent
 } from '../messaging/publish-outbound-notification.js'
 import { getApplication } from '../repositories/application-repository.js'
-import { piHunt, piHuntAllAnimals } from '../constants/index.js'
-import { isVisitDateAfterPIHuntAndDairyGoLive } from '../lib/context-helper.js'
+import {
+  checkForPiHunt,
+  getHerdName,
+  isVisitDateAfterPIHuntAndDairyGoLive
+} from '../lib/context-helper.js'
 import { raiseClaimEvents } from '../event-publisher/index.js'
 
 export const processOnHoldClaims = async (db) => {
@@ -60,13 +63,12 @@ export const processOnHoldClaims = async (db) => {
         // This is setup straight to udpatedat in case
         // Mongo is slow updating
         dateTime: updatedAt,
-        herdName: claim.herd.name,
+        herdName: getHerdName(claim),
         reviewTestResults: claim.data.reviewTestResults,
         piHuntRecommended: claim.data.piHuntRecommended,
         piHuntAllAnimals: claim.data.piHuntAllAnimals
       })
 
-      // We add here sending of the message to the queue using publishRequestForPaymentEvent
       const optionalPiHuntValue = isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)
         ? checkForPiHunt(claim)
         : undefined
@@ -90,10 +92,4 @@ export const processOnHoldClaims = async (db) => {
   } else {
     getLogger().info('No claims to move from on hold to ready to pay.')
   }
-}
-
-function checkForPiHunt(claim) {
-  return claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
-    ? 'yesPiHunt'
-    : 'noPiHunt'
 }

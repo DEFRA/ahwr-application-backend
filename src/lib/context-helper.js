@@ -1,5 +1,15 @@
-import { MULTIPLE_HERDS_RELEASE_DATE, PIGS_AND_PAYMENTS_RELEASE_DATE } from '../constants/index.js'
-import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from 'ffc-ahwr-common-library'
+import {
+  MULTIPLE_HERDS_RELEASE_DATE,
+  PIGS_AND_PAYMENTS_RELEASE_DATE,
+  piHunt,
+  piHuntAllAnimals
+} from '../constants/index.js'
+import {
+  PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE,
+  TYPE_OF_LIVESTOCK,
+  UNNAMED_FLOCK,
+  UNNAMED_HERD
+} from 'ffc-ahwr-common-library'
 
 export const isVisitDateAfterPIHuntAndDairyGoLive = (dateOfVisit) => {
   const dateOfVisitParsed = new Date(dateOfVisit)
@@ -22,4 +32,31 @@ export const isOWAppRef = (applicationReference) => applicationReference.startsW
 
 export const isPigsAndPaymentsUserJourney = (dateOfVisit) => {
   return new Date(dateOfVisit) >= PIGS_AND_PAYMENTS_RELEASE_DATE
+}
+
+export const getOptionalPiHuntValue = (claim) => {
+  let optionalPiHuntValue
+
+  if (isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)) {
+    optionalPiHuntValue =
+      claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHunt.yes
+        ? 'yesPiHunt'
+        : 'noPiHunt'
+  }
+
+  return optionalPiHuntValue
+}
+
+// TODO: the above needs to use this
+export const checkForPiHunt = (claim) => {
+  return claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
+    ? 'yesPiHunt'
+    : 'noPiHunt'
+}
+
+export const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
+  typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD
+
+export const getHerdName = (claim) => {
+  return claim.herd?.name ?? getUnnamedHerdValueByTypeOfLivestock(claim.data.typeOfLivestock)
 }
