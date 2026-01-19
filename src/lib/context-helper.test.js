@@ -1,9 +1,17 @@
-import { PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE } from 'ffc-ahwr-common-library'
+import {
+  PI_HUNT_AND_DAIRY_FOLLOW_UP_RELEASE_DATE,
+  TYPE_OF_LIVESTOCK
+} from 'ffc-ahwr-common-library'
 import {
   isVisitDateAfterPIHuntAndDairyGoLive,
   isMultipleHerdsUserJourney,
-  isPigsAndPaymentsUserJourney
+  isPigsAndPaymentsUserJourney,
+  getHerdName,
+  getUnnamedHerdValueByTypeOfLivestock,
+  checkForPiHunt,
+  getReviewTestResults
 } from './context-helper.js'
+import { piHunt, piHuntAllAnimals } from '../constants/index.js'
 
 describe('context-helper', () => {
   test('isVisitDateAfterGoLive throws error when no visit date provided', () => {
@@ -62,6 +70,76 @@ describe('context-helper', () => {
 
     it('should return false when visit date before golive', () => {
       expect(isPigsAndPaymentsUserJourney('2026-01-21T00:00:00.000Z')).toBe(false)
+    })
+  })
+
+  describe('getHerdName', () => {
+    it('returns the name from the claim when present', () => {
+      const actual = getHerdName({ herd: { name: 'some' } })
+      expect(actual).toBe('some')
+    })
+
+    it('returns the default name for the live stock when name not present', () => {
+      const actual = getHerdName({ herd: {}, data: { typeOfLivestock: TYPE_OF_LIVESTOCK.SHEEP } })
+      expect(actual).toBe('Unnamed flock')
+    })
+
+    it('returns the default name for the live stock when herd not present', () => {
+      const actual = getHerdName({ data: { typeOfLivestock: TYPE_OF_LIVESTOCK.SHEEP } })
+      expect(actual).toBe('Unnamed flock')
+    })
+  })
+
+  describe('getUnnamedHerdValueByTypeOfLivestock', () => {
+    it('returns unnamed flock for sheep', () => {
+      const actual = getUnnamedHerdValueByTypeOfLivestock(TYPE_OF_LIVESTOCK.SHEEP)
+      expect(actual).toBe('Unnamed flock')
+    })
+
+    it('returns unnamed herd for beef', () => {
+      const actual = getUnnamedHerdValueByTypeOfLivestock(TYPE_OF_LIVESTOCK.BEEF)
+      expect(actual).toBe('Unnamed herd')
+    })
+
+    it('returns unnamed herd for beef', () => {
+      const actual = getUnnamedHerdValueByTypeOfLivestock(TYPE_OF_LIVESTOCK.PIGS)
+      expect(actual).toBe('Unnamed herd')
+    })
+  })
+
+  describe('checkForPiHunt', () => {
+    it('returns yesPiHunt if piHunt and piHuntAllAnimals are yes', () => {
+      const actual = checkForPiHunt({
+        data: { piHunt: piHunt.yes, piHuntAllAnimals: piHuntAllAnimals.yes }
+      })
+
+      expect(actual).toBe('yesPiHunt')
+    })
+
+    it('returns noPiHunt if piHunt is no', () => {
+      const actual = checkForPiHunt({ data: { piHunt: piHunt.no } })
+
+      expect(actual).toBe('noPiHunt')
+    })
+
+    it('returns noPiHunt if piHuntAllAnimals is no', () => {
+      const actual = checkForPiHunt({
+        data: { piHunt: piHunt.yes, piHuntAllAnimals: piHuntAllAnimals.no }
+      })
+
+      expect(actual).toBe('noPiHunt')
+    })
+  })
+
+  describe('getReviewTestResults', () => {
+    it('returns the reviewTestResults if they exists', () => {
+      const actual = getReviewTestResults({ data: { reviewTestResults: 'something' } })
+      expect(actual).toBe('something')
+    })
+
+    it('returns the vetVisitsReviewTestResults if reviewTestResults does not exists', () => {
+      const actual = getReviewTestResults({ data: { vetVisitsReviewTestResults: 'something' } })
+      expect(actual).toBe('something')
     })
   })
 })

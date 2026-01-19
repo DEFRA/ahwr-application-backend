@@ -74,15 +74,10 @@ export const updateClaimStatuses = async ({ db, references, status, user, update
 export const findOnHoldClaims = async ({ db, beforeDate, limit = 500 }) => {
   return db
     .collection(CLAIMS_COLLECTION)
-    .find(
-      {
-        status: STATUS.ON_HOLD,
-        updatedAt: { $lte: beforeDate }
-      },
-      {
-        projection: { reference: 1 }
-      }
-    )
+    .find({
+      status: STATUS.ON_HOLD,
+      updatedAt: { $lte: beforeDate }
+    })
     .limit(limit)
     .toArray()
 }
