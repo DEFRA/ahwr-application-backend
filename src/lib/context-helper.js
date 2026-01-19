@@ -34,20 +34,6 @@ export const isPigsAndPaymentsUserJourney = (dateOfVisit) => {
   return new Date(dateOfVisit) >= PIGS_AND_PAYMENTS_RELEASE_DATE
 }
 
-export const getOptionalPiHuntValue = (claim) => {
-  let optionalPiHuntValue
-
-  if (isVisitDateAfterPIHuntAndDairyGoLive(claim.data.dateOfVisit)) {
-    optionalPiHuntValue =
-      claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHunt.yes
-        ? 'yesPiHunt'
-        : 'noPiHunt'
-  }
-
-  return optionalPiHuntValue
-}
-
-// TODO: the above needs to use this
 export const checkForPiHunt = (claim) => {
   return claim.data.piHunt === piHunt.yes && claim.data.piHuntAllAnimals === piHuntAllAnimals.yes
     ? 'yesPiHunt'
