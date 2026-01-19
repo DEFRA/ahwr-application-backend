@@ -7,8 +7,10 @@ import {
   isMultipleHerdsUserJourney,
   isPigsAndPaymentsUserJourney,
   getHerdName,
-  getUnnamedHerdValueByTypeOfLivestock
+  getUnnamedHerdValueByTypeOfLivestock,
+  checkForPiHunt
 } from './context-helper.js'
+import { piHunt, piHuntAllAnimals } from '../constants/index.js'
 
 describe('context-helper', () => {
   test('isVisitDateAfterGoLive throws error when no visit date provided', () => {
@@ -101,6 +103,30 @@ describe('context-helper', () => {
     it('returns unnamed herd for beef', () => {
       const actual = getUnnamedHerdValueByTypeOfLivestock(TYPE_OF_LIVESTOCK.PIGS)
       expect(actual).toBe('Unnamed herd')
+    })
+  })
+
+  describe('checkForPiHunt', () => {
+    it('returns yesPiHunt if piHunt and piHuntAllAnimals are yes', () => {
+      const actual = checkForPiHunt({
+        data: { piHunt: piHunt.yes, piHuntAllAnimals: piHuntAllAnimals.yes }
+      })
+
+      expect(actual).toBe('yesPiHunt')
+    })
+
+    it('returns noPiHunt if piHunt is no', () => {
+      const actual = checkForPiHunt({ data: { piHunt: piHunt.no } })
+
+      expect(actual).toBe('noPiHunt')
+    })
+
+    it('returns noPiHunt if piHuntAllAnimals is no', () => {
+      const actual = checkForPiHunt({
+        data: { piHunt: piHunt.yes, piHuntAllAnimals: piHuntAllAnimals.no }
+      })
+
+      expect(actual).toBe('noPiHunt')
     })
   })
 })
