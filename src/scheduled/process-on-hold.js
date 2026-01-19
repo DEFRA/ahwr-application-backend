@@ -9,6 +9,7 @@ import { getApplication } from '../repositories/application-repository.js'
 import {
   checkForPiHunt,
   getHerdName,
+  getReviewTestResults,
   isVisitDateAfterPIHuntAndDairyGoLive
 } from '../lib/context-helper.js'
 import { raiseClaimEvents } from '../event-publisher/index.js'
@@ -64,7 +65,7 @@ export const processOnHoldClaims = async (db) => {
         // Mongo is slow updating
         dateTime: updatedAt,
         herdName: getHerdName(claim),
-        reviewTestResults: claim.data.reviewTestResults,
+        reviewTestResults: getReviewTestResults(claim),
         piHuntRecommended: claim.data.piHuntRecommended,
         piHuntAllAnimals: claim.data.piHuntAllAnimals
       })
@@ -81,7 +82,7 @@ export const processOnHoldClaims = async (db) => {
         isEndemics: true,
         claimType: claim.type,
         dateOfVisit: claim.data.dateOfVisit,
-        reviewTestResults: claim.data.reviewTestResults,
+        reviewTestResults: getReviewTestResults(claim),
         frn,
         optionalPiHuntValue
       })

@@ -46,3 +46,7 @@ export const getUnnamedHerdValueByTypeOfLivestock = (typeOfLivestock) =>
 export const getHerdName = (claim) => {
   return claim.herd?.name ?? getUnnamedHerdValueByTypeOfLivestock(claim.data.typeOfLivestock)
 }
+
+export const getReviewTestResults = (claim) => {
+  return claim.data.reviewTestResults ?? claim.data.vetVisitsReviewTestResults
+}

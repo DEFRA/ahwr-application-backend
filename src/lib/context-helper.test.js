@@ -8,7 +8,8 @@ import {
   isPigsAndPaymentsUserJourney,
   getHerdName,
   getUnnamedHerdValueByTypeOfLivestock,
-  checkForPiHunt
+  checkForPiHunt,
+  getReviewTestResults
 } from './context-helper.js'
 import { piHunt, piHuntAllAnimals } from '../constants/index.js'
 
@@ -127,6 +128,18 @@ describe('context-helper', () => {
       })
 
       expect(actual).toBe('noPiHunt')
+    })
+  })
+
+  describe('getReviewTestResults', () => {
+    it('returns the reviewTestResults if they exists', () => {
+      const actual = getReviewTestResults({ data: { reviewTestResults: 'something' } })
+      expect(actual).toBe('something')
+    })
+
+    it('returns the vetVisitsReviewTestResults if reviewTestResults does not exists', () => {
+      const actual = getReviewTestResults({ data: { vetVisitsReviewTestResults: 'something' } })
+      expect(actual).toBe('something')
     })
   })
 })
