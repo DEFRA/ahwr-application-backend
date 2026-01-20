@@ -248,7 +248,8 @@ describe('generateEventsAndComms', () => {
         category: 'sheep',
         created: expect.any(Date),
         kind: 'REVIEW',
-        outcome: 'Status - ON_HOLD',
+        claimStatus: 'Status - ON_HOLD',
+        outcome: true,
         reference: 'SBI-123 - APP-999 - CLM-999',
         type: 'process-claim'
       }

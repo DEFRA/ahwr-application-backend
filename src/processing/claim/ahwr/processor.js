@@ -164,7 +164,8 @@ export async function generateEventsAndComms(
     event: {
       type: 'process-claim',
       reference: `${sbi} - ${applicationReference} - ${claimReference}`,
-      outcome: `Status - ${status}`,
+      claimStatus: `Status - ${status}`,
+      outcome: true,
       kind: type,
       category: typeOfLivestock,
       created: new Date()
