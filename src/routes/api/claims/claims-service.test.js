@@ -10,7 +10,10 @@ import {
 } from '../../../repositories/claim-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
-import { saveClaimAndRelatedData } from '../../../processing/claim/ahwr/processor.js'
+import {
+  saveClaimAndRelatedData,
+  generateEventsAndComms
+} from '../../../processing/claim/ahwr/processor.js'
 import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import { trackError } from '../../../logging/logger.js'
 
@@ -35,7 +38,10 @@ describe('processClaim', () => {
     reference: 'TEMP-O9UD-0025',
     data: {
       typeOfLivestock: 'beef',
-      laboratoryURN: 'AK-2024-38'
+      laboratoryURN: 'AK-2024-38',
+      herd: {
+        id: 'db32152a-724a-4c5d-8073-0901c8d307f7'
+      }
     }
   }
 
@@ -50,6 +56,14 @@ describe('processClaim', () => {
   }
 
   test('creates and returns claim when valid request', async () => {
+    const herdData = {
+      id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
+      version: 1,
+      cph: '12/345/6789',
+      name: 'Sheep herd 2',
+      reasons: ['uniqueHealthNeeds'],
+      associatedAt: '2025-10-21T09:28:49.760Z'
+    }
     const saveClaimResult = {
       claim: {
         applicationReference: 'IAHW-AAAA-AAAA',
@@ -77,12 +91,16 @@ describe('processClaim', () => {
           reasons: ['uniqueHealthNeeds'],
           associatedAt: '2025-10-21T09:28:49.760Z'
         }
-      }
+      },
+      isMultiHerdsClaim: true,
+      herdGotUpdated: true,
+      herdData
     }
-    getApplication.mockResolvedValue({
+    const application = {
       flags: [],
       organisation: { sbi: '123456789' }
-    })
+    }
+    getApplication.mockResolvedValue(application)
     validateClaim.mockReturnValue({ value: payload })
     createClaimReference.mockReturnValue('RESH-O9UD-0025')
     mockIsURNNumberUnique(true)
@@ -104,6 +122,14 @@ describe('processClaim', () => {
       flags: [],
       logger: mockLogger
     })
+    expect(generateEventsAndComms).toHaveBeenCalledWith(
+      true,
+      saveClaimResult.claim,
+      application,
+      herdData,
+      true,
+      'db32152a-724a-4c5d-8073-0901c8d307f7'
+    )
   })
 
   test('throws NotFound error when application does not exist', async () => {
