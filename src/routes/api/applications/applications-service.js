@@ -92,7 +92,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
     event: {
       type: 'process-application-api',
       reference: application.reference,
-      outcome: true,
+      outcome: 'true',
       category: `status: ${application.data.offerStatus} sbi:${application.organisation.sbi}`
     }
   })

@@ -242,7 +242,7 @@ describe('applications-service', () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           event: {
             category: 'status: accepted sbi:118409263',
-            outcome: true,
+            outcome: 'true',
             reference: 'IAHW-8ZPZ-8CLI',
             type: 'process-application-api'
           }
@@ -306,7 +306,7 @@ describe('applications-service', () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           event: {
             category: 'status: accepted sbi:118409263',
-            outcome: true,
+            outcome: 'true',
             reference: 'IAHW-8ZPZ-8CLI',
             type: 'process-application-api'
           }
@@ -364,7 +364,7 @@ describe('applications-service', () => {
         expect(mockLogger.info).toHaveBeenCalledWith({
           event: {
             category: 'status: rejected sbi:118409263',
-            outcome: true,
+            outcome: 'true',
             reference: 'IAHW-8ZPZ-8CLI',
             type: 'process-application-api'
           }
