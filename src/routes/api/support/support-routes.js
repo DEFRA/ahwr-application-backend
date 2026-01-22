@@ -10,7 +10,7 @@ export const supportHandlers = [
     method: 'GET',
     path: '/api/support/applications/{reference}',
     options: {
-      description: 'Get a claim by reference',
+      description: 'Get an application by reference',
       validate: {
         params: joi.object({
           reference: joi.string().required()
@@ -34,12 +34,12 @@ export const supportHandlers = [
   },
   {
     method: 'GET',
-    path: '/api/support/herds/{reference}',
+    path: '/api/support/herds/{id}',
     options: {
-      description: 'Get a claim by reference',
+      description: 'Get a herd by id',
       validate: {
         params: joi.object({
-          reference: joi.string().required()
+          id: joi.string().required()
         })
       },
       handler: supportHerdHandler

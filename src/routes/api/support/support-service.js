@@ -3,7 +3,7 @@ import { getApplicationWithFullFlags } from '../../../repositories/application-r
 import { getClaimByReference } from '../../../repositories/claim-repository'
 import { getHerdById } from '../../../repositories/herd-repository'
 
-export const getSupportApplication = async ({ db, logger, reference }) => {
+export const getSupportApplication = async ({ db, reference }) => {
   const application = await getApplicationWithFullFlags({ db, reference })
 
   if (!application) {
@@ -13,7 +13,7 @@ export const getSupportApplication = async ({ db, logger, reference }) => {
   return application
 }
 
-export const getSupportClaim = async ({ db, logger, reference }) => {
+export const getSupportClaim = async ({ db, reference }) => {
   const claim = await getClaimByReference(db, reference)
 
   if (!claim) {
@@ -23,8 +23,8 @@ export const getSupportClaim = async ({ db, logger, reference }) => {
   return claim
 }
 
-export const getSupportHerd = async ({ db, logger, reference }) => {
-  const claim = await getHerdById(db, reference)
+export const getSupportHerd = async ({ db, id }) => {
+  const claim = await getHerdById(db, id)
 
   if (!claim) {
     throw Boom.notFound('Herd not found')

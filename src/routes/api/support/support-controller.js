@@ -14,7 +14,7 @@ export const supportApplicationHandler = async (request, h) => {
 
     return h.response(result).code(StatusCodes.OK)
   } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+    request.logger.error({ err }, 'Failed to get application')
 
     if (Boom.isBoom(err)) {
       throw err
@@ -48,17 +48,17 @@ export const supportClaimHandler = async (request, h) => {
 
 export const supportHerdHandler = async (request, h) => {
   try {
-    const { reference } = request.params
+    const { id } = request.params
 
     const result = await getSupportHerd({
       db: request.db,
       logger: request.logger,
-      reference
+      id
     })
 
     return h.response(result).code(StatusCodes.OK)
   } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+    request.logger.error({ err }, 'Failed to get herd')
 
     if (Boom.isBoom(err)) {
       throw err
