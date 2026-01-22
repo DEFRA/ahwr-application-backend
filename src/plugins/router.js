@@ -9,6 +9,7 @@ import { flagHandlers } from '../routes/api/flags/flags-routes.js'
 import { claimHistoryHandlers } from '../routes/api/claim-history.js'
 import { config } from '../config/config.js'
 import { cleanupHandlers } from '../routes/api/cleanup/cleanup-routes.js'
+import { supportHandlers } from '../routes/api/support/support-routes.js'
 
 const router = {
   plugin: {
@@ -23,6 +24,7 @@ const router = {
         .concat(claimsHandlers)
         .concat(contactHistoryHandlers)
         .concat(flagHandlers)
+        .concat(supportHandlers)
 
       if (
         ['local', 'infra-dev', 'management', 'dev', 'test', 'perf-test', 'ext-test'].includes(
