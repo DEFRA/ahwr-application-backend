@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
-import { getApplicationWithFullFlags } from '../../../repositories/application-repository'
-import { getClaimByReference } from '../../../repositories/claim-repository'
-import { getHerdById } from '../../../repositories/herd-repository'
+import { getApplicationWithFullFlags } from '../../../repositories/application-repository.js'
+import { getClaimByReference } from '../../../repositories/claim-repository.js'
+import { getHerdById } from '../../../repositories/herd-repository.js'
 
 export const getSupportApplication = async ({ db, reference }) => {
   const application = await getApplicationWithFullFlags({ db, reference })

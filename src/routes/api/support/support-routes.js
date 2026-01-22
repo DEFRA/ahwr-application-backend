@@ -3,7 +3,7 @@ import {
   supportApplicationHandler,
   supportClaimHandler,
   supportHerdHandler
-} from './support-controller'
+} from './support-controller.js'
 
 export const supportHandlers = [
   {
