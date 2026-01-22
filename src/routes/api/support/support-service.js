@@ -1,7 +1,7 @@
 import Boom from '@hapi/boom'
 import { getApplicationWithFullFlags } from '../../../repositories/application-repository.js'
 import { getClaimByReference } from '../../../repositories/claim-repository.js'
-import { getHerdById } from '../../../repositories/herd-repository.js'
+import { getAllHerdsById } from '../../../repositories/herd-repository.js'
 
 export const getSupportApplication = async ({ db, reference }) => {
   const application = await getApplicationWithFullFlags({ db, reference })
@@ -24,7 +24,7 @@ export const getSupportClaim = async ({ db, reference }) => {
 }
 
 export const getSupportHerd = async ({ db, id }) => {
-  const claim = await getHerdById(db, id)
+  const claim = await getAllHerdsById(db, id)
 
   if (!claim) {
     throw Boom.notFound('Herd not found')

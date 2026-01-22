@@ -1,6 +1,6 @@
 import { Server } from '@hapi/hapi'
 import { supportHandlers } from './support-routes'
-import { applicationDocument, claimDocument, herdDocument } from './test-data'
+import { applicationDocument, claimDocument, multipleVersionsHerdDocument } from './test-data'
 
 const reference = 'REBC-VA4R-TRL7'
 const mockError = jest.fn(() => {})
@@ -13,9 +13,14 @@ const mockLogger = {
 }
 
 const mockFindOne = jest.fn()
+const mockToArray = jest.fn()
+const mockFind = jest.fn(() => ({
+  toArray: mockToArray
+}))
 const mockDb = {
   collection: jest.fn(() => ({
-    findOne: mockFindOne
+    findOne: mockFindOne,
+    find: mockFind
   }))
 }
 
@@ -138,26 +143,26 @@ describe('support-routes', () => {
 
   describe('Get /api/support/herds', () => {
     it('returns the data if present', async () => {
-      const mockResult = herdDocument
-      mockFindOne.mockResolvedValue(mockResult)
+      const mockResult = multipleVersionsHerdDocument
+      mockToArray.mockResolvedValue(mockResult)
       const response = await server.inject({
         method: 'GET',
         url: `/api/support/herds/${reference}`
       })
 
-      expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
+      expect(mockFind).toHaveBeenCalledWith({ id: reference })
       expect(response.statusCode).toBe(200)
       expect(response.result).toEqual(mockResult)
     })
 
     it('returns not found if not present', async () => {
-      mockFindOne.mockResolvedValue(null)
+      mockToArray.mockResolvedValue(null)
       const response = await server.inject({
         method: 'GET',
         url: `/api/support/herds/${reference}`
       })
 
-      expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
+      expect(mockFind).toHaveBeenCalledWith({ id: reference })
       expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get herd')
       expect(response.statusCode).toBe(404)
       expect(response.result).toEqual({
@@ -168,7 +173,7 @@ describe('support-routes', () => {
     })
 
     it('handles an error from the DB', async () => {
-      mockFindOne.mockImplementation(() => {
+      mockToArray.mockImplementation(() => {
         throw new Error('Database error')
       })
       const response = await server.inject({
@@ -176,7 +181,7 @@ describe('support-routes', () => {
         url: `/api/support/herds/${reference}`
       })
 
-      expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
+      expect(mockFind).toHaveBeenCalledWith({ id: reference })
       expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get herd')
       expect(response.statusCode).toBe(500)
       expect(response.result).toEqual({

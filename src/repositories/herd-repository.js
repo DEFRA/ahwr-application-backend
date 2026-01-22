@@ -15,6 +15,15 @@ export const getHerdById = async (db, id) => {
   })
 }
 
+export const getAllHerdsById = async (db, id) => {
+  return db
+    .collection(HERDS_COLLECTION)
+    .find({
+      id
+    })
+    .toArray()
+}
+
 export const updateIsCurrentHerd = async (db, id, isCurrent, version) => {
   return db.collection(HERDS_COLLECTION).updateOne({ id, version }, { $set: { isCurrent } })
 }

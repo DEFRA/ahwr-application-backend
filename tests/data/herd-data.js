@@ -25,3 +25,29 @@ export const sheepHerd = {
   updatedBy: 'admin',
   applicationReference: 'IAHW-G3CL-V59P'
 }
+
+export const beefHerdVersion1 = {
+  id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+  cph: '12/345/6789',
+  name: 'EventTester',
+  reasons: ['separateManagementNeeds'],
+  species: 'beef',
+  version: 1,
+  createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
+  createdBy: 'admin',
+  isCurrent: false,
+  applicationReference: 'IAHW-G3CL-V59P'
+}
+
+export const beefHerdVersion2 = {
+  id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+  cph: '12/345/6789',
+  name: 'EventTester',
+  reasons: ['separateManagementNeeds'],
+  species: 'beef',
+  version: 2,
+  createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
+  createdBy: 'admin',
+  isCurrent: true,
+  applicationReference: 'IAHW-G3CL-V59P'
+}

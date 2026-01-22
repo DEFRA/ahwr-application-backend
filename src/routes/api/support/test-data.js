@@ -55,7 +55,7 @@ export const applicationDocument = ({ reference }) => ({
   eligiblePiiRedaction: true
 })
 
-export const herdDocument = {
+export const herdDocumentVersion1 = {
   id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
   cph: '12/345/6789',
   name: 'EventTester',
@@ -64,9 +64,24 @@ export const herdDocument = {
   version: 1,
   createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
   createdBy: 'admin',
+  isCurrent: false,
+  applicationReference: 'IAHW-G3CL-V59P'
+}
+
+export const herdDocumentVersion2 = {
+  id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+  cph: '12/345/6789',
+  name: 'EventTester',
+  reasons: ['separateManagementNeeds'],
+  species: 'beef',
+  version: 2,
+  createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
+  createdBy: 'admin',
   isCurrent: true,
   applicationReference: 'IAHW-G3CL-V59P'
 }
+
+export const multipleVersionsHerdDocument = [herdDocumentVersion1, herdDocumentVersion2]
 
 export const claimDocument = {
   reference: 'REBC-VA4R-TRL7',
