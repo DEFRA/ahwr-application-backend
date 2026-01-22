@@ -15,7 +15,7 @@ export const getHerdById = async (db, id) => {
   })
 }
 
-export const getAllHerdsById = async (db, id) => {
+export const getAllHerdVersionsById = async (db, id) => {
   return db
     .collection(HERDS_COLLECTION)
     .find({
