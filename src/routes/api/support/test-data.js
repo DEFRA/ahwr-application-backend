@@ -3,7 +3,7 @@ const person2 = 'Carroll, Aaron'
 
 export const applicationDocument = ({ reference }) => ({
   status: 'AGREED',
-  reference: reference,
+  reference,
   data: {
     reference: 'TEMP-AAAA-AAAA',
     declaration: true,
