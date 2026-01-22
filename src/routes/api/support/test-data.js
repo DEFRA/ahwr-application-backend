@@ -1,3 +1,6 @@
+const person1 = 'Rob Catton (EqualExperts)'
+const person2 = 'Carroll, Aaron'
+
 export const applicationDocument = ({ reference }) => ({
   status: 'AGREED',
   reference: reference,
@@ -31,9 +34,9 @@ export const applicationDocument = ({ reference }) => ({
       note: "User did not agree with multi herds T&C's",
       deleted: true,
       createdAt: new Date('2025-04-30T10:42:04.707Z'),
-      createdBy: 'Rob Catton (EqualExperts)',
+      createdBy: person1,
       deletedAt: new Date('2025-04-30T10:50:55.169Z'),
-      deletedBy: 'Rob Catton (EqualExperts)',
+      deletedBy: person1,
       appliesToMh: true,
       deletedNote: "User has changed their mind and accepted the T&C's"
     },
@@ -42,9 +45,9 @@ export const applicationDocument = ({ reference }) => ({
       note: 'This user lies a lot on their claims.',
       deleted: true,
       createdAt: new Date('2025-04-30T10:43:01.066Z'),
-      createdBy: 'Rob Catton (EqualExperts)',
+      createdBy: person1,
       deletedAt: new Date('2025-06-23T07:42:12.104Z'),
-      deletedBy: 'Carroll, Aaron',
+      deletedBy: person2,
       appliesToMh: false,
       deletedNote: 'no they do not'
     }
@@ -96,7 +99,7 @@ export const claimDocument = {
       newValue: 'Mr C test',
       oldValue: 'Mr B Test',
       createdAt: new Date('2025-04-25T13:05:39.937+00:00'),
-      createdBy: 'Carroll, Aaron',
+      createdBy: person2,
       eventType: 'claim-vetsName',
       updatedProperty: 'vetsName'
     },
@@ -106,7 +109,7 @@ export const claimDocument = {
       newValue: new Date('2025-04-25T00:00:00.000Z'),
       oldValue: new Date('2025-04-24T00:00:00.000Z'),
       createdAt: new Date('2025-04-25T13:35:43.53+00:00'),
-      createdBy: 'Carroll, Aaron',
+      createdBy: person2,
       eventType: 'claim-dateOfVisit',
       updatedProperty: 'dateOfVisit'
     },
@@ -116,7 +119,7 @@ export const claimDocument = {
       newValue: '1111111',
       oldValue: '5312363',
       createdAt: new Date('2025-04-28T07:44:06.944+00:00'),
-      createdBy: 'Carroll, Aaron',
+      createdBy: person2,
       eventType: 'claim-vetRCVSNumber',
       updatedProperty: 'vetRCVSNumber'
     }
