@@ -1,5 +1,6 @@
 const person1 = 'Rob Catton (EqualExperts)'
 const person2 = 'Carroll, Aaron'
+const applicationReference = 'IAHW-G3CL-V59P'
 
 export const applicationDocument = ({ reference }) => ({
   status: 'AGREED',
@@ -65,7 +66,7 @@ export const herdDocumentVersion1 = {
   createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
   createdBy: 'admin',
   isCurrent: false,
-  applicationReference: 'IAHW-G3CL-V59P'
+  applicationReference
 }
 
 export const herdDocumentVersion2 = {
@@ -78,14 +79,14 @@ export const herdDocumentVersion2 = {
   createdAt: new Date('2025-08-15T08:54:04.271367+00:00'),
   createdBy: 'admin',
   isCurrent: true,
-  applicationReference: 'IAHW-G3CL-V59P'
+  applicationReference
 }
 
 export const multipleVersionsHerdDocument = [herdDocumentVersion1, herdDocumentVersion2]
 
 export const claimDocument = {
   reference: 'REBC-VA4R-TRL7',
-  applicationReference: 'IAHW-G3CL-V59P',
+  applicationReference,
   createdAt: new Date('2025-04-24 08:24:24.092000 +00:00'),
   updatedAt: new Date('2025-04-28 07:44:03.864000 +00:00'),
   createdBy: 'admin',
