@@ -3,10 +3,11 @@ import { supportHandlers } from './support-routes'
 import { applicationDocument, claimDocument, herdDocument } from './test-data'
 
 const reference = 'REBC-VA4R-TRL7'
+const mockError = jest.fn(() => {})
 const mockLogger = {
   info: jest.fn(() => {}),
   warn: jest.fn(() => {}),
-  error: jest.fn(() => {}),
+  error: mockError,
   debug: jest.fn(() => {}),
   setBindings: jest.fn(() => {})
 }
@@ -55,6 +56,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get application')
       expect(response.statusCode).toBe(404)
       expect(response.result).toEqual({
         error: 'Not Found',
@@ -73,6 +75,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get application')
       expect(response.statusCode).toBe(500)
       expect(response.result).toEqual({
         error: 'Internal Server Error',
@@ -104,6 +107,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference }, { projection: { _id: 0 } })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get claim')
       expect(response.statusCode).toBe(404)
       expect(response.result).toEqual({
         error: 'Not Found',
@@ -122,6 +126,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference }, { projection: { _id: 0 } })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get claim')
       expect(response.statusCode).toBe(500)
       expect(response.result).toEqual({
         error: 'Internal Server Error',
@@ -153,6 +158,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get herd')
       expect(response.statusCode).toBe(404)
       expect(response.result).toEqual({
         error: 'Not Found',
@@ -171,6 +177,7 @@ describe('support-routes', () => {
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
+      expect(mockError).toHaveBeenCalledWith(expect.anything(), 'Failed to get herd')
       expect(response.statusCode).toBe(500)
       expect(response.result).toEqual({
         error: 'Internal Server Error',

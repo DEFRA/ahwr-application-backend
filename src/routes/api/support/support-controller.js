@@ -8,7 +8,6 @@ export const supportApplicationHandler = async (request, h) => {
 
     const result = await getSupportApplication({
       db: request.db,
-      logger: request.logger,
       reference
     })
 
@@ -30,7 +29,6 @@ export const supportClaimHandler = async (request, h) => {
 
     const result = await getSupportClaim({
       db: request.db,
-      logger: request.logger,
       reference
     })
 
@@ -52,7 +50,6 @@ export const supportHerdHandler = async (request, h) => {
 
     const result = await getSupportHerd({
       db: request.db,
-      logger: request.logger,
       id
     })
 
