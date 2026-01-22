@@ -20,7 +20,7 @@ describe('Get application herds', () => {
   test('successfully retrieves herd', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: '/api/support/herd/0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+      url: '/api/support/herds/0e4f55ea-ed42-4139-9c46-c75ba63b0742'
     })
 
     expect(res.statusCode).toBe(200)

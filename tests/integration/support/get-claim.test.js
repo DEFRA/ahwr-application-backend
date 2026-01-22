@@ -20,7 +20,7 @@ describe('Get claim', () => {
   test('returns claim when claim reference matches claim in db', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: '/api/support/claim/REBC-VA4R-TRL7'
+      url: '/api/support/claims/REBC-VA4R-TRL7'
     })
 
     expect(res.statusCode).toBe(200)

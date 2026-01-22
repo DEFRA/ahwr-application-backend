@@ -8,7 +8,7 @@ import {
 export const supportHandlers = [
   {
     method: 'GET',
-    path: '/api/support/application/{reference}',
+    path: '/api/support/applications/{reference}',
     options: {
       description: 'Get a claim by reference',
       validate: {
@@ -21,7 +21,7 @@ export const supportHandlers = [
   },
   {
     method: 'GET',
-    path: '/api/support/claim/{reference}',
+    path: '/api/support/claims/{reference}',
     options: {
       description: 'Get a claim by reference',
       validate: {
@@ -34,7 +34,7 @@ export const supportHandlers = [
   },
   {
     method: 'GET',
-    path: '/api/support/herd/{reference}',
+    path: '/api/support/herds/{reference}',
     options: {
       description: 'Get a claim by reference',
       validate: {

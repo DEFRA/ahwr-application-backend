@@ -19,7 +19,7 @@ describe('Get applications', () => {
 
   const options = {
     method: 'GET',
-    url: '/api/support/application/IAHW-G3CL-V59P'
+    url: '/api/support/applications/IAHW-G3CL-V59P'
   }
 
   test('successfully retrieves application', async () => {

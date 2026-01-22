@@ -33,13 +33,13 @@ describe('support-routes', () => {
     jest.clearAllMocks()
   })
 
-  describe('Get /api/support/application', () => {
+  describe('Get /api/support/applications', () => {
     it('returns the data if present', async () => {
       const mockResult = applicationDocument({ reference })
       mockFindOne.mockResolvedValue(mockResult)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/application/${reference}`
+        url: `/api/support/applications/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference })
@@ -51,7 +51,7 @@ describe('support-routes', () => {
       mockFindOne.mockResolvedValue(null)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/application/${reference}`
+        url: `/api/support/applications/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference })
@@ -69,7 +69,7 @@ describe('support-routes', () => {
       })
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/application/${reference}`
+        url: `/api/support/applications/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference })
@@ -82,13 +82,13 @@ describe('support-routes', () => {
     })
   })
 
-  describe('Get /api/support/claim', () => {
+  describe('Get /api/support/claims', () => {
     it('returns the data if present', async () => {
       const mockResult = claimDocument
       mockFindOne.mockResolvedValue(mockResult)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/claim/${reference}`
+        url: `/api/support/claims/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference }, { projection: { _id: 0 } })
@@ -100,7 +100,7 @@ describe('support-routes', () => {
       mockFindOne.mockResolvedValue(null)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/claim/${reference}`
+        url: `/api/support/claims/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference }, { projection: { _id: 0 } })
@@ -118,7 +118,7 @@ describe('support-routes', () => {
       })
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/claim/${reference}`
+        url: `/api/support/claims/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ reference }, { projection: { _id: 0 } })
@@ -131,13 +131,13 @@ describe('support-routes', () => {
     })
   })
 
-  describe('Get /api/support/herd', () => {
+  describe('Get /api/support/herds', () => {
     it('returns the data if present', async () => {
       const mockResult = herdDocument
       mockFindOne.mockResolvedValue(mockResult)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/herd/${reference}`
+        url: `/api/support/herds/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
@@ -149,7 +149,7 @@ describe('support-routes', () => {
       mockFindOne.mockResolvedValue(null)
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/herd/${reference}`
+        url: `/api/support/herds/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
@@ -167,7 +167,7 @@ describe('support-routes', () => {
       })
       const response = await server.inject({
         method: 'GET',
-        url: `/api/support/herd/${reference}`
+        url: `/api/support/herds/${reference}`
       })
 
       expect(mockFindOne).toHaveBeenCalledWith({ id: reference, isCurrent: true })
