@@ -56,7 +56,7 @@ export const getApplicationWithFullFlags = async ({ db, reference }) => {
   if (result) {
     return result
   }
-  return await db.collection(OW_APPLICATION_COLLECTION).findOne({ reference })
+  return db.collection(OW_APPLICATION_COLLECTION).findOne({ reference })
 }
 
 export const evalSortField = (sort) => {
