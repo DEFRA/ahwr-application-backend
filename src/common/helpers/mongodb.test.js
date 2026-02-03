@@ -1,3 +1,5 @@
+import { createApplicationIndexes } from '../../repositories/application-repository'
+import { createClaimIndexes } from '../../repositories/claim-repository'
 import { mongoDb } from './mongodb'
 import { MongoClient } from 'mongodb'
 
@@ -15,6 +17,8 @@ jest.mock('mongodb', () => {
     MongoClient: { connect: jest.fn(() => mockClient) }
   }
 })
+jest.mock('../../repositories/application-repository.js')
+jest.mock('../../repositories/claim-repository.js')
 
 describe('mongodb', () => {
   let server
@@ -44,6 +48,8 @@ describe('mongodb', () => {
     expect(server.decorate).toHaveBeenCalledWith('server', 'mongoClient', expect.any(Object))
     expect(server.decorate).toHaveBeenCalledWith('server', 'db', expect.any(Object))
     expect(server.decorate).toHaveBeenCalledWith('server', 'locker', expect.any(Object))
+    expect(createApplicationIndexes).toHaveBeenCalled()
+    expect(createClaimIndexes).toHaveBeenCalled()
   })
 
   it('should register stop event to close mongo db client', async () => {

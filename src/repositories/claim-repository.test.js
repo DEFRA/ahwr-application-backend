@@ -5,7 +5,8 @@ import {
   updateClaimData,
   addHerdToClaimData,
   updateClaimStatuses,
-  findOnHoldClaims
+  findOnHoldClaims,
+  createClaimIndexes
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -448,6 +449,18 @@ describe('claim-repository', () => {
 
       expect(mockCursor.limit).toHaveBeenCalledWith(10)
       expect(result).toEqual(fakeClaims)
+    })
+  })
+
+  describe('createClaimIndexes', () => {
+    const mockCollection = { createIndex: jest.fn() }
+    const mockDb = { collection: jest.fn(() => mockCollection) }
+
+    it('should create indexes', async () => {
+      await createClaimIndexes(mockDb)
+
+      expect(mockDb.collection).toHaveBeenCalledWith('claims')
+      expect(mockCollection.createIndex).toHaveBeenCalledWith({ createdAt: -1 })
     })
   })
 })

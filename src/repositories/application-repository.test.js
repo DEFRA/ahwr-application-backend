@@ -5,7 +5,8 @@ import {
   getRemindersToSend,
   updateReminders,
   updateApplication,
-  searchApplications
+  searchApplications,
+  createApplicationIndexes
 } from './application-repository'
 import { flagNotDeletedFilter } from './common.js'
 
@@ -23,7 +24,8 @@ describe('application-repository', () => {
     next: jest.fn(),
     insertOne: jest.fn(),
     updateOne: jest.fn(() => ({ modifiedCount: 1 })),
-    findOneAndUpdate: jest.fn()
+    findOneAndUpdate: jest.fn(),
+    createIndex: jest.fn()
   }
 
   describe('getApplicationsBySbi', () => {
@@ -624,6 +626,15 @@ describe('application-repository', () => {
       })
 
       expect(collectionMock.aggregate).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('createApplicationIndexes', () => {
+    it('should create indexes', async () => {
+      await createApplicationIndexes(dbMock)
+
+      expect(dbMock.collection).toHaveBeenCalledWith('applications')
+      expect(collectionMock.createIndex).toHaveBeenCalledWith({ reference: 1 })
     })
   })
 })

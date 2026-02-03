@@ -5,6 +5,12 @@ import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/
 import { v4 as uuid } from 'uuid'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
 
+export const createApplicationIndexes = async (db) => {
+  await db.collection(APPLICATION_COLLECTION).createIndex({
+    reference: 1
+  })
+}
+
 export const getApplication = async ({ db, reference, includeDeletedFlags = false }) => {
   const flagFilter = includeDeletedFlags
     ? '$flags'
