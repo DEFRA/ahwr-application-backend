@@ -43,7 +43,7 @@
     "convict": "6.2.4",
     "convict-format-with-validator": "6.2.0",
     "crypto-js": "4.2.0",
-    "fast-xml-parser": "5.2.5",
+    "fast-xml-parser": "5.3.4",
     "ffc-ahwr-common-library": "3.5.0",
     "ffc-messaging": "2.10.3",
     "global-agent": "3.0.0",
