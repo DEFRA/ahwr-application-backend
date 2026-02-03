@@ -52,7 +52,11 @@ export const getApplication = async ({ db, reference, includeDeletedFlags = fals
 }
 
 export const getApplicationWithFullFlags = async ({ db, reference }) => {
-  return db.collection(APPLICATION_COLLECTION).findOne({ reference })
+  const result = await db.collection(APPLICATION_COLLECTION).findOne({ reference })
+  if (result) {
+    return result
+  }
+  return db.collection(OW_APPLICATION_COLLECTION).findOne({ reference })
 }
 
 export const evalSortField = (sort) => {
