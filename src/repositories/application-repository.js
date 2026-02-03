@@ -53,8 +53,9 @@ export const getApplication = async ({ db, reference, includeDeletedFlags = fals
 
 export const getApplicationWithFullFlags = async ({ db, reference }) => {
   const result = await db.collection(APPLICATION_COLLECTION).findOne({ reference })
-  console.log({ result })
-  if (result) return result
+  if (result) {
+    return result
+  }
   return await db.collection(OW_APPLICATION_COLLECTION).findOne({ reference })
 }
 
