@@ -3,6 +3,12 @@ import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { v4 as uuid } from 'uuid'
 
+export const createClaimIndexes = async (db) => {
+  await db.collection(CLAIMS_COLLECTION).createIndex({
+    createdAt: -1
+  })
+}
+
 export const getClaimByReference = async (db, reference) => {
   return db.collection(CLAIMS_COLLECTION).findOne({ reference }, { projection: { _id: 0 } })
 }
