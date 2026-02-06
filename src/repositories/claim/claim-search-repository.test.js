@@ -24,11 +24,11 @@ describe('claim-search-repository', () => {
         collection: jest.fn(() => collectionMock)
       }
       const collectionMock = {
-        aggregate: jest
-          .fn()
-          .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
-          })
+        aggregate: jest.fn().mockReturnValueOnce({
+          toArray: jest
+            .fn()
+            .mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
+        })
       }
 
       const search = null
@@ -56,7 +56,11 @@ describe('claim-search-repository', () => {
             toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
           })
           .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
+            toArray: jest
+              .fn()
+              .mockReturnValue([
+                { data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }
+              ])
           })
       }
 
@@ -84,11 +88,11 @@ describe('claim-search-repository', () => {
         collection: jest.fn(() => collectionMock)
       }
       const collectionMock = {
-        aggregate: jest
-          .fn()
-          .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
-          })
+        aggregate: jest.fn().mockReturnValueOnce({
+          toArray: jest
+            .fn()
+            .mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
+        })
       }
 
       const search = null
