@@ -31,7 +31,10 @@ describe('claim-search-repository', () => {
         })
       }
 
-      const search = null
+      const search = {
+        type: "reset",
+        text: ""
+      }
       const filter = null
       const offset = 0
       const limit = 30
