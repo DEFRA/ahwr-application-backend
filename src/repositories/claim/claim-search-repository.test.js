@@ -86,6 +86,37 @@ describe('claim-search-repository', () => {
       })
     })
 
+    it('returns total and claims when search type is appRef', async () => {
+      const dbMock = {
+        collection: jest.fn(() => collectionMock)
+      }
+      const collectionMock = {
+        aggregate: jest.fn().mockReturnValueOnce({
+          toArray: jest
+            .fn()
+            .mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
+        })
+      }
+
+      const search = { type: 'appRef', text: 'IAHW-ABCD-1234' }
+      const filter = null
+      const offset = 0
+      const limit = 30
+      const sort = { field: 'createdAt', direction: 'DESC' }
+
+      const result = await searchClaims(search, filter, offset, limit, dbMock, sort)
+
+      expect(result).toEqual({
+        claims: [{ reference: 'IAHW-ABCD-1234' }],
+        total: 50
+      })
+      expect(collectionMock.aggregate.mock.calls[0][0][0]).toEqual({
+        $match: {
+          applicationReference: { $options: 'i', $regex: 'IAHW-ABCD-1234' }
+        }
+      })
+    })
+
     it('returns total and claims if there a filter is provided', async () => {
       const dbMock = {
         collection: jest.fn(() => collectionMock)
