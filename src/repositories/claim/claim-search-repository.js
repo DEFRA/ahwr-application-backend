@@ -1,5 +1,5 @@
 import { startAndEndDate } from '../../lib/date-utils.js'
-import { CLAIMS_COLLECTION } from '../../constants/index.js'
+import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index.js'
 
 const MONGO_OP_BY_FILTER_OP = {
   eq: '$eq',
@@ -71,17 +71,24 @@ const applyClaimSearchConditions = (matchStage, search) => {
   }
 }
 
-const applyApplicationSearchConditions = (matchStage, search) => {
+const applyApplicationSearchConditions = async (db, matchStage, search) => {
   const { text, type } = search || {}
   if (!text || !type) {
     return
   }
 
   if (type === 'sbi') {
-    matchStage['application.organisation.sbi'] = {
-      $regex: text,
-      $options: 'i'
-    }
+    const result = await db
+      .collection(APPLICATION_COLLECTION)
+      .aggregate([
+        { $match: { 'organisation.sbi': { $regex: text, $options: 'i' } } },
+        { $project: { reference: 1 } }
+      ])
+      .toArray()
+
+    const applicationRefs = result.map((a) => a.reference)
+
+    matchStage['applicationReference'] = { $in: applicationRefs }
   }
 }
 
@@ -93,62 +100,49 @@ export const searchClaims = async (search, filter, offset, limit, db, sort = get
   }
 
   const claimMatchStage = {}
-  const appMatchStage = {}
 
   if (search) {
     if (APPLICATION_SEARCH_TYPES.has(search.type)) {
-      applyApplicationSearchConditions(appMatchStage, search)
+      await applyApplicationSearchConditions(db, claimMatchStage, search)
     } else {
       applyClaimSearchConditions(claimMatchStage, search)
+    }
+  }
+
+  if (filter) {
+    const mongoOp = MONGO_OP_BY_FILTER_OP[filter.op]
+    if (mongoOp) {
+      claimMatchStage[filter.field] = { [mongoOp]: filter.value }
     }
   }
 
   const pipeline = [
     { $match: claimMatchStage },
     {
-      $lookup: {
-        from: 'applications',
-        localField: 'applicationReference',
-        foreignField: 'reference',
-        as: 'application'
-      }
-    },
-    { $unwind: { path: '$application', preserveNullAndEmptyArrays: true } },
-    {
-      $addFields: {
-        'application.flags': {
-          $filter: {
-            input: '$application.flags',
-            as: 'flag',
-            cond: { $eq: ['$$flag.deleted', false] }
-          }
-        }
+      $facet: {
+        data: [
+          { $sort: evalSortField(sort) },
+          { $skip: offset },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: 'applications',
+              localField: 'applicationReference',
+              foreignField: 'reference',
+              as: 'application'
+            }
+          },
+          { $unwind: '$application' }
+        ],
+        total: [{ $count: 'total' }]
       }
     }
   ]
 
-  if (Object.keys(appMatchStage).length > 0) {
-    pipeline.push({ $match: appMatchStage })
+  const result = await db.collection(CLAIMS_COLLECTION).aggregate(pipeline).toArray()
+
+  return {
+    claims: result[0].data,
+    total: result[0].total[0]?.total || 0
   }
-
-  if (filter) {
-    const mongoOp = MONGO_OP_BY_FILTER_OP[filter.op]
-    if (mongoOp) {
-      pipeline.push({
-        $match: {
-          [filter.field]: { [mongoOp]: filter.value }
-        }
-      })
-    }
-  }
-
-  const countPipeline = [...pipeline, { $count: 'total' }]
-  const totalResult = await db.collection(CLAIMS_COLLECTION).aggregate(countPipeline).toArray()
-  const total = totalResult[0]?.total || 0
-
-  pipeline.push({ $sort: evalSortField(sort) }, { $skip: offset }, { $limit: limit })
-
-  const claims = await db.collection(CLAIMS_COLLECTION).aggregate(pipeline).toArray()
-
-  return { total, claims }
 }

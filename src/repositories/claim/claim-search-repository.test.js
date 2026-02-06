@@ -27,10 +27,7 @@ describe('claim-search-repository', () => {
         aggregate: jest
           .fn()
           .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ total: 50 }])
-          })
-          .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
           })
       }
 
@@ -56,10 +53,10 @@ describe('claim-search-repository', () => {
         aggregate: jest
           .fn()
           .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ total: 50 }])
+            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
           })
           .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
           })
       }
 
@@ -75,9 +72,9 @@ describe('claim-search-repository', () => {
         claims: [{ reference: 'IAHW-ABCD-1234' }],
         total: 50
       })
-      expect(collectionMock.aggregate.mock.calls[0][0][4]).toEqual({
+      expect(collectionMock.aggregate.mock.calls[0][0][0]).toEqual({
         $match: {
-          'application.organisation.sbi': { $options: 'i', $regex: '123456789' }
+          'organisation.sbi': { $options: 'i', $regex: '123456789' }
         }
       })
     })
@@ -90,10 +87,7 @@ describe('claim-search-repository', () => {
         aggregate: jest
           .fn()
           .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ total: 50 }])
-          })
-          .mockReturnValueOnce({
-            toArray: jest.fn().mockReturnValue([{ reference: 'IAHW-ABCD-1234' }])
+            toArray: jest.fn().mockReturnValue([{ data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }])
           })
       }
 
@@ -109,7 +103,7 @@ describe('claim-search-repository', () => {
         claims: [{ reference: 'IAHW-ABCD-1234' }],
         total: 50
       })
-      expect(collectionMock.aggregate.mock.calls[0][0][4]).toEqual({
+      expect(collectionMock.aggregate.mock.calls[0][0][0]).toEqual({
         $match: {
           [filter.field]: { [`$${filter.op}`]: filter.value }
         }

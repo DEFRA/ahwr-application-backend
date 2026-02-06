@@ -47,6 +47,9 @@ export const claimsHandlers = [
       },
       handler: async (request, h) => {
         const { search, filter, offset, limit, sort } = request.payload
+        console.log({
+          payload: request.payload
+        })
         const { total, claims } = await searchClaims(
           search,
           filter,
@@ -55,6 +58,9 @@ export const claimsHandlers = [
           request.db,
           sort
         )
+        console.log({
+          total
+        })
         return h.response({ total, claims }).code(StatusCodes.OK)
       }
     }
