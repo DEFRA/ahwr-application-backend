@@ -14,7 +14,6 @@ const MONGO_OP_BY_FILTER_OP = {
 }
 
 const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'])
-const APPLICATION_SEARCH_TYPES = new Set(['sbi'])
 
 const evalSortField = (sort) => {
   const direction = sort?.direction?.toUpperCase() === 'DESC' ? -1 : 1
@@ -38,9 +37,6 @@ const evalSortField = (sort) => {
 
 const applyClaimSearchConditions = (matchStage, search) => {
   const { text, type } = search || {}
-  if (!text || !type) {
-    return
-  }
 
   switch (type) {
     case 'ref':
@@ -71,25 +67,18 @@ const applyClaimSearchConditions = (matchStage, search) => {
   }
 }
 
-const applyApplicationSearchConditions = async (db, matchStage, search) => {
-  const { text, type } = search || {}
-  if (!text || !type) {
-    return
-  }
+const applyApplicationSearchConditions = async (db, matchStage, text) => {
+  const result = await db
+    .collection(APPLICATION_COLLECTION)
+    .aggregate([
+      { $match: { 'organisation.sbi': { $regex: text, $options: 'i' } } },
+      { $project: { reference: 1 } }
+    ])
+    .toArray()
 
-  if (type === 'sbi') {
-    const result = await db
-      .collection(APPLICATION_COLLECTION)
-      .aggregate([
-        { $match: { 'organisation.sbi': { $regex: text, $options: 'i' } } },
-        { $project: { reference: 1 } }
-      ])
-      .toArray()
+  const applicationRefs = result.map((a) => a.reference)
 
-    const applicationRefs = result.map((a) => a.reference)
-
-    matchStage['applicationReference'] = { $in: applicationRefs }
-  }
+  matchStage['applicationReference'] = { $in: applicationRefs }
 }
 
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
@@ -101,9 +90,9 @@ export const searchClaims = async (search, filter, offset, limit, db, sort = get
 
   const claimMatchStage = {}
 
-  if (search) {
-    if (APPLICATION_SEARCH_TYPES.has(search.type)) {
-      await applyApplicationSearchConditions(db, claimMatchStage, search)
+  if (search?.text && search?.type) {
+    if (search.type === 'sbi') {
+      await applyApplicationSearchConditions(db, claimMatchStage, search.text)
     } else {
       applyClaimSearchConditions(claimMatchStage, search)
     }
