@@ -10,6 +10,7 @@ describe('Get applications', () => {
 
   beforeEach(async () => {
     await server.db.collection('applications').deleteMany({})
+    await server.db.collection('owapplications').deleteMany({})
     await server.db.collection('applications').insertOne(application)
   })
 
