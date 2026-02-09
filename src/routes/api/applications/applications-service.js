@@ -105,10 +105,20 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 export const getApplications = async ({ sbi, logger, db }) => {
   logger.setBindings({ sbi })
 
-  const result = await appRepo.getApplicationsBySbi(db, sbi)
+  const nwResult = (await appRepo.getApplicationsBySbi(db, sbi)).map((app) =>
+    mapApplicationForResponse(app, 'EE')
+  )
 
-  return result.map((app) => ({
-    type: 'EE',
+  const owResult = (await owAppRepo.getOWApplicationsBySbi(db, sbi)).map((app) =>
+    mapApplicationForResponse(app, 'VV')
+  )
+
+  return [...nwResult, ...owResult]
+}
+
+const mapApplicationForResponse = (app, type) => {
+  return {
+    type,
     reference: app.reference,
     data: app.data,
     status: app.status,
@@ -116,7 +126,7 @@ export const getApplications = async ({ sbi, logger, db }) => {
     organisation: app.organisation,
     redacted: app.redacted,
     flags: app.flags
-  }))
+  }
 }
 
 export const getClaims = async ({ db, logger, applicationReference, typeOfLivestock }) => {
