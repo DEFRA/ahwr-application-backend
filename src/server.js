@@ -1,5 +1,4 @@
 import Hapi from '@hapi/hapi'
-import Boom from '@hapi/boom'
 import { secureContext } from '@defra/hapi-secure-context'
 import { config } from './config/config.js'
 import { router } from './plugins/router.js'
@@ -19,6 +18,7 @@ import {
 } from './messaging/fcp-messaging-service.js'
 import { startPulseScheduling, stopPulseScheduling } from './scheduled/cron-scheduler.js'
 import { getLogger } from './logging/logger.js'
+import { authPlugin } from './plugins/auth.js'
 
 async function createServer(options) {
   setupProxy()
@@ -49,29 +49,6 @@ async function createServer(options) {
     }
   })
 
-  // Setup credentials
-  const API_KEYS = {
-    [process.env.PUBLIC_UI_API_KEY]: 'public-ui',
-    [process.env.BACKOFFICE_UI_API_KEY]: 'backoffice-ui'
-  }
-
-  const apiKeyScheme = () => ({
-    authenticate(request, h) {
-      const apiKey = request.headers['x-api-key']
-      const service = API_KEYS[apiKey]
-
-      if (!apiKey || !service) {
-        throw Boom.unauthorized('Invalid API key')
-      }
-
-      return h.authenticated({ credentials: { app: service } })
-    }
-  })
-
-  server.auth.scheme('api-key', apiKeyScheme)
-  server.auth.strategy('service-key', 'api-key')
-  server.auth.default('service-key') // apply to all routes
-
   // Hapi Plugins:
   // requestLogger  - automatically logs incoming requests
   // requestTracing - trace header logging and propagation
@@ -88,6 +65,7 @@ async function createServer(options) {
       plugin: mongoDb,
       options: config.get('mongo')
     },
+    authPlugin,
     router
   ])
 
