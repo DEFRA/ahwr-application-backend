@@ -64,6 +64,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 
   if (application.data.offerStatus === 'accepted') {
     try {
+      const orgEmail = application.organisation.orgEmail
       await publishDocumentRequestEvent(logger, {
         reference: application.reference,
         sbi: application.organisation.sbi,
@@ -72,9 +73,9 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
         email: application.organisation.email,
         farmerName: application.organisation.farmerName,
         name: application.organisation.name,
-        orgEmail: application.organisation.orgEmail,
         crn: application.organisation.crn,
-        scheme: AHWR_SCHEME
+        scheme: AHWR_SCHEME,
+        ...(orgEmail && { orgEmail })
       })
     } catch (error) {
       logger.error(error, 'Failed to request application document generation')
