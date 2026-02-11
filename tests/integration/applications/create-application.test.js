@@ -34,7 +34,8 @@ describe('Create application', () => {
         email: 'business@email.com',
         userType: 'newUser'
       }
-    }
+    },
+    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
   }
 
   test('successfully creates a new application', async () => {

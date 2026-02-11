@@ -21,7 +21,7 @@ jest.mock('ffc-ahwr-common-library', () => {
 let server
 
 export const setupTestEnvironment = async () => {
-  server = await startServer()
+  server = await startServer({ testPort: 6000 })
   return server
 }
 

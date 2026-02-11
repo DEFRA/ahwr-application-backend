@@ -23,7 +23,8 @@ describe('Get application claims', () => {
   test('successfully retrieves claims for a given application and livestock', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: buildUrl('IAHW-G3CL-V59P', 'beef')
+      url: buildUrl('IAHW-G3CL-V59P', 'beef'),
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     })
 
     expect(res.statusCode).toBe(200)
@@ -55,7 +56,8 @@ describe('Get application claims', () => {
   test('returns no claims when an application has no claims for livestock', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: buildUrl('IAHW-G3CL-V59P', 'sheep')
+      url: buildUrl('IAHW-G3CL-V59P', 'sheep'),
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     })
 
     expect(res.statusCode).toBe(200)

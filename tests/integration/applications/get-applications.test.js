@@ -20,7 +20,8 @@ describe('Get applications', () => {
 
   const options = {
     method: 'GET',
-    url: '/api/applications'
+    url: '/api/applications',
+    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
   }
 
   test('successfully retrieves applications for a given sbi', async () => {

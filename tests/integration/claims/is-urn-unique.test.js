@@ -26,7 +26,8 @@ describe('Is URN Unique', () => {
 
   const options = {
     method: 'POST',
-    url: '/api/claims/is-urn-unique'
+    url: '/api/claims/is-urn-unique',
+    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
   }
 
   test('returns urn is unique when urn does not exist on claims for sbi', async () => {

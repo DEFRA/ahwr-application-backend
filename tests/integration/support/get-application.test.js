@@ -23,7 +23,8 @@ describe('Get applications', () => {
   test('successfully retrieves application', async () => {
     const options = {
       method: 'GET',
-      url: '/api/support/applications/IAHW-G3CL-V59P'
+      url: '/api/support/applications/IAHW-G3CL-V59P',
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     }
     const res = await server.inject({
       ...options
@@ -89,7 +90,8 @@ describe('Get applications', () => {
   test('successfully retrieves OW application', async () => {
     const options = {
       method: 'GET',
-      url: '/api/support/applications/AHWR-B571-6E79'
+      url: '/api/support/applications/AHWR-B571-6E79',
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     }
     const res = await server.inject({
       ...options

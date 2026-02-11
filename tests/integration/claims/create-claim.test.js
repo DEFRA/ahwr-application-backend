@@ -45,7 +45,8 @@ describe('Create claim', () => {
       },
       type: 'REVIEW',
       createdBy: 'admin'
-    }
+    },
+    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
   }
 
   test('successfully creates a new claim with herd', async () => {

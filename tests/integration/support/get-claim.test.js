@@ -20,7 +20,8 @@ describe('Get claim', () => {
   test('returns claim when claim reference matches claim in db', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: '/api/support/claims/REBC-VA4R-TRL7'
+      url: '/api/support/claims/REBC-VA4R-TRL7',
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     })
 
     expect(res.statusCode).toBe(200)

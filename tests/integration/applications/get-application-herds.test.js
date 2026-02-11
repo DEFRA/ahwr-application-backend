@@ -22,7 +22,8 @@ describe('Get application herds', () => {
   test('successfully retrieves herds for a given application and species', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: buildUrl('IAHW-G3CL-V59P', 'beef')
+      url: buildUrl('IAHW-G3CL-V59P', 'beef'),
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     })
 
     expect(res.statusCode).toBe(200)
@@ -43,7 +44,8 @@ describe('Get application herds', () => {
   test('returns no herds when an application has no herds for species', async () => {
     const res = await server.inject({
       method: 'GET',
-      url: buildUrl('IAHW-G3CL-V59P', 'pigs')
+      url: buildUrl('IAHW-G3CL-V59P', 'pigs'),
+      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
     })
 
     expect(res.statusCode).toBe(200)

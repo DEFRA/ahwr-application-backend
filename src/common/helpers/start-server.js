@@ -1,8 +1,8 @@
 import { config } from '../../config/config.js'
 import { createServer } from '../../server.js'
 
-export async function startServer() {
-  const server = await createServer()
+export async function startServer(options) {
+  const server = await createServer(options)
   await server.start()
 
   server.logger.info('Server started successfully')
