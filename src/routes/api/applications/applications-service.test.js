@@ -423,6 +423,61 @@ describe('applications-service', () => {
           }
         })
       })
+
+      it('should create application when orgEmail is null', async () => {
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue([])
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
+        const request = {
+          ...inputRequest,
+          organisation: {
+            ...inputRequest.organisation,
+            orgEmail: null
+          }
+        }
+
+        await createApplication({
+          applicationRequest: request,
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(appRepo.createApplication).toHaveBeenCalledWith(expect.anything(), {
+          ...expectedApplication,
+          organisation: { ...expectedApplication.organisation, orgEmail: null }
+        })
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: {
+            ...expectedApplication,
+            id: '690e04e10341b23a7d3cb9e5',
+            organisation: { ...expectedApplication.organisation, orgEmail: null }
+          },
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          crn: '1101489790',
+          name: 'High Oustley Farm',
+          reference: 'IAHW-8ZPZ-8CLI',
+          sbi: '118409263',
+          startDate: expect.any(String),
+          userType: 'newUser',
+          scheme: 'ahwr'
+        })
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: accepted sbi:118409263',
+            outcome: 'true',
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
+      })
     })
   })
 
