@@ -7,7 +7,8 @@ export const authPlugin = {
       // Setup credentials
       const API_KEYS = {
         [process.env.PUBLIC_UI_API_KEY]: 'public-ui',
-        [process.env.BACKOFFICE_UI_API_KEY]: 'backoffice-ui'
+        [process.env.BACKOFFICE_UI_API_KEY]: 'backoffice-ui',
+        [process.env.MESSAGE_GENERATOR_API_KEY]: 'message-generator'
       }
 
       const apiKeyScheme = () => ({
