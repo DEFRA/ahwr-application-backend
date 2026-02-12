@@ -121,7 +121,18 @@ export const searchClaims = async (search, filter, offset, limit, db, sort = get
               as: 'application'
             }
           },
-          { $unwind: '$application' }
+          { $unwind: '$application' },
+          {
+            $set: {
+              'application.flags': {
+                $filter: {
+                  input: '$application.flags',
+                  as: 'flag',
+                  cond: { $ne: ['$$flag.deleted', true] }
+                }
+              }
+            }
+          }
         ],
         total: [{ $count: 'total' }]
       }
