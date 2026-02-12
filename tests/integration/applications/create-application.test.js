@@ -1,5 +1,9 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
+import { config } from '../../../src/config/config.js'
+import { StatusCodes } from 'http-status-codes'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 jest.mock('../../../src/event-publisher/index.js') //TODO remove mock
 
@@ -34,13 +38,14 @@ describe('Create application', () => {
         email: 'business@email.com',
         userType: 'newUser'
       }
-    }
+    },
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('successfully creates a new application', async () => {
     const res = await server.inject(options)
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       applicationReference: 'IAHW-5C1C-DD6Z'
     })
@@ -60,7 +65,7 @@ describe('Create application', () => {
       payload: { ...options.payload, organisation: fullOrganisation }
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       applicationReference: 'IAHW-5C1C-DD6Z'
     })
@@ -72,7 +77,7 @@ describe('Create application', () => {
       payload: { ...options.payload, offerStatus: undefined }
     })
 
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST)
     expect(JSON.parse(res.payload)).toEqual({
       error: 'Bad Request',
       message: '"offerStatus" is required',
@@ -85,11 +90,29 @@ describe('Create application', () => {
 
     const res = await server.inject(options)
 
-    expect(res.statusCode).toBe(500)
+    expect(res.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
     expect(JSON.parse(res.payload)).toEqual({
       error: 'Internal Server Error',
       message: 'An internal server error occurred',
       statusCode: 500
     })
+  })
+
+  test('should return not authorised when no api key sent', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: {}
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
+  })
+
+  test('should return not authorised when when api key incorrect', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: { 'x-api-key': 'will-not-be-this' }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
 })

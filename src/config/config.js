@@ -9,6 +9,7 @@ const isProduction = process.env.NODE_ENV === 'production'
 const usePrettyPrint = process.env.USE_PRETTY_PRINT === 'true'
 const msgTypePrefix = 'uk.gov.ffc.ahwr'
 const defaultServiceUri = 'http://localhost:3002'
+const defaultApiKey = 'c19fcb0d-a6d2-4d9e-9325-16d44ddc0724'
 
 const config = convict({
   serviceVersion: {
@@ -29,6 +30,36 @@ const config = convict({
     format: 'port',
     default: 3001,
     env: 'PORT'
+  },
+  apiKeys: {
+    publicUiApiKey: {
+      doc: 'Api key for the public ui',
+      format: String,
+      default: defaultApiKey,
+      sensitive: true,
+      env: 'PUBLIC_UI_API_KEY'
+    },
+    applicationBackendApiKey: {
+      doc: 'Api key for the public ui',
+      format: String,
+      default: defaultApiKey,
+      sensitive: true,
+      env: 'APPLICATION_BACKEND_API_KEY'
+    },
+    backofficeUiApiKey: {
+      doc: 'Api key for the backoffice',
+      format: String,
+      default: defaultApiKey,
+      sensitive: true,
+      env: 'BACKOFFICE_UI_API_KEY'
+    },
+    messageGeneratorApiKey: {
+      doc: 'Api key for the message generator',
+      format: String,
+      default: defaultApiKey,
+      sensitive: true,
+      env: 'MESSAGE_GENERATOR_API_KEY'
+    }
   },
   serviceName: {
     doc: 'Api Service Name',

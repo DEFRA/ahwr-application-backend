@@ -1,5 +1,9 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { reviewClaim } from '../../data/claim-data.js'
+import { config } from '../../../src/config/config.js'
+import { StatusCodes } from 'http-status-codes'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get claim', () => {
   let server
@@ -17,13 +21,18 @@ describe('Get claim', () => {
     await teardownTestEnvironment()
   })
 
+  const options = {
+    method: 'GET',
+    url: '/api/claims/REBC-CA1D-TRL2',
+    headers: { 'x-api-key': backofficeUiApiKey }
+  }
   test('returns claim when claim reference matches claim in db', async () => {
     const res = await server.inject({
-      method: 'GET',
+      ...options,
       url: '/api/claims/REBC-VA4R-TRL7'
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       applicationReference: 'IAHW-G3CL-V59P',
       createdAt: '2025-04-24T08:24:24.092Z',
@@ -81,16 +90,31 @@ describe('Get claim', () => {
   })
 
   test('returns 404 when claim reference does not match claim in db', async () => {
-    const res = await server.inject({
-      method: 'GET',
-      url: '/api/claims/REBC-CA1D-TRL2'
-    })
+    const res = await server.inject(options)
 
-    expect(res.statusCode).toBe(404)
+    expect(res.statusCode).toBe(StatusCodes.NOT_FOUND)
     expect(JSON.parse(res.payload)).toEqual({
       error: 'Not Found',
       message: 'Claim not found',
       statusCode: 404
     })
+  })
+
+  test('should return not authorised when no api key sent', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: {}
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
+  })
+
+  test('should return not authorised when when api key incorrect', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: { 'x-api-key': 'will-not-be-this' }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
 })

@@ -2,6 +2,10 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
 import { reviewClaim } from '../../data/claim-data.js'
+import { config } from '../../../src/config/config.js'
+import { StatusCodes } from 'http-status-codes'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Is URN Unique', () => {
   let server
@@ -26,7 +30,8 @@ describe('Is URN Unique', () => {
 
   const options = {
     method: 'POST',
-    url: '/api/claims/is-urn-unique'
+    url: '/api/claims/is-urn-unique',
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('returns urn is unique when urn does not exist on claims for sbi', async () => {
@@ -38,7 +43,7 @@ describe('Is URN Unique', () => {
       }
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       isURNUnique: true
     })
@@ -53,7 +58,7 @@ describe('Is URN Unique', () => {
       }
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       isURNUnique: false
     })
@@ -68,9 +73,27 @@ describe('Is URN Unique', () => {
       }
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       isURNUnique: false
     })
+  })
+
+  test('should return not authorised when no api key sent', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: {}
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
+  })
+
+  test('should return not authorised when when api key incorrect', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: { 'x-api-key': 'will-not-be-this' }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
 })

@@ -1,5 +1,9 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
+import { config } from '../../../src/config/config.js'
+import { StatusCodes } from 'http-status-codes'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
 describe('Create claim', () => {
@@ -45,13 +49,14 @@ describe('Create claim', () => {
       },
       type: 'REVIEW',
       createdBy: 'admin'
-    }
+    },
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('successfully creates a new claim with herd', async () => {
     const res = await server.inject(options)
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       _id: expect.any(String),
       applicationReference: 'IAHW-G3CL-V59P',
@@ -101,11 +106,29 @@ describe('Create claim', () => {
       }
     })
 
-    expect(res.statusCode).toBe(404)
+    expect(res.statusCode).toBe(StatusCodes.NOT_FOUND)
     expect(JSON.parse(res.payload)).toEqual({
       error: 'Not Found',
       message: 'Application not found',
       statusCode: 404
     })
+  })
+
+  test('should return not authorised when no api key sent', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: {}
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
+  })
+
+  test('should return not authorised when when api key incorrect', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: { 'x-api-key': 'will-not-be-this' }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
 })

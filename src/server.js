@@ -18,12 +18,14 @@ import {
 } from './messaging/fcp-messaging-service.js'
 import { startPulseScheduling, stopPulseScheduling } from './scheduled/cron-scheduler.js'
 import { getLogger } from './logging/logger.js'
+import { authPlugin } from './plugins/auth.js'
 
-async function createServer() {
+async function createServer(options) {
   setupProxy()
+  const { testPort } = options ?? {}
   const server = Hapi.server({
     host: config.get('host'),
-    port: config.get('port'),
+    port: testPort ?? config.get('port'),
     routes: {
       validate: {
         options: {
@@ -63,6 +65,7 @@ async function createServer() {
       plugin: mongoDb,
       options: config.get('mongo')
     },
+    authPlugin,
     router
   ])
 

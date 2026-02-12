@@ -1,6 +1,10 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
+import { config } from '../../../src/config/config.js'
+import { StatusCodes } from 'http-status-codes'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get applications', () => {
   let server
@@ -20,11 +24,13 @@ describe('Get applications', () => {
     await teardownTestEnvironment()
   })
 
+  const options = {
+    method: 'GET',
+    url: '/api/support/applications/IAHW-G3CL-V59P',
+    headers: { 'x-api-key': backofficeUiApiKey }
+  }
+
   test('successfully retrieves application', async () => {
-    const options = {
-      method: 'GET',
-      url: '/api/support/applications/IAHW-G3CL-V59P'
-    }
     const res = await server.inject({
       ...options
     })
@@ -87,15 +93,12 @@ describe('Get applications', () => {
   })
 
   test('successfully retrieves OW application', async () => {
-    const options = {
-      method: 'GET',
-      url: '/api/support/applications/AHWR-B571-6E79'
-    }
     const res = await server.inject({
-      ...options
+      ...options,
+      url: '/api/support/applications/AHWR-B571-6E79'
     })
 
-    expect(res.statusCode).toBe(200)
+    expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload)).toEqual({
       _id: expect.any(String),
       claimed: false,
@@ -165,5 +168,23 @@ describe('Get applications', () => {
       updatedAt: '2024-11-20T13:51:24.283Z',
       updatedBy: 'admin'
     })
+  })
+
+  test('should return not authorised when no api key sent', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: {}
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
+  })
+
+  test('should return not authorised when when api key incorrect', async () => {
+    const res = await server.inject({
+      ...options,
+      headers: { 'x-api-key': 'will-not-be-this' }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
 })
