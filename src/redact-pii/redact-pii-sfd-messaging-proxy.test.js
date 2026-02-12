@@ -1,6 +1,7 @@
 import wreck from '@hapi/wreck'
 import { updateApplicationRedactRecords } from './update-application-redact-records'
 import { redactSFDMessagingProxyPII } from './redact-pii-sfd-messaging-proxy'
+import { config } from '../config/config'
 
 jest.mock('@hapi/wreck')
 jest.mock('./update-application-redact-records')
@@ -27,7 +28,8 @@ describe('callSfdMessagingProxyRedactPII', () => {
       json: true,
       payload: {
         agreementsToRedact: [{ reference: 'AHWR-123' }, { reference: 'AHWR-456' }]
-      }
+      },
+      headers: { 'x-api-key': config.get('apiKeys.applicationBackendApiKey') }
     })
 
     expect(updateApplicationRedactRecords).not.toHaveBeenCalled()

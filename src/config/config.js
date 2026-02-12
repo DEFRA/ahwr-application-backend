@@ -39,6 +39,13 @@ const config = convict({
       sensitive: true,
       env: 'PUBLIC_UI_API_KEY'
     },
+    applicationBackendApiKey: {
+      doc: 'Api key for the public ui',
+      format: String,
+      default: defaultApiKey,
+      sensitive: true,
+      env: 'APPLICATION_BACKEND_API_KEY'
+    },
     backofficeUiApiKey: {
       doc: 'Api key for the backoffice',
       format: String,

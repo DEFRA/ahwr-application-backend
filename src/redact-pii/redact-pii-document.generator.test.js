@@ -1,6 +1,7 @@
 import wreck from '@hapi/wreck'
 import { redactDocumentGeneratorPII } from './redact-pii-document-generator'
 import { updateApplicationRedactRecords } from './update-application-redact-records'
+import { config } from '../config/config'
 
 jest.mock('@hapi/wreck', () => ({
   post: jest.fn()
@@ -36,7 +37,8 @@ describe('redact-pii-document-generator', () => {
           { reference: 'AHWR-123', sbi: 'SBI001' },
           { reference: 'AHWR-456', sbi: 'SBI002' }
         ]
-      }
+      },
+      headers: { 'x-api-key': config.get('apiKeys.applicationBackendApiKey') }
     })
     expect(updateApplicationRedactRecords).not.toHaveBeenCalled()
     expect(logger.setBindings).not.toHaveBeenCalled()

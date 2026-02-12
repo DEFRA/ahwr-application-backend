@@ -12,7 +12,8 @@ export const redactMessageGeneratorPII = async (agreementsToRedact, redactProgre
   try {
     await wreck.post(endpoint, {
       json: true,
-      payload: { agreementsToRedact: agreementsToRedactPayload }
+      payload: { agreementsToRedact: agreementsToRedactPayload },
+      headers: { 'x-api-key': config.get('apiKeys.applicationBackendApiKey') }
     })
   } catch (err) {
     logger.setBindings({ err, endpoint })
