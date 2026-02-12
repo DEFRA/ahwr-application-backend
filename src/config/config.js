@@ -36,18 +36,21 @@ const config = convict({
       doc: 'Api key for the public ui',
       format: String,
       default: defaultApiKey,
+      sensitive: true,
       env: 'PUBLIC_UI_API_KEY'
     },
     backofficeUiApiKey: {
       doc: 'Api key for the backoffice',
       format: String,
       default: defaultApiKey,
+      sensitive: true,
       env: 'BACKOFFICE_UI_API_KEY'
     },
     messageGeneratorApiKey: {
       doc: 'Api key for the message generator',
       format: String,
       default: defaultApiKey,
+      sensitive: true,
       env: 'MESSAGE_GENERATOR_API_KEY'
     }
   },
