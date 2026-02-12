@@ -1,5 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { beefHerd, sheepHerd } from '../../data/herd-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get application herds', () => {
   let server
@@ -23,7 +26,7 @@ describe('Get application herds', () => {
     const res = await server.inject({
       method: 'GET',
       url: buildUrl('IAHW-G3CL-V59P', 'beef'),
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     })
 
     expect(res.statusCode).toBe(200)
@@ -45,7 +48,7 @@ describe('Get application herds', () => {
     const res = await server.inject({
       method: 'GET',
       url: buildUrl('IAHW-G3CL-V59P', 'pigs'),
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     })
 
     expect(res.statusCode).toBe(200)

@@ -1,5 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { reviewClaim } from '../../data/claim-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get claim', () => {
   let server
@@ -21,7 +24,7 @@ describe('Get claim', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/claims/REBC-VA4R-TRL7',
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     })
 
     expect(res.statusCode).toBe(200)
@@ -85,7 +88,7 @@ describe('Get claim', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/claims/REBC-CA1D-TRL2',
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     })
 
     expect(res.statusCode).toBe(404)

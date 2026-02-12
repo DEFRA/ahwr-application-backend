@@ -1,5 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 jest.mock('../../../src/event-publisher/index.js') //TODO remove mock
 
@@ -35,7 +38,7 @@ describe('Create application', () => {
         userType: 'newUser'
       }
     },
-    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('successfully creates a new application', async () => {

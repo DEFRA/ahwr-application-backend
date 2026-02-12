@@ -1,6 +1,9 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get applications', () => {
   let server
@@ -24,7 +27,7 @@ describe('Get applications', () => {
     const options = {
       method: 'GET',
       url: '/api/support/applications/IAHW-G3CL-V59P',
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     }
     const res = await server.inject({
       ...options
@@ -91,7 +94,7 @@ describe('Get applications', () => {
     const options = {
       method: 'GET',
       url: '/api/support/applications/AHWR-B571-6E79',
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     }
     const res = await server.inject({
       ...options

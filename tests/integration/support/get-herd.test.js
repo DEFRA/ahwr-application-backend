@@ -1,5 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { beefHerdVersion1, beefHerdVersion2 } from '../../data/herd-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Get application herds', () => {
   let server
@@ -21,7 +24,7 @@ describe('Get application herds', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/support/herds/0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-      headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+      headers: { 'x-api-key': backofficeUiApiKey }
     })
 
     expect(res.statusCode).toBe(200)

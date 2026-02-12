@@ -2,6 +2,9 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
 import { reviewClaim } from '../../data/claim-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 describe('Is URN Unique', () => {
   let server
@@ -27,7 +30,7 @@ describe('Is URN Unique', () => {
   const options = {
     method: 'POST',
     url: '/api/claims/is-urn-unique',
-    headers: { 'x-api-key': process.env.BACKOFFICE_UI_API_KEY }
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('returns urn is unique when urn does not exist on claims for sbi', async () => {

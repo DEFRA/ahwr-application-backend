@@ -1,5 +1,8 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
+import { config } from '../../../src/config/config.js'
+
+const { backofficeUiApiKey } = config.get('apiKeys')
 
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
 describe('Create claim', () => {
@@ -46,7 +49,7 @@ describe('Create claim', () => {
       type: 'REVIEW',
       createdBy: 'admin'
     },
-    headers: { 'x-api-key': '446dcdbe-e02c-4d16-a266-001bbbd5f089' }
+    headers: { 'x-api-key': backofficeUiApiKey }
   }
 
   test('successfully creates a new claim with herd', async () => {
