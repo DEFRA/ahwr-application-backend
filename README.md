@@ -1,6 +1,6 @@
 # ahwr-application-backend
 
-Core delivery platform Node.js Backend Template.
+Created from the Core delivery platform Node.js Backend Template.
 
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
@@ -25,6 +25,18 @@ Core delivery platform Node.js Backend Template.
   - [SonarCloud](#sonarcloud)
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
+
+# Service Purpose
+
+This service is the main backend for AHWR and handles the CRUD updates for applications, claims, herds and flags.
+API endpoints are provided for the public and internal frontends to interact with the data.
+
+# Service features
+
+- Provides API endpoints for the public and internal frontends to interact with the data
+- Processes incoming messages from an SQS queue to update the status of claims as needed
+- Emits outbound events to various SNS topics to notify other services of changes to applications, claims, herds and flags
+- Runs scheduled tasks to check for any claims that have been in a ON_HOLD status for over 24 hours and updates their status to READY_TO_PAY
 
 ## Requirements
 
@@ -58,20 +70,18 @@ To run the application in `development` mode run:
 npm run dev
 ```
 
+OR to run dockerised to mimic production environment run:
+
+```bash
+./scripts/start.sh
+```
+
 ### Testing
 
 To test the application run:
 
 ```bash
 npm run test
-```
-
-### Production
-
-To mimic the application running in `production` mode locally run:
-
-```bash
-npm start
 ```
 
 ### Npm scripts
@@ -106,11 +116,36 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+| Endpoint                                               | Description                                                                         |
+| :----------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| `GET: /health`                                         | Health                                                                              |
+| `GET: /api/support/applications/{reference}`           | Request DB view of a given application, for support area in backoffice              |
+| `GET: /api/support/claims/{reference}`                 | Request DB view of a given claim, for support area in backoffice                    |
+| `GET: /api/support/herds/{id}`                         | Request DB view of a given herd, for support area in backoffice                     |
+| `GET: /api/applications/{oldWorldAppRef}/history`      | Request history for a specific old world application                                |
+| `GET: /api/claims/{claimRef}/history`                  | Request history for a specific claim                                                |
+| `PUT: /api/applications/{ref}`                         | Update status of old world application. <Deprecated>                                |
+| `GET: /api/applications/contact-history/{ref}`         | Request contact history for a specific application                                  |
+| `PUT: /api/applications/contact-history`               | Potentially update contact history for a specific application                       |
+| `GET: /api/applications/latest-contact-details/{ref}`  | Request latest contact details for an application                                   |
+| `POST: /api/applications`                              | Create a new application                                                            |
+| `GET: /api/applications`                               | Get all applications for a specific SBI                                             |
+| `GET: /api/applications/{applicationReference}/claims` | Get all claims for a specific application                                           |
+| `GET: /api/applications/{applicationReference}/herds`  | Get all herds for a specific application                                            |
+| `GET: /api/applications/{applicationReference}`        | Get a specific application                                                          |
+| `POST: /api/applications/search`                       | Search for applications using specific criteria                                     |
+| `PUT: /api/applications/{reference}/data`              | Update data for a specific application                                              |
+| `PUT: /api/applications/{ref}/eligible-pii-redaction`  | Update eligibility for PII redaction for a specific application                     |
+| `GET: /api/claims/{reference}`                         | Get a specific claim by reference                                                   |
+| `POST: /api/claims/search`                             | Search for claims using specific criteria                                           |
+| `POST: /api/claims/is-urn-unique`                      | Check if the Unique reference has been used for any previous claims for a given SBI |
+| `POST: /api/claims`                                    | Create a new claim                                                                  |
+| `PUT: /api/claims/update-by-reference`                 | Update the status of a claim                                                        |
+| `PUT: /api/claims/{reference}/data`                    | Update data for a specific claim                                                    |
+| `PATCH: /api/flags/{flagId}/delete`                    | Mark a flag as deleted                                                              |
+| `GET: /api/flags`                                      | Get all the lags that exist                                                         |
+| `POST: /api/applications/{ref}/flag`                   | Create a new flag against the given application reference                           |
+| `DELETE: /api/cleanup`                                 | Cleanup (delete) data for a given SBI, as used by performance tests etc             |
 
 ## Development helpers
 
@@ -228,7 +263,8 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 
 ### SonarCloud
 
-Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
+Sonarcoud is enabled for this repository. All pull requests will be analysed.
+You can view the reports at [Sonarcloud](https://sonarcloud.io/project/overview?id=DEFRA_ahwr-application-backend)
 
 ## Licence
 
