@@ -3,13 +3,17 @@ import { beefHerdVersion1, beefHerdVersion2 } from '../../data/herd-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Get application herds', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'GET',
+      url: '/api/support/herds/0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -20,12 +24,6 @@ describe('Get application herds', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'GET',
-    url: '/api/support/herds/0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('successfully retrieves herd', async () => {
     const res = await server.inject(options)

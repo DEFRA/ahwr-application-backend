@@ -1,0 +1,46 @@
+import { config, defaultApiKey } from '../config/config.js'
+import { authPlugin } from './auth.js'
+
+describe('auth', () => {
+  let mockServer
+
+  beforeEach(() => {
+    mockServer = {
+      auth: {
+        scheme: jest.fn(),
+        strategy: jest.fn(),
+        default: jest.fn()
+      }
+    }
+    jest.clearAllMocks()
+  })
+
+  it('does NOT register API keys that are left at default', () => {
+    let keyCheckFunction
+    const mockAuthenticated = jest.fn()
+    mockServer.auth.scheme.mockImplementation((key, schemeFunction) => {
+      keyCheckFunction = schemeFunction
+    })
+    jest.spyOn(config, 'get').mockReturnValue({
+      publicUiApiKey: 'overridden',
+      backofficeUiApiKey: defaultApiKey,
+      messageGeneratorApiKey: defaultApiKey,
+      testsApiKey: defaultApiKey
+    })
+
+    authPlugin.plugin.register(mockServer, {})
+
+    expect(keyCheckFunction).toBeDefined()
+    keyCheckFunction().authenticate(
+      { headers: { 'x-api-key': 'overridden' } },
+      { authenticated: mockAuthenticated }
+    )
+    expect(mockAuthenticated).toHaveBeenCalledWith({ credentials: { app: 'public-ui' } })
+    expect(() =>
+      keyCheckFunction().authenticate(
+        { headers: { 'x-api-key': defaultApiKey } },
+        { authenticated: mockAuthenticated }
+      )
+    ).toThrow('Invalid API key')
+  })
+})

@@ -3,13 +3,17 @@ import { application } from '../../data/application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Get applications', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'GET',
+      url: '/api/applications',
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -21,12 +25,6 @@ describe('Get applications', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'GET',
-    url: '/api/applications',
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('successfully retrieves applications for a given sbi', async () => {
     const res = await server.inject({

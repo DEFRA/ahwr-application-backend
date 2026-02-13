@@ -3,14 +3,42 @@ import { application } from '../../data/application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
 describe('Create claim', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'POST',
+      url: '/api/claims',
+      payload: {
+        applicationReference: 'IAHW-G3CL-V59P',
+        reference: 'TEMP-CLAIM-O9UD-0025',
+        data: {
+          typeOfLivestock: 'sheep',
+          dateOfVisit: '2025-10-20T00:00:00.000Z',
+          dateOfTesting: '2024-01-22T00:00:00.000Z',
+          vetsName: 'Afshin',
+          vetRCVSNumber: 'AK-2024',
+          laboratoryURN: 'AK-2024-39',
+          numberAnimalsTested: 30,
+          speciesNumbers: 'yes',
+          herd: {
+            id: '123456789',
+            version: 1,
+            name: 'Sheep herd 2',
+            cph: 'someCph',
+            reasons: ['reasonOne', 'reasonTwo'],
+            same: 'yes'
+          }
+        },
+        type: 'REVIEW',
+        createdBy: 'admin'
+      },
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -22,36 +50,6 @@ describe('Create claim', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'POST',
-    url: '/api/claims',
-    payload: {
-      applicationReference: 'IAHW-G3CL-V59P',
-      reference: 'TEMP-CLAIM-O9UD-0025',
-      data: {
-        typeOfLivestock: 'sheep',
-        dateOfVisit: '2025-10-20T00:00:00.000Z',
-        dateOfTesting: '2024-01-22T00:00:00.000Z',
-        vetsName: 'Afshin',
-        vetRCVSNumber: 'AK-2024',
-        laboratoryURN: 'AK-2024-39',
-        numberAnimalsTested: 30,
-        speciesNumbers: 'yes',
-        herd: {
-          id: '123456789',
-          version: 1,
-          name: 'Sheep herd 2',
-          cph: 'someCph',
-          reasons: ['reasonOne', 'reasonTwo'],
-          same: 'yes'
-        }
-      },
-      type: 'REVIEW',
-      createdBy: 'admin'
-    },
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('successfully creates a new claim with herd', async () => {
     const res = await server.inject(options)

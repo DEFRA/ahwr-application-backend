@@ -3,15 +3,33 @@ import { application } from '../../data/application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 jest.mock('../../../src/event-publisher/index.js') //TODO remove mock
 
 describe('Create application', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'POST',
+      url: '/api/applications',
+      payload: {
+        reference: 'TEMP-5C1C-DD6Z',
+        confirmCheckDetails: 'yes',
+        declaration: true,
+        offerStatus: 'accepted',
+        organisation: {
+          farmerName: 'Mr Farmer',
+          name: 'My Amazing Farm',
+          sbi: '123456789',
+          address: '1 Example Road',
+          email: 'business@email.com',
+          userType: 'newUser'
+        }
+      },
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -21,26 +39,6 @@ describe('Create application', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'POST',
-    url: '/api/applications',
-    payload: {
-      reference: 'TEMP-5C1C-DD6Z',
-      confirmCheckDetails: 'yes',
-      declaration: true,
-      offerStatus: 'accepted',
-      organisation: {
-        farmerName: 'Mr Farmer',
-        name: 'My Amazing Farm',
-        sbi: '123456789',
-        address: '1 Example Road',
-        email: 'business@email.com',
-        userType: 'newUser'
-      }
-    },
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('successfully creates a new application', async () => {
     const res = await server.inject(options)
