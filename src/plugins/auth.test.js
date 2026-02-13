@@ -43,4 +43,32 @@ describe('auth', () => {
       )
     ).toThrow('Invalid API key')
   })
+
+  it('other non-default keys can be registered', () => {
+    let keyCheckFunction
+    const mockAuthenticated = jest.fn()
+    mockServer.auth.scheme.mockImplementation((key, schemeFunction) => {
+      keyCheckFunction = schemeFunction
+    })
+    jest.spyOn(config, 'get').mockReturnValue({
+      publicUiApiKey: defaultApiKey,
+      backofficeUiApiKey: defaultApiKey,
+      messageGeneratorApiKey: 'key-for-message-gen',
+      testsApiKey: 'key-for-tests'
+    })
+
+    authPlugin.plugin.register(mockServer, {})
+
+    expect(keyCheckFunction).toBeDefined()
+    keyCheckFunction().authenticate(
+      { headers: { 'x-api-key': 'key-for-message-gen' } },
+      { authenticated: mockAuthenticated }
+    )
+    expect(mockAuthenticated).toHaveBeenCalledWith({ credentials: { app: 'message-generator' } })
+    keyCheckFunction().authenticate(
+      { headers: { 'x-api-key': 'key-for-tests' } },
+      { authenticated: mockAuthenticated }
+    )
+    expect(mockAuthenticated).toHaveBeenCalledWith({ credentials: { app: 'tests' } })
+  })
 })
