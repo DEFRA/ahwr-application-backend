@@ -5,13 +5,17 @@ import { reviewClaim } from '../../data/claim-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Is URN Unique', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'POST',
+      url: '/api/claims/is-urn-unique',
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -27,12 +31,6 @@ describe('Is URN Unique', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'POST',
-    url: '/api/claims/is-urn-unique',
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('returns urn is unique when urn does not exist on claims for sbi', async () => {
     const res = await server.inject({

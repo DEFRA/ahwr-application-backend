@@ -3,13 +3,17 @@ import { reviewClaim } from '../../data/claim-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Get application claims', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'GET',
+      url: buildUrl('IAHW-G3CL-V59P', 'beef'),
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -24,11 +28,6 @@ describe('Get application claims', () => {
   const buildUrl = (appRef, typeOfLivestock) =>
     `/api/applications/${appRef}/claims?typeOfLivestock=${typeOfLivestock}`
 
-  const options = {
-    method: 'GET',
-    url: buildUrl('IAHW-G3CL-V59P', 'beef'),
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
   test('successfully retrieves claims for a given application and livestock', async () => {
     const res = await server.inject(options)
 

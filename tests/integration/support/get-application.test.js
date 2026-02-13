@@ -4,13 +4,17 @@ import { owApplicationReviewClaim } from '../../data/ow-application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Get applications', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'GET',
+      url: '/api/support/applications/IAHW-G3CL-V59P',
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -23,12 +27,6 @@ describe('Get applications', () => {
   afterAll(async () => {
     await teardownTestEnvironment()
   })
-
-  const options = {
-    method: 'GET',
-    url: '/api/support/applications/IAHW-G3CL-V59P',
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
 
   test('successfully retrieves application', async () => {
     const res = await server.inject({

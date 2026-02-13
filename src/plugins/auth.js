@@ -1,17 +1,30 @@
 import Boom from '@hapi/boom'
-import { config } from '../config/config.js'
+import { config, defaultApiKey } from '../config/config.js'
 
 export const authPlugin = {
   plugin: {
     name: 'auth',
     register: async (server, _options) => {
-      const { publicUiApiKey, backofficeUiApiKey, messageGeneratorApiKey } = config.get('apiKeys')
+      const { publicUiApiKey, backofficeUiApiKey, messageGeneratorApiKey, testsApiKey } =
+        config.get('apiKeys')
 
       // Setup credentials
-      const API_KEYS = {
-        [publicUiApiKey]: 'public-ui',
-        [backofficeUiApiKey]: 'backoffice-ui',
-        [messageGeneratorApiKey]: 'message-generator'
+      const API_KEYS = {}
+
+      if (publicUiApiKey && publicUiApiKey !== defaultApiKey) {
+        API_KEYS[publicUiApiKey] = 'public-ui'
+      }
+
+      if (backofficeUiApiKey && backofficeUiApiKey !== defaultApiKey) {
+        API_KEYS[backofficeUiApiKey] = 'backoffice-ui'
+      }
+
+      if (messageGeneratorApiKey && messageGeneratorApiKey !== defaultApiKey) {
+        API_KEYS[messageGeneratorApiKey] = 'message-generator'
+      }
+
+      if (testsApiKey && testsApiKey !== defaultApiKey) {
+        API_KEYS[testsApiKey] = 'tests'
       }
 
       const apiKeyScheme = () => ({

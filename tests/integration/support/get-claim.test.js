@@ -3,13 +3,17 @@ import { reviewClaim } from '../../data/claim-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-const { backofficeUiApiKey } = config.get('apiKeys')
-
 describe('Get claim', () => {
   let server
+  let options
 
   beforeAll(async () => {
     server = await setupTestEnvironment()
+    options = {
+      method: 'GET',
+      url: '/api/support/claims/REBC-VA4R-TRL7',
+      headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
+    }
   })
 
   beforeEach(async () => {
@@ -21,11 +25,6 @@ describe('Get claim', () => {
     await teardownTestEnvironment()
   })
 
-  const options = {
-    method: 'GET',
-    url: '/api/support/claims/REBC-VA4R-TRL7',
-    headers: { 'x-api-key': backofficeUiApiKey }
-  }
   test('returns claim when claim reference matches claim in db', async () => {
     const res = await server.inject(options)
 
