@@ -162,6 +162,69 @@ export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, d
   )
 }
 
+export const removeHerdFromClaimData = async ({
+  claimRef,
+  oldClaimHerdName,
+  updateNotes,
+  updatedBy,
+  db
+}) => {
+  await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference: claimRef },
+    {
+      $set: {
+        herd: {},
+        updatedBy,
+        updatedAt: new Date()
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note: updateNotes,
+          updatedProperty: 'herdName',
+          newValue: 'Unnamed herd',
+          oldValue: oldClaimHerdName,
+          eventType: 'claim-herdAssociated',
+          createdBy: updatedBy,
+          createdAt: new Date()
+        }
+      }
+    }
+  )
+}
+
+export const updateHerdNameInClaimData = async ({
+  claimRef,
+  newClaimHerdName,
+  oldClaimHerdName,
+  updateNotes,
+  updatedBy,
+  db
+}) => {
+  await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference: claimRef },
+    {
+      $set: {
+        'herd.name': newClaimHerdName,
+        updatedBy,
+        updatedAt: new Date()
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note: updateNotes,
+          updatedProperty: 'herdName',
+          newValue: newClaimHerdName,
+          oldValue: oldClaimHerdName,
+          eventType: 'herd-name',
+          createdBy: updatedBy,
+          createdAt: new Date()
+        }
+      }
+    }
+  )
+}
+
 export const redactClaimPII = async (applicationReference, logger) => {
   // TODO: 1495 impl
   // const redactedValueByField = {

@@ -360,6 +360,15 @@ const config = convict({
       nullable: true,
       default: null
     }
+  },
+  distributedJobs: {
+    v0680SupportingData: {
+      doc: 'Data to support v0.68.0 data changes',
+      format: Object,
+      default: {},
+      sensitive: true,
+      env: 'DATA_CHANGE_V0680_DATA'
+    }
   }
 })
 

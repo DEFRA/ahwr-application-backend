@@ -88,7 +88,7 @@ export const raiseApplicationFlagDeletedEvent = async (event, sbi) => {
   })
 }
 
-export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
+export const raiseHerdEvent = async ({ sbi, message, data, type, raisedBy = 'admin' }) => {
   await getFcpEventPublisher().publishEvent({
     name: SEND_SESSION_EVENT,
     id: randomUUID(),
@@ -99,7 +99,7 @@ export const raiseHerdEvent = async ({ sbi, message, data, type }) => {
     type,
     message,
     data,
-    raisedBy: 'admin',
+    raisedBy,
     raisedOn: new Date().toISOString()
   })
 }
