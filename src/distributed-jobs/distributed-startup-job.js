@@ -35,7 +35,9 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  logger.info(`Running distributed startup job for: service version (${serviceVersion}) environments [${environmentsJobWillRun}]`)
+  logger.info(
+    `Running distributed startup job for: service version (${serviceVersion}) environments [${environmentsJobWillRun}]`
+  )
   if (environmentsJobWillRun.includes(environment)) {
     await performDataChanges(serviceVersion, db, logger)
   }
