@@ -49,7 +49,7 @@ describe('startServer', () => {
   })
 
   it('should create and start the server even when distributed startup job fails', async () => {
-    runDistributedStartupJob.mockImplementation(() => Promise.reject(new Error('mock error')))
+    runDistributedStartupJob.mockRejectedValueOnce(new Error('mock failure'))
 
     const server = await startServer()
 

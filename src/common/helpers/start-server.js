@@ -10,10 +10,16 @@ export async function startServer(options) {
   logger.info('Server started successfully')
   logger.info(`Access your backend on http://localhost:${config.get('port')}`)
 
-  // asynchronous, adding await might result in startup health check failures/timeouts
-  runDistributedStartupJob(server.db, logger).catch((err) => {
-    logger.error('Distributed startup job error', err)
-  })
+  // asynchronous, awaiting might result in startup health check failures/timeouts
+  runDistributedStartupJobInBackground(server.db, logger)
 
   return server
+}
+
+const runDistributedStartupJobInBackground = async (db, logger) => {
+  try {
+    await runDistributedStartupJob(db, logger.child())
+  } catch (err) {
+    logger.error('Distributed startup job error', err)
+  }
 }
