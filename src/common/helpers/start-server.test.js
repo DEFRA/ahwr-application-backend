@@ -1,6 +1,7 @@
 import { startServer } from './start-server.js'
 import { createServer } from '../../server.js'
 import { config } from '../../config/config.js'
+import { runDistributedStartupJob } from '../../distributed-jobs/distributed-startup-job.js'
 
 const mockLogger = { info: jest.fn(), error: jest.fn() }
 const mockServer = { start: jest.fn(), logger: mockLogger }
@@ -14,10 +15,12 @@ jest.mock('../../config/config.js', () => ({
   }
 }))
 jest.mock('../../messaging/fcp-messaging-service.js')
+jest.mock('../../distributed-jobs/distributed-startup-job.js')
 
 describe('startServer', () => {
   beforeEach(() => {
     config.get.mockReturnValue(3000)
+    runDistributedStartupJob.mockImplementation(() => Promise.resolve())
   })
 
   afterEach(() => {
@@ -43,5 +46,22 @@ describe('startServer', () => {
     expect(createServer).toHaveBeenCalledTimes(1)
     expect(mockServer.start).toHaveBeenCalledTimes(1)
     expect(mockLogger.info).not.toHaveBeenCalledWith('Server started successfully')
+  })
+
+  it('should create and start the server even when distributed startup job fails', async () => {
+    runDistributedStartupJob.mockImplementation(() => Promise.reject(new Error('mock error')))
+
+    const server = await startServer()
+
+    expect(createServer).toHaveBeenCalledTimes(1)
+    expect(mockServer.start).toHaveBeenCalledTimes(1)
+    expect(mockLogger.info).toHaveBeenCalledWith('Server started successfully')
+    expect(mockLogger.info).toHaveBeenCalledWith('Access your backend on http://localhost:3000')
+    expect(server).toBe(mockServer)
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      'Distributed startup job error',
+      expect.any(Object)
+    )
   })
 })
