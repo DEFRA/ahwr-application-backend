@@ -18,7 +18,7 @@ export async function startServer(options) {
 
 const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
-    await runDistributedStartupJob(db, logger.child())
+    await runDistributedStartupJob(db, logger.child({}))
   } catch (err) {
     logger.error('Distributed startup job error', err)
   }
