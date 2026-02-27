@@ -5,7 +5,7 @@ import { runDistributedStartupJob } from '../../distributed-jobs/distributed-sta
 export async function startServer(options) {
   const server = await createServer(options)
   await server.start()
-  const logger = server.logger
+  const { logger } = server
 
   logger.info('Server started successfully')
   logger.info(`Access your backend on http://localhost:${config.get('port')}`)

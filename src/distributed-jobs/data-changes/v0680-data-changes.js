@@ -57,18 +57,40 @@ export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
   logger.info(`Running send events for service version: ${serviceVersion}`)
   // common data across events
   const raisedBy = 'Admin2'
-  const unnamedHerdPrefix = 'UNNAMED_FLOCK_'
+  const unnamedHerdPrefix = 'UNNAMED_HERD_'
+  const newClaimHerdName = 'Commercial Flock'
 
   const event1 = events[0]
   await raiseHerdEvent({
     sbi: event1.sbi,
-    message: 'Herd name updated',
-    type: 'herd-name',
+    message: 'New herd version created',
+    type: 'herd-versionCreated',
     raisedBy,
     data: {
-      herdId: event1.id,
-      herdVersion: event1.version,
-      herdName: 'Commercial Flock'
+      herdId: event1.herdId,
+      herdVersion: event1.herdVersion,
+      herdName: newClaimHerdName,
+      herdSpecies: 'sheep',
+      herdCph: event1.herdCph,
+      herdReasonManagementNeeds: false,
+      herdReasonUniqueHealth: false,
+      herdReasonDifferentBreed: false,
+      herdReasonOtherPurpose: false,
+      herdReasonKeptSeparate: false,
+      herdReasonOnlyHerd: true,
+      herdReasonOther: false
+    }
+  })
+  await raiseHerdEvent({
+    sbi: event1.sbi,
+    message: 'Herd associated with claim updated',
+    type: 'claim-herdAssociated',
+    raisedBy,
+    data: {
+      herdId: event1.herdId,
+      herdVersion: event1.herdVersion,
+      reference: event1.claimReference,
+      applicationReference: event1.applicationReference
     }
   })
 
