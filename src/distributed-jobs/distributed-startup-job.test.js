@@ -62,7 +62,6 @@ describe('Test runDistributedStartupJob', () => {
     expect(v0680SendEvents).not.toHaveBeenCalled()
   })
 
-  // job runs and executes data changes
   it('should run job and executes data changes', () => {
     runDistributedStartupJob(mockDB, mockLogger)
 
