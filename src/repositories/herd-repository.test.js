@@ -6,8 +6,7 @@ describe('herd-repository', () => {
   }
   const collectionMock = {
     toArray: jest.fn(),
-    find: jest.fn().mockReturnThis(),
-    updateOne: jest.fn().mockReturnThis()
+    find: jest.fn().mockReturnThis()
   }
 
   describe('getHerdsByAppRefAndSpecies', () => {
