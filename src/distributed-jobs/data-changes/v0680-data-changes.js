@@ -59,6 +59,8 @@ export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
   const raisedBy = 'Admin2'
   const unnamedHerdPrefix = 'UNNAMED_HERD_'
   const newClaimHerdName = 'Commercial Flock'
+  const herdAssociatedEvent = 'claim-herdAssociated'
+  const herdAssociatedMessage = 'Herd associated with claim updated'
 
   const event1 = events[0]
   await raiseHerdEvent({
@@ -83,8 +85,8 @@ export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
   })
   await raiseHerdEvent({
     sbi: event1.sbi,
-    message: 'Herd associated with claim updated',
-    type: 'claim-herdAssociated',
+    message: herdAssociatedMessage,
+    type: herdAssociatedEvent,
     raisedBy,
     data: {
       herdId: event1.herdId,
@@ -97,8 +99,8 @@ export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
   const event2 = events[1]
   await raiseHerdEvent({
     sbi: event2.sbi,
-    message: 'Herd associated with claim updated',
-    type: 'claim-herdAssociated',
+    message: herdAssociatedMessage,
+    type: herdAssociatedEvent,
     raisedBy,
     data: {
       herdId: unnamedHerdPrefix + event2.claimReference,
@@ -111,8 +113,8 @@ export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
   const event3 = events[2]
   await raiseHerdEvent({
     sbi: event3.sbi,
-    message: 'Herd associated with claim updated',
-    type: 'claim-herdAssociated',
+    message: herdAssociatedMessage,
+    type: herdAssociatedEvent,
     raisedBy,
     data: {
       herdId: unnamedHerdPrefix + event3.claimReference,
