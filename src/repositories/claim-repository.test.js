@@ -7,8 +7,7 @@ import {
   updateClaimStatuses,
   findOnHoldClaims,
   createClaimIndexes,
-  removeHerdFromClaimData,
-  updateHerdNameInClaimData
+  removeHerdFromClaimData
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -386,49 +385,6 @@ describe('claim-repository', () => {
             }
           },
           $set: { herd: {}, updatedAt: expect.any(Date), updatedBy: 'test-user' }
-        }
-      )
-    })
-  })
-
-  describe('updateHerdNameInClaimData', () => {
-    const mockDb = { collection: jest.fn() }
-    const mockCollection = { findOneAndUpdate: jest.fn() }
-
-    beforeEach(() => {
-      jest.clearAllMocks()
-      mockDb.collection.mockReturnValue(mockCollection)
-    })
-
-    it('should update claim herd data and add history entry', async () => {
-      await updateHerdNameInClaimData({
-        claimRef: 'FUBC-JTTU-SDQ7',
-        newClaimHerdName: 'New Sheeps',
-        oldClaimHerdName: 'Old Sheeps',
-        updateNotes: 'test update herd name',
-        updatedBy: 'test-user',
-        db: mockDb
-      })
-
-      expect(mockDb.collection).toHaveBeenCalledWith('claims')
-      expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
-        {
-          reference: 'FUBC-JTTU-SDQ7'
-        },
-        {
-          $push: {
-            updateHistory: {
-              createdAt: expect.any(Date),
-              createdBy: 'test-user',
-              eventType: 'herd-name',
-              id: expect.any(String),
-              newValue: 'New Sheeps',
-              note: 'test update herd name',
-              oldValue: 'Old Sheeps',
-              updatedProperty: 'herdName'
-            }
-          },
-          $set: { 'herd.name': 'New Sheeps', updatedAt: expect.any(Date), updatedBy: 'test-user' }
         }
       )
     })

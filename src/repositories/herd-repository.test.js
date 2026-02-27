@@ -1,4 +1,4 @@
-import { getHerdsByAppRefAndSpecies, updateHerdName } from './herd-repository'
+import { getHerdsByAppRefAndSpecies } from './herd-repository'
 
 describe('herd-repository', () => {
   const dbMock = {
@@ -43,30 +43,6 @@ describe('herd-repository', () => {
         species: 'sheep'
       })
       expect(result).toEqual(mockResult)
-    })
-  })
-
-  describe('updateHerdName', () => {
-    it('should update herd name property', async () => {
-      await updateHerdName({
-        id: 'fake-herd-id',
-        version: 1,
-        name: 'Backyard Sheeps',
-        updatedBy: 'unit-test',
-        db: dbMock
-      })
-
-      expect(dbMock.collection).toHaveBeenCalledWith('herds')
-      expect(collectionMock.updateOne).toHaveBeenCalledWith(
-        { id: 'fake-herd-id', version: 1 },
-        {
-          $set: {
-            name: 'Backyard Sheeps',
-            updatedAt: expect.any(Date),
-            updatedBy: 'unit-test'
-          }
-        }
-      )
     })
   })
 })

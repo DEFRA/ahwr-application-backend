@@ -1,12 +1,9 @@
-import { updateHerdName } from '../../repositories/herd-repository.js'
-import {
-  removeHerdFromClaimData,
-  updateHerdNameInClaimData
-} from '../../repositories/claim-repository.js'
+import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
+import { addHerdToClaimData, removeHerdFromClaimData } from '../../repositories/claim-repository.js'
 import { raiseHerdEvent } from '../../event-publisher/index.js'
 
 export const v0680DatastoreUpdates = async ({ datastoreUpdates }, serviceVersion, db, logger) => {
-  logger.info(`Running datastore updates for service versionAaron: ${serviceVersion}`)
+  logger.info(`Running datastore updates for service version: ${serviceVersion}`)
   // common data across updates
   const updatedBy = 'Admin2'
   const updateNotes = 'Requested change from Samantha Smith via email on 11th February 2026'
@@ -31,21 +28,27 @@ export const v0680DatastoreUpdates = async ({ datastoreUpdates }, serviceVersion
     db
   })
 
+  // create new herd version and update claim to use it
   const update3 = datastoreUpdates[2]
-  await updateHerdName({
-    id: update3.id,
-    version: 1,
-    name: newClaimHerdName,
-    updatedBy,
-    db
-  })
+  const herd = await getHerdById(db, update3.id)
+  await updateIsCurrentHerd(db, herd.id, false, herd.version)
+  delete herd._id
+  delete herd.createdAt
+  delete herd.updatedAt
+  delete herd.updatedBy
+  delete herd.migratedRecord
+  herd.createdBy = updatedBy
+  herd.updatedAt = {}
+  herd.version = herd.version + 1
+  herd.name = newClaimHerdName
+  await createHerd(db, herd)
   const update4 = datastoreUpdates[3]
-  await updateHerdNameInClaimData({
+  await addHerdToClaimData({
     claimRef: update4.claimRef,
-    newClaimHerdName,
-    oldClaimHerdName,
-    updateNotes,
-    updatedBy,
+    oldHerdName: oldClaimHerdName,
+    claimHerdData: herd,
+    note: updateNotes,
+    createdBy: updatedBy,
     db
   })
 }

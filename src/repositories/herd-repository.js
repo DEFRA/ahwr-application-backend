@@ -39,12 +39,6 @@ export const getHerdsByAppRefAndSpecies = async ({ db, applicationReference, spe
     .toArray()
 }
 
-export const updateHerdName = async ({ id, version, name, updatedBy, db }) => {
-  return db
-    .collection(HERDS_COLLECTION)
-    .updateOne({ id, version }, { $set: { name, updatedBy, updatedAt: new Date() } })
-}
-
 // TODO: 1495 impl
 export const redactHerdPII = async (applicationReference) => {
   return {}
