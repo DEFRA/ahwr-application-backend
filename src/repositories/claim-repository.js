@@ -130,7 +130,14 @@ export const updateClaimData = async ({
   )
 }
 
-export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, db }) => {
+export const addHerdToClaimData = async ({
+  claimRef,
+  claimHerdData,
+  createdBy,
+  db,
+  oldHerdName = 'Unnamed herd',
+  note = 'Herd details were retroactively applied to this pre-multiple herds claim'
+}) => {
   const { id, version, associatedAt, name, cph, reasons } = claimHerdData
 
   await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
@@ -149,12 +156,43 @@ export const addHerdToClaimData = async ({ claimRef, claimHerdData, createdBy, d
       $push: {
         updateHistory: {
           id: crypto.randomUUID(),
-          note: 'Herd details were retroactively applied to this pre-multiple herds claim',
+          note,
           updatedProperty: 'herdName',
           newValue: name,
-          oldValue: 'Unnamed herd',
+          oldValue: oldHerdName,
           eventType: 'claim-herdAssociated',
           createdBy,
+          createdAt: new Date()
+        }
+      }
+    }
+  )
+}
+
+export const removeHerdFromClaimData = async ({
+  claimRef,
+  oldClaimHerdName,
+  updateNotes,
+  updatedBy,
+  db
+}) => {
+  await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference: claimRef },
+    {
+      $set: {
+        herd: {},
+        updatedBy,
+        updatedAt: new Date()
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note: updateNotes,
+          updatedProperty: 'herdName',
+          newValue: 'Unnamed herd',
+          oldValue: oldClaimHerdName,
+          eventType: 'claim-herdAssociated',
+          createdBy: updatedBy,
           createdAt: new Date()
         }
       }
