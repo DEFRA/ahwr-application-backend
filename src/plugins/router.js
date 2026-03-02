@@ -4,7 +4,6 @@ import { applicationHistoryHandlers } from '../routes/api/application-history.js
 import { claimsHandlers } from '../routes/api/claims/claims-routes.js'
 import { contactHistoryHandlers } from '../routes/api/contact-history.js'
 import { applicationRoutes } from '../routes/api/applications/applications-routes.js'
-import { applicationHandlers } from '../routes/api/applications.js'
 import { flagHandlers } from '../routes/api/flags/flags-routes.js'
 import { claimHistoryHandlers } from '../routes/api/claim-history.js'
 import { config } from '../config/config.js'
@@ -16,7 +15,6 @@ const router = {
     name: 'router',
     register: (server, _options) => {
       let routes = [health]
-        .concat(applicationHandlers)
         .concat(applicationRoutes)
         .concat(latestContactDetailsHandlers)
         .concat(applicationHistoryHandlers)

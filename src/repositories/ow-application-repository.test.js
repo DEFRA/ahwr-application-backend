@@ -2,7 +2,6 @@ import {
   isOWURNUnique,
   getOWApplication,
   updateOWApplication,
-  updateOWApplicationStatus,
   getOWApplicationsBySbi
 } from './ow-application-repository.js'
 
@@ -181,60 +180,6 @@ describe('updateOWApplication', () => {
         }
       }
     )
-  })
-})
-
-describe('updateOWApplicationStatus', () => {
-  const mockDb = {
-    collection: jest.fn(() => mockCollection)
-  }
-  const mockCollection = {
-    findOneAndUpdate: jest.fn()
-  }
-  it('should call findOneAndUpdate with correct parameters and return result', async () => {
-    const updatedApplication = {
-      reference: 'IAHW-8ZPZ-8CLI',
-      status: 'WITHDRAWN',
-      updatedBy: 'test-user',
-      updatedAt: new Date('2025-10-22T16:21:46.091Z'),
-      statusHistory: [
-        {
-          status: 'AGREED',
-          createdBy: 'admin',
-          createdAt: new Date('2025-10-22T16:21:46.091Z')
-        }
-      ]
-    }
-    mockCollection.findOneAndUpdate.mockResolvedValue(updatedApplication)
-
-    const result = await updateOWApplicationStatus({
-      db: mockDb,
-      reference: 'IAHW-8ZPZ-8CLI',
-      status: 'WITHDRAWN',
-      user: 'test-user',
-      updatedAt: new Date('2025-10-22T16:21:46.091Z')
-    })
-
-    expect(mockDb.collection).toHaveBeenCalledWith('owapplications')
-    expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
-      { reference: 'IAHW-8ZPZ-8CLI' },
-      {
-        $set: {
-          status: 'WITHDRAWN',
-          updatedBy: 'test-user',
-          updatedAt: new Date('2025-10-22T16:21:46.091Z')
-        },
-        $push: {
-          statusHistory: {
-            status: 'WITHDRAWN',
-            createdAt: new Date('2025-10-22T16:21:46.091Z'),
-            createdBy: 'test-user'
-          }
-        }
-      },
-      { returnDocument: 'after' }
-    )
-    expect(result).toBe(updatedApplication)
   })
 })
 
