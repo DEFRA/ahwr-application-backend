@@ -78,7 +78,7 @@ async function createServer(options) {
     await startFcpMessagingService(logger)
 
     // asynchronous, awaiting might result in startup health check failures/timeouts
-    runDistributedStartupJobInBackground(db, logger.child({}))
+    runDistributedStartupJobInBackground(db, logger)
 
     await configureAndStartMessaging(db)
   })
