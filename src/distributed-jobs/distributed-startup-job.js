@@ -57,7 +57,7 @@ const performDataChanges = async (serviceVersion, supportingData, db, logger) =>
   if (serviceVersion === '0.68.0') {
     await v0680DatastoreUpdates(serviceVersion, supportingData, db, logger)
     await v0680SendEvents(serviceVersion, supportingData, logger)
-  } else if (serviceVersion === '0.68.1') {
+  } else if (serviceVersion === '0.68.2') {
     await v0680SendEvents(serviceVersion, supportingData, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)

@@ -99,9 +99,9 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.68.1',
+        serviceVersion: '0.68.2',
         'distributedJobs.v0680SupportingData': {},
-        'distributedJobs.v0681SupportingData': {
+        'distributedJobs.v0682SupportingData': {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
@@ -112,7 +112,7 @@ describe('Test runDistributedStartupJob', () => {
 
     expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
     expect(mockCollection.insertOne).toHaveBeenCalledWith({
-      _id: '0.68.1',
+      _id: '0.68.2',
       environments: ['local', 'dev', 'prod'],
       lockedAt: expect.any(Date),
       type: 'startup'
