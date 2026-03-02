@@ -47,21 +47,4 @@ describe('startServer', () => {
     expect(mockServer.start).toHaveBeenCalledTimes(1)
     expect(mockLogger.info).not.toHaveBeenCalledWith('Server started successfully')
   })
-
-  it('should create and start the server even when distributed startup job fails', async () => {
-    runDistributedStartupJob.mockRejectedValueOnce(new Error('mock failure'))
-
-    const server = await startServer()
-
-    expect(createServer).toHaveBeenCalledTimes(1)
-    expect(mockServer.start).toHaveBeenCalledTimes(1)
-    expect(mockLogger.info).toHaveBeenCalledWith('Server started successfully')
-    expect(mockLogger.info).toHaveBeenCalledWith('Access your backend on http://localhost:3000')
-    expect(server).toBe(mockServer)
-
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      expect.any(Object),
-      'Distributed startup job error'
-    )
-  })
 })

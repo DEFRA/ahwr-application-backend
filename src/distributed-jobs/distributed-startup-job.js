@@ -1,23 +1,12 @@
 import { config } from '../config/config.js'
 import { v0680DatastoreUpdates, v0680SendEvents } from './data-changes/v0680-data-changes.js'
 
-const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
-  let hasRun
-
+export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
-    await db.collection('distributed-job-locks').insertOne({
-      _id: serviceVersion,
-      type: 'startup',
-      environments: environmentsJobWillRun,
-      lockedAt: new Date()
-    })
-
-    hasRun = false
-  } catch (e) {
-    hasRun = true
+    await runDistributedStartupJob(db, logger.child({}))
+  } catch (error) {
+    logger.error(error, 'Distributed startup job error')
   }
-
-  return hasRun
 }
 
 export const runDistributedStartupJob = async (db, logger) => {
@@ -45,11 +34,30 @@ export const runDistributedStartupJob = async (db, logger) => {
   await performDataChanges(serviceVersion, supportingData, db, logger)
 }
 
+const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
+  let hasRun
+
+  try {
+    await db.collection('distributed-job-locks').insertOne({
+      _id: serviceVersion,
+      type: 'startup',
+      environments: environmentsJobWillRun,
+      lockedAt: new Date()
+    })
+
+    hasRun = false
+  } catch (e) {
+    hasRun = true
+  }
+
+  return hasRun
+}
+
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
   if (serviceVersion === '0.68.0') {
     await v0680DatastoreUpdates(serviceVersion, supportingData, db, logger)
     await v0680SendEvents(serviceVersion, supportingData, logger)
-  } else if (serviceVersion === '0.68.1') {
+  } else if (serviceVersion === '0.68.2') {
     await v0680SendEvents(serviceVersion, supportingData, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
