@@ -19,6 +19,7 @@ import {
 import { startPulseScheduling, stopPulseScheduling } from './scheduled/cron-scheduler.js'
 import { getLogger } from './logging/logger.js'
 import { authPlugin } from './plugins/auth.js'
+import { runDistributedStartupJobInBackground } from './distributed-jobs/distributed-startup-job.js'
 
 async function createServer(options) {
   setupProxy()
@@ -70,9 +71,16 @@ async function createServer(options) {
   ])
 
   server.events.on('start', async () => {
-    await startPulseScheduling(server.db)
-    await startFcpMessagingService(getLogger())
-    await configureAndStartMessaging(server.db)
+    const { db } = server
+    const logger = getLogger()
+
+    await startPulseScheduling(db)
+    await startFcpMessagingService(logger)
+
+    // asynchronous, awaiting might result in startup health check failures/timeouts
+    runDistributedStartupJobInBackground(db, logger.child({}))
+
+    await configureAndStartMessaging(db)
   })
 
   server.events.on('stop', async () => {

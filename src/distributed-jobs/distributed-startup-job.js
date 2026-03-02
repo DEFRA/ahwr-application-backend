@@ -1,23 +1,12 @@
 import { config } from '../config/config.js'
 import { v0680DatastoreUpdates, v0680SendEvents } from './data-changes/v0680-data-changes.js'
 
-const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
-  let hasRun
-
+export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
-    await db.collection('distributed-job-locks').insertOne({
-      _id: serviceVersion,
-      type: 'startup',
-      environments: environmentsJobWillRun,
-      lockedAt: new Date()
-    })
-
-    hasRun = false
-  } catch (e) {
-    hasRun = true
+    await runDistributedStartupJob(db, logger.child({}))
+  } catch (error) {
+    logger.error(error, 'Distributed startup job error')
   }
-
-  return hasRun
 }
 
 export const runDistributedStartupJob = async (db, logger) => {
@@ -43,6 +32,25 @@ export const runDistributedStartupJob = async (db, logger) => {
 
   logger.info(`Running distributed job, service version ${serviceVersion}`)
   await performDataChanges(serviceVersion, supportingData, db, logger)
+}
+
+const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
+  let hasRun
+
+  try {
+    await db.collection('distributed-job-locks').insertOne({
+      _id: serviceVersion,
+      type: 'startup',
+      environments: environmentsJobWillRun,
+      lockedAt: new Date()
+    })
+
+    hasRun = false
+  } catch (e) {
+    hasRun = true
+  }
+
+  return hasRun
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
