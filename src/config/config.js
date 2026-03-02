@@ -368,6 +368,13 @@ const config = convict({
       default: {},
       sensitive: true,
       env: 'DATA_CHANGE_V0680_DATA'
+    },
+    v0681SupportingData: {
+      doc: 'Data to support v0.68.1 data changes',
+      format: Object,
+      default: {},
+      sensitive: true,
+      env: 'DATA_CHANGE_V0681_DATA'
     }
   }
 })

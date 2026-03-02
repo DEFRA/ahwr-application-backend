@@ -15,8 +15,8 @@ describe('Test runDistributedStartupJob', () => {
       const values = {
         cdpEnvironment: 'local',
         serviceVersion: '0.68.0',
-        distributedJobs: {
-          v0680SupportingData: {}
+        'distributedJobs.v0680SupportingData': {
+          mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
       return values[key]

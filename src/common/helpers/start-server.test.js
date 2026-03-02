@@ -60,8 +60,8 @@ describe('startServer', () => {
     expect(server).toBe(mockServer)
 
     expect(mockLogger.error).toHaveBeenCalledWith(
-      'Distributed startup job error',
-      expect.any(Object)
+      expect.any(Object),
+      'Distributed startup job error'
     )
   })
 })

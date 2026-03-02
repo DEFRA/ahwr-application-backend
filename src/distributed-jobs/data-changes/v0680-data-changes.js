@@ -2,7 +2,7 @@ import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories
 import { addHerdToClaimData, removeHerdFromClaimData } from '../../repositories/claim-repository.js'
 import { raiseHerdEvent } from '../../event-publisher/index.js'
 
-export const v0680DatastoreUpdates = async ({ datastoreUpdates }, serviceVersion, db, logger) => {
+export const v0680DatastoreUpdates = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
   // common data across updates
   const updatedBy = 'Admin2'
@@ -53,7 +53,7 @@ export const v0680DatastoreUpdates = async ({ datastoreUpdates }, serviceVersion
   })
 }
 
-export const v0680SendEvents = async ({ events }, serviceVersion, logger) => {
+export const v0680SendEvents = async (serviceVersion, { events }, logger) => {
   logger.info(`Running send events for service version: ${serviceVersion}`)
   // common data across events
   const raisedBy = 'Admin2'
