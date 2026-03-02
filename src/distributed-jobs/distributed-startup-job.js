@@ -23,10 +23,17 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 export const runDistributedStartupJob = async (db, logger) => {
   const environmentsJobWillRun = ['local', 'dev', 'prod']
   const environment = config.get('cdpEnvironment')
-  const serviceVersion = config.get('serviceVersion')
 
   if (!environmentsJobWillRun.includes(environment)) {
     return
+  }
+
+  const serviceVersion = config.get('serviceVersion')
+  const supportingDataConfigKey = `distributedJobs.v${serviceVersion.replaceAll('.', '')}SupportingData`
+  const supportingData = config.get(supportingDataConfigKey)
+
+  if (Object.keys(supportingData).length === 0) {
+    throw new Error(`Missing supporting data for service version ${serviceVersion}`)
   }
 
   const hasAlreadyRun = await hasStartupJobAlreadyRun(serviceVersion, environmentsJobWillRun, db)
@@ -35,13 +42,16 @@ export const runDistributedStartupJob = async (db, logger) => {
   }
 
   logger.info(`Running distributed job, service version ${serviceVersion}`)
-  await performDataChanges(serviceVersion, db, logger)
+  await performDataChanges(serviceVersion, supportingData, db, logger)
 }
 
-const performDataChanges = async (serviceVersion, db, logger) => {
+const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
   if (serviceVersion === '0.68.0') {
-    const v0680SupportingData = config.get('distributedJobs.v0680SupportingData')
-    await v0680DatastoreUpdates(v0680SupportingData, serviceVersion, db, logger)
-    await v0680SendEvents(v0680SupportingData, serviceVersion, logger)
+    await v0680DatastoreUpdates(serviceVersion, supportingData, db, logger)
+    await v0680SendEvents(serviceVersion, supportingData, logger)
+  } else if (serviceVersion === '0.68.1') {
+    await v0680SendEvents(serviceVersion, supportingData, logger)
+  } else {
+    logger.info(`No data changes found for service version ${serviceVersion}`)
   }
 }
