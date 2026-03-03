@@ -1,6 +1,6 @@
 import { config } from '../config/config.js'
 import {
-  datastoreUpdates as v0690DatastoreUpdates,
+  updateDatastore as v0690DatastoreUpdates,
   sendEvents as v0690SendEvents
 } from './data-changes/v0690-data-changes.js'
 

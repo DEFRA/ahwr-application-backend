@@ -5,7 +5,7 @@ import { raiseHerdEvent } from '../../event-publisher/index.js'
 // Example supportingData, add to secrets via CDP portal:
 // DATA_CHANGE_V0690_DATA={"datastoreUpdates":[{"claimRef":"RESH-AGL5-SVCW"},{"claimRef":"FUSH-MPSK-5DH3"},{"id":"132cedb5-7804-4d7b-b2d4-2e2f07fdc66d"},{"claimRef":"RESH-W7A1-BJJW"}],"events":[{"sbi":"106308119","claimReference":"RESH-W7A1-BJJW","applicationReference":"IAHW-2E02-3601","herdId":"132cedb5-7804-4d7b-b2d4-2e2f07fdc66d","herdVersion":2,"herdCph":"00/000/0000"},{"sbi":"106308119","claimReference":"RESH-AGL5-SVCW","applicationReference":"IAHW-2E02-3601"},{"sbi":"106308119","claimReference":"FUSH-MPSK-5DH3","applicationReference":"IAHW-2E02-3601"}]}
 
-export const datastoreUpdates = async (serviceVersion, { datastoreUpdates }, db, logger) => {
+export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
   // common data across updates
   const updatedBy = 'Admin2'
@@ -65,12 +65,20 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
   const herdAssociatedEvent = 'claim-herdAssociated'
   const herdAssociatedMessage = 'Herd associated with claim updated'
 
+  // Ensure SBI_eventType_timestamp is unique.
+  const raisedOn = new Date()
+  const raisedOn1 = new Date(raisedOn.getTime() + 1)
+  const raisedOn2 = new Date(raisedOn.getTime() + 2)
+  const raisedOn3 = new Date(raisedOn.getTime() + 3)
+  const raisedOn4 = new Date(raisedOn.getTime() + 4)
+
   const event1 = events[0]
   await raiseHerdEvent({
     sbi: event1.sbi,
     message: 'New herd version created',
     type: 'herd-versionCreated',
     raisedBy,
+    raisedOn: raisedOn1,
     data: {
       herdId: event1.herdId,
       herdVersion: event1.herdVersion,
@@ -91,6 +99,7 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
     message: herdAssociatedMessage,
     type: herdAssociatedEvent,
     raisedBy,
+    raisedOn: raisedOn2,
     data: {
       herdId: event1.herdId,
       herdVersion: event1.herdVersion,
@@ -105,6 +114,7 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
     message: herdAssociatedMessage,
     type: herdAssociatedEvent,
     raisedBy,
+    raisedOn: raisedOn3,
     data: {
       herdId: unnamedHerdPrefix + event2.claimReference,
       herdVersion: 1,
@@ -119,6 +129,7 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
     message: herdAssociatedMessage,
     type: herdAssociatedEvent,
     raisedBy,
+    raisedOn: raisedOn4,
     data: {
       herdId: unnamedHerdPrefix + event3.claimReference,
       herdVersion: 1,
