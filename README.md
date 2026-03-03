@@ -64,6 +64,8 @@ npm install
 
 ### Development
 
+Copy `.env.example` to `.env` and speak to the team for the relevant values.
+
 To run the application in `development` mode run:
 
 ```bash
@@ -73,7 +75,7 @@ npm run dev
 OR to run dockerised to mimic production environment run:
 
 ```bash
-./scripts/start.sh
+./scripts/start
 ```
 
 ### Testing
