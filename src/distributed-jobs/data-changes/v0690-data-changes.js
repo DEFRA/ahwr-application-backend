@@ -67,10 +67,10 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
 
   // Ensure SBI_eventType_timestamp is unique.
   const raisedOn = new Date()
-  const raisedOn1 = new Date(raisedOn.getTime() + 1)
-  const raisedOn2 = new Date(raisedOn.getTime() + 2)
-  const raisedOn3 = new Date(raisedOn.getTime() + 3)
-  const raisedOn4 = new Date(raisedOn.getTime() + 4)
+  const raisedOn1 = new Date(raisedOn.getTime() + 1).toISOString()
+  const raisedOn2 = new Date(raisedOn.getTime() + 2).toISOString()
+  const raisedOn3 = new Date(raisedOn.getTime() + 3).toISOString()
+  const raisedOn4 = new Date(raisedOn.getTime() + 4).toISOString()
 
   const event1 = events[0]
   await raiseHerdEvent({
