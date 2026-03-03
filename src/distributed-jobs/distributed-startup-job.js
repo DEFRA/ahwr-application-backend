@@ -1,5 +1,8 @@
 import { config } from '../config/config.js'
-import { v0680DatastoreUpdates, v0680SendEvents } from './data-changes/v0680-data-changes.js'
+import {
+  datastoreUpdates as v0690DatastoreUpdates,
+  sendEvents as v0690SendEvents
+} from './data-changes/v0690-data-changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
@@ -54,11 +57,9 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.68.0') {
-    await v0680DatastoreUpdates(serviceVersion, supportingData, db, logger)
-    await v0680SendEvents(serviceVersion, supportingData, logger)
-  } else if (serviceVersion === '0.68.2') {
-    await v0680SendEvents(serviceVersion, supportingData, logger)
+  if (serviceVersion === '0.69.0') {
+    await v0690DatastoreUpdates(serviceVersion, supportingData, db, logger)
+    await v0690SendEvents(serviceVersion, supportingData, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
   }

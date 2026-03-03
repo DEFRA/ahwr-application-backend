@@ -2,7 +2,7 @@ import { runDistributedStartupJob } from './distributed-startup-job.js'
 import { config } from '../config/config.js'
 
 jest.mock('../config/config.js')
-jest.mock('./data-changes/v0680-data-changes.js')
+jest.mock('./data-changes/v0690-data-changes.js')
 // add mocks for each set of data change here
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
@@ -23,14 +23,14 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.68.0',
-        'distributedJobs.v0680SupportingData': {}
+        serviceVersion: '0.69.0',
+        'distributedJobs.v0690SupportingData': {}
       }
       return values[key]
     })
 
     expect(() => runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.68.0'
+      'Missing supporting data for service version 0.69.0'
     )
   })
 
@@ -38,8 +38,8 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.68.0',
-        'distributedJobs.v0680SupportingData': {
+        serviceVersion: '0.69.0',
+        'distributedJobs.v0690SupportingData': {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
@@ -76,8 +76,8 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.68.0',
-        'distributedJobs.v0680SupportingData': {
+        serviceVersion: '0.69.0',
+        'distributedJobs.v0690SupportingData': {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
@@ -88,31 +88,7 @@ describe('Test runDistributedStartupJob', () => {
 
     expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
     expect(mockCollection.insertOne).toHaveBeenCalledWith({
-      _id: '0.68.0',
-      environments: ['local', 'dev', 'prod'],
-      lockedAt: expect.any(Date),
-      type: 'startup'
-    })
-  })
-
-  it('TEMP should run job and executes data changes', () => {
-    config.get.mockImplementation((key) => {
-      const values = {
-        cdpEnvironment: 'local',
-        serviceVersion: '0.68.2',
-        'distributedJobs.v0680SupportingData': {},
-        'distributedJobs.v0682SupportingData': {
-          mandatory: 'need-at-least-one-key-to-be-valid-data'
-        }
-      }
-      return values[key]
-    })
-
-    runDistributedStartupJob(mockDB, mockLogger)
-
-    expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
-    expect(mockCollection.insertOne).toHaveBeenCalledWith({
-      _id: '0.68.2',
+      _id: '0.69.0',
       environments: ['local', 'dev', 'prod'],
       lockedAt: expect.any(Date),
       type: 'startup'
