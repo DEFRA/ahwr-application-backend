@@ -3,6 +3,7 @@ import { config } from '../config/config.js'
 
 jest.mock('../config/config.js')
 jest.mock('./data-changes/v0690-data-changes.js')
+jest.mock('./data-changes/v0691-data-changes.js')
 // add mocks for each set of data change here
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
@@ -72,7 +73,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).toHaveBeenCalled()
   })
 
-  it('should run job and executes data changes', () => {
+  it('WOULD NORMALLY REMOVE should run job and executes data changes', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -89,6 +90,29 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
     expect(mockCollection.insertOne).toHaveBeenCalledWith({
       _id: '0.69.0',
+      environments: ['local', 'dev', 'prod'],
+      lockedAt: expect.any(Date),
+      type: 'startup'
+    })
+  })
+
+  it('should run job and executes data changes', () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        serviceVersion: '0.69.1',
+        'distributedJobs.v0691SupportingData': {
+          mandatory: 'need-at-least-one-key-to-be-valid-data'
+        }
+      }
+      return values[key]
+    })
+
+    runDistributedStartupJob(mockDB, mockLogger)
+
+    expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
+    expect(mockCollection.insertOne).toHaveBeenCalledWith({
+      _id: '0.69.1',
       environments: ['local', 'dev', 'prod'],
       lockedAt: expect.any(Date),
       type: 'startup'
