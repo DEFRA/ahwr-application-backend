@@ -3,6 +3,7 @@ import { config } from '../config/config.js'
 
 jest.mock('../config/config.js')
 jest.mock('./data-changes/v0690-data-changes.js')
+jest.mock('./data-changes/v0691-data-changes.js')
 // add mocks for each set of data change here
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
