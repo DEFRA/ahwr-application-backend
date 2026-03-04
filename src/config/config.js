@@ -224,6 +224,12 @@ const config = convict({
     default: isProduction,
     env: 'ENABLE_METRICS'
   },
+  isAuditEventEnabled: {
+    doc: 'Enable metrics reporting',
+    format: Boolean,
+    default: true,
+    env: 'ENABLE_AUDIT_EVENTS'
+  },
   tracing: {
     header: {
       doc: 'CDP tracing header name',
