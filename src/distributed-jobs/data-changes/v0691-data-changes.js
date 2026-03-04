@@ -1,7 +1,7 @@
 import { updateClaimStatus } from '../../repositories/claim-repository.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0691_DATA={"datastoreUpdates":[{"claimRef":"REDC-MJ9J-SFHD","claimStatus":"RECOMMENDED_TO_PAY"}]}
+// DATA_CHANGE_V0691_DATA={"datastoreUpdates":[{"claimRef":"REPI-YCUH-SICN","claimStatus":"RECOMMENDED_TO_PAY"}]}
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
