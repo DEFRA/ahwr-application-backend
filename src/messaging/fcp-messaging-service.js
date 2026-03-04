@@ -5,18 +5,19 @@ let fcpMessageClient
 let eventPublisher
 
 export const startFcpMessagingService = async (logger) => {
-  fcpMessageClient = createServiceBusClient({
-    host: config.get('azure.eventQueue.host'),
-    username: config.get('azure.eventQueue.username'),
-    password: config.get('azure.eventQueue.password'),
-    proxyUrl: config.get('httpProxy')
-  })
+  const eventsEnabled = config.get('isAuditEventEnabled')
+  if (eventsEnabled) {
+    fcpMessageClient = createServiceBusClient({
+      host: config.get('azure.eventQueue.host'),
+      username: config.get('azure.eventQueue.username'),
+      password: config.get('azure.eventQueue.password'),
+      proxyUrl: config.get('httpProxy')
+    })
+  }
 
-  eventPublisher = createEventPublisher(
-    fcpMessageClient,
-    config.get('azure.eventQueue.address'),
-    logger
-  )
+  eventPublisher = eventsEnabled
+    ? createEventPublisher(fcpMessageClient, config.get('azure.eventQueue.address'), logger)
+    : { publishEvent: () => {} }
 }
 
 export const stopFcpMessagingService = async () => {
