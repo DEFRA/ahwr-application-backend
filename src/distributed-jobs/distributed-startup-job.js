@@ -3,6 +3,7 @@ import {
   updateDatastore as v0690DatastoreUpdates,
   sendEvents as v0690SendEvents
 } from './data-changes/v0690-data-changes.js'
+import { updateDatastore as v0691DatastoreUpdates } from './data-changes/v0691-data-changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
@@ -60,6 +61,8 @@ const performDataChanges = async (serviceVersion, supportingData, db, logger) =>
   if (serviceVersion === '0.69.0') {
     await v0690DatastoreUpdates(serviceVersion, supportingData, db, logger)
     await v0690SendEvents(serviceVersion, supportingData, logger)
+  } else if (serviceVersion === '0.69.1') {
+    await v0691DatastoreUpdates(serviceVersion, supportingData, db, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
   }
