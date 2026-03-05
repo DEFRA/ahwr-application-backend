@@ -7,7 +7,8 @@ import {
   updateClaimStatuses,
   findOnHoldClaims,
   createClaimIndexes,
-  removeHerdFromClaimData
+  removeHerdFromClaimData,
+  deleteClaim
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -138,6 +139,21 @@ describe('claim-repository', () => {
       mockFindOne.mockRejectedValue(error)
 
       await expect(getClaimByReference(mockDb, 'RESH-O9UD-0025')).rejects.toThrow('Database error')
+    })
+  })
+
+  describe('deleteClaim', () => {
+    const mockDeleteOne = jest.fn(() => ({}))
+    const mockCollection = jest.fn(() => ({ deleteOne: mockDeleteOne }))
+    const mockDb = { collection: mockCollection }
+
+    it('should call deleteOne with correct parameters', async () => {
+      mockDeleteOne.mockResolvedValue({})
+
+      await deleteClaim(mockDb, 'REBC-VA4R-TRL7')
+
+      expect(mockCollection).toHaveBeenCalledWith('claims')
+      expect(mockDeleteOne).toHaveBeenCalledWith({ reference: 'REBC-VA4R-TRL7' })
     })
   })
 
