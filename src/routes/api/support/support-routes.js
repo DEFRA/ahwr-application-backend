@@ -2,7 +2,8 @@ import joi from 'joi'
 import {
   supportApplicationHandler,
   supportClaimHandler,
-  supportHerdHandler
+  supportHerdHandler,
+  supportQueueMessagesHandler
 } from './support-controller.js'
 
 export const supportHandlers = [
@@ -43,6 +44,20 @@ export const supportHandlers = [
         })
       },
       handler: supportHerdHandler
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/support/queue-messages',
+    options: {
+      description: 'Get queue messages by url',
+      validate: {
+        query: joi.object({
+          queueUrl: joi.string().required(),
+          limit: joi.string().optional()
+        })
+      },
+      handler: supportQueueMessagesHandler
     }
   }
 ]

@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
-import { getSupportApplication, getSupportClaim, getSupportHerd } from './support-service.js'
+import { getQueueMessages, getSupportApplication, getSupportClaim, getSupportHerd } from './support-service.js'
 
 export const supportApplicationHandler = async (request, h) => {
   try {
@@ -56,6 +56,28 @@ export const supportHerdHandler = async (request, h) => {
     return h.response(result).code(StatusCodes.OK)
   } catch (err) {
     request.logger.error({ err }, 'Failed to get herd')
+
+    if (Boom.isBoom(err)) {
+      throw err
+    }
+
+    throw Boom.internal(err)
+  }
+}
+
+export const supportQueueMessagesHandler = async (request, h) => {
+  try {
+    const { queueUrl, limit } = request.query
+
+    const result = await getQueueMessages({
+      queueUrl,
+      limit,
+      logger: request.logger
+    })
+
+    return h.response(result).code(StatusCodes.OK)
+  } catch (err) {
+    request.logger.error({ err }, 'Failed to get queue messages')
 
     if (Boom.isBoom(err)) {
       throw err
