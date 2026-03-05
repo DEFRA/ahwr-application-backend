@@ -1,9 +1,8 @@
 import { config } from '../config/config.js'
 import {
-  updateDatastore as v0690DatastoreUpdates,
-  sendEvents as v0690SendEvents
-} from './data-changes/v0690-data-changes.js'
-import { updateDatastore as v0691DatastoreUpdates } from './data-changes/v0691-data-changes.js'
+  updateDatastore as v0692DatastoreUpdates,
+  sendEvents as v0692SendEvents
+} from './data-changes/v0692-data-changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
@@ -23,7 +22,16 @@ export const runDistributedStartupJob = async (db, logger) => {
 
   const serviceVersion = config.get('serviceVersion')
   const supportingDataConfigKey = `distributedJobs.v${serviceVersion.replaceAll('.', '')}SupportingData`
-  const supportingData = config.get(supportingDataConfigKey)
+
+  let supportingData
+  try {
+    supportingData = config.get(supportingDataConfigKey)
+  } catch (_err) {
+    // only data change versions should have config keys
+  }
+  if (!supportingData) {
+    return // key not found in config so not a data change version
+  }
 
   if (Object.keys(supportingData).length === 0) {
     throw new Error(`Missing supporting data for service version ${serviceVersion}`)
@@ -58,11 +66,9 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.69.0') {
-    await v0690DatastoreUpdates(serviceVersion, supportingData, db, logger)
-    await v0690SendEvents(serviceVersion, supportingData, logger)
-  } else if (serviceVersion === '0.69.1') {
-    await v0691DatastoreUpdates(serviceVersion, supportingData, db, logger)
+  if (serviceVersion === '0.69.2') {
+    await v0692DatastoreUpdates(serviceVersion, supportingData, db, logger)
+    await v0692SendEvents(serviceVersion, supportingData, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
   }
