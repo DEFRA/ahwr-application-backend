@@ -20,6 +20,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { v0690SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -35,6 +36,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when already been run', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { v0690SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -55,6 +57,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should run job but exit early when config not present', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -70,6 +73,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should run job if config present but no data changes for service version', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { v0690SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -89,13 +93,15 @@ describe('Test runDistributedStartupJob', () => {
 
   it('should run job and executes data changes', async () => {
     const serviceVersion = '0.69.2'
-    const configKey = `distributedJobs.v${serviceVersion.replaceAll('.', '')}SupportingData`
+    const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
+    const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
+    config.getProperties.mockReturnValue({ distributedJobs: { [supportingDataVersion]: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
         serviceVersion,
-        [configKey]: {
+        [supportingDataConfigKey]: {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }

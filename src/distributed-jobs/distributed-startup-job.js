@@ -21,18 +21,14 @@ export const runDistributedStartupJob = async (db, logger) => {
   }
 
   const serviceVersion = config.get('serviceVersion')
-  const supportingDataConfigKey = `distributedJobs.v${serviceVersion.replaceAll('.', '')}SupportingData`
+  const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
+  const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
-  let supportingData
-  try {
-    supportingData = config.get(supportingDataConfigKey)
-  } catch (_err) {
-    // only data change versions should have config keys
-  }
-  if (!supportingData) {
-    return // key not found in config so not a data change version
+  if (isNotDataChangeVersion(supportingDataVersion)) {
+    return
   }
 
+  const supportingData = config.get(supportingDataConfigKey)
   if (Object.keys(supportingData).length === 0) {
     throw new Error(`Missing supporting data for service version ${serviceVersion}`)
   }
@@ -44,6 +40,11 @@ export const runDistributedStartupJob = async (db, logger) => {
 
   logger.info(`Running distributed job, service version ${serviceVersion}`)
   await performDataChanges(serviceVersion, supportingData, db, logger)
+}
+
+const isNotDataChangeVersion = (configKey) => {
+  const schema = config.getProperties().distributedJobs
+  return !(configKey in schema)
 }
 
 const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
