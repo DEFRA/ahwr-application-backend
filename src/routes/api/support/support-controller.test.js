@@ -42,7 +42,7 @@ describe('supportQueueMessagesHandler', () => {
   test('returns queue messages with 200 status', async () => {
     getQueueMessages.mockResolvedValue(queueMessages)
 
-    const result = await supportQueueMessagesHandler(request, h)
+    await supportQueueMessagesHandler(request, h)
 
     expect(getQueueMessages).toHaveBeenCalledWith({
       queueUrl: request.query.queueUrl,
@@ -58,9 +58,7 @@ describe('supportQueueMessagesHandler', () => {
     const boomError = Boom.badRequest('Invalid queue')
     getQueueMessages.mockRejectedValue(boomError)
 
-    await expect(
-      supportQueueMessagesHandler(request, h)
-    ).rejects.toThrow(boomError)
+    await expect(supportQueueMessagesHandler(request, h)).rejects.toThrow(boomError)
 
     expect(request.logger.error).toHaveBeenCalledWith(
       { err: boomError },
@@ -72,9 +70,7 @@ describe('supportQueueMessagesHandler', () => {
     const error = new Error('Unexpected')
     getQueueMessages.mockRejectedValue(error)
 
-    await expect(
-      supportQueueMessagesHandler(request, h)
-    ).rejects.toThrow(Boom.internal(error))
+    await expect(supportQueueMessagesHandler(request, h)).rejects.toThrow(Boom.internal(error))
 
     expect(request.logger.error).toHaveBeenCalledWith(
       { err: error },
