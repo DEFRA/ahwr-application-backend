@@ -6,7 +6,7 @@ export const getLoggerOptions = () => {
   const logConfig = config.get('log')
   const serviceName = config.get('serviceName')
   const serviceVersion = config.get('serviceVersion')
-  
+
   const formatters = {
     ecs: {
       ...ecsFormat({
@@ -24,7 +24,7 @@ export const getLoggerOptions = () => {
       }
     }
   }
-  
+
   const loggerOptions = {
     ignorePaths: ['/health'],
     redact: {
