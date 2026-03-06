@@ -1,9 +1,10 @@
-import { deleteClaim } from '../../repositories/claim-repository.js'
-import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { v4 as uuid } from 'uuid'
+import { deleteClaim, updateClaimData } from '../../repositories/claim-repository.js'
+import { raiseClaimEvents } from '../../event-publisher/index.js'
+import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0692_DATA={"datastoreUpdates":[{"claimRef":"RESH-C2DZ-HPZR"}],"events":[{"sbi":"123456789","claimRef":"RESH-C2DZ-HPZR","applicationRef":"IAHW-8VE2-P6PA"}]}
+// DATA_CHANGE_V0692_DATA={"datastoreUpdates":[{"claimRef":"RESH-CM1C-KYJQ"},{"claimRef":"RESH-6755-4TUH"},{"claimRef":"RESH-2CGP-1EM9"},{"claimRef":"RESH-8GSD-BIZ5","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}],"events":[{"sbi":"106746222","claimRef":"RESH-CM1C-KYJQ","applicationRef":"IAHW-3SEL-B5CP"},{"sbi":"106746222","claimRef":"RESH-6755-4TUH","applicationRef":"IAHW-Q4T3-YMBT"},{"sbi":"106746222","claimRef":"RESH-2CGP-1EM9","applicationRef":"IAHW-1FD0-6124"},{"sbi":"106746222","claimRef":"RESH-8GSD-BIZ5","applicationRef":"IAHW-GVJ6-33CY","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}]}
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
@@ -14,10 +15,17 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
 
   await deleteClaim(db, datastoreUpdates[2].claimRef)
 
-  // update URN
-  // const update4 = datastoreUpdates[3]
-  // const updatedBy = 'Admin2'
-  // const updateNotes = 'Requested change from Samantha Smith via email on 23rd February 2026'
+  const update4 = datastoreUpdates[3]
+  await updateClaimData({
+    db,
+    reference: update4.claimRef,
+    updatedProperty: 'laboratoryURN',
+    newValue: update4.newValue,
+    oldValue: update4.oldValue,
+    note: 'Requested change from Samantha Smith via email on 23rd February 2026',
+    user: 'Admin2',
+    updatedAt: new Date()
+  })
 }
 
 export const sendEvents = async (serviceVersion, { events }, logger) => {
@@ -74,4 +82,15 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
     },
     event3.sbi
   )
+
+  const event4 = events[3]
+  const eventData = {
+    applicationReference: event4.applicationRef,
+    reference: event4.claimRef,
+    newValue: event4.newValue,
+    oldValue: event4.oldValue,
+    updatedProperty: 'urnResult',
+    note: 'Requested change from Samantha Smith via email on 23rd February 2026'
+  }
+  await claimDataUpdateEvent(eventData, 'claim-urnResult', 'Admin2', new Date(), event4.sbi)
 }

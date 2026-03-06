@@ -29,9 +29,9 @@ describe('Test runDistributedStartupJob', () => {
       return values[key]
     })
 
-    await expect(async () => await runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.69.0'
-    )
+    await expect(
+      runDistributedStartupJob(mockDB, mockLogger)
+    ).rejects.toThrow('Missing supporting data for service version 0.69.0')
   })
 
   it('should not run job when already been run', async () => {
