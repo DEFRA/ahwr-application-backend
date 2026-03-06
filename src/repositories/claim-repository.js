@@ -29,6 +29,10 @@ export const createClaim = async (db, data) => {
   return db.collection(CLAIMS_COLLECTION).insertOne(data)
 }
 
+export const deleteClaim = async (db, reference) => {
+  return db.collection(CLAIMS_COLLECTION).deleteOne({ reference })
+}
+
 export const updateClaimStatus = async ({ db, reference, status, user, updatedAt, note }) => {
   return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
     { reference },
