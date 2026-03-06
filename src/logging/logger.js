@@ -1,9 +1,12 @@
 import { pino } from 'pino'
-import { loggerOptions } from './logger-options.js'
+import { getLoggerOptions } from './logger-options.js'
 
-const logger = pino(loggerOptions)
+let logger
 
 export function getLogger() {
+  if (!logger) {
+    logger = pino(getLoggerOptions())
+  }
   return logger
 }
 

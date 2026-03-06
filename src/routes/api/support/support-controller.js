@@ -1,6 +1,11 @@
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
-import { getQueueMessages, getSupportApplication, getSupportClaim, getSupportHerd } from './support-service.js'
+import {
+  getQueueMessages,
+  getSupportApplication,
+  getSupportClaim,
+  getSupportHerd
+} from './support-service.js'
 
 export const supportApplicationHandler = async (request, h) => {
   try {
