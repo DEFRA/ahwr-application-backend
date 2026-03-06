@@ -25,7 +25,7 @@ export const getLoggerOptions = () => {
     }
   }
 
-  const loggerOptions = {
+  return {
     ignorePaths: ['/health'],
     redact: {
       paths: logConfig.redact,
@@ -55,6 +55,4 @@ export const getLoggerOptions = () => {
       return mixinValues
     }
   }
-
-  return loggerOptions
 }
