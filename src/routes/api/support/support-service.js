@@ -2,6 +2,8 @@ import Boom from '@hapi/boom'
 import { getApplicationWithFullFlags } from '../../../repositories/application-repository.js'
 import { getClaimByReference } from '../../../repositories/claim-repository.js'
 import { getAllHerdVersionsById } from '../../../repositories/herd-repository.js'
+import { SQSClient, ReceiveMessageCommand } from '@aws-sdk/client-sqs'
+import { config } from '../../../config/config.js'
 
 export const getSupportApplication = async ({ db, reference }) => {
   const application = await getApplicationWithFullFlags({ db, reference })
@@ -31,4 +33,30 @@ export const getSupportHerd = async ({ db, id }) => {
   }
 
   return claim
+}
+
+export const getQueueMessages = async ({ queueUrl, limit, logger }) => {
+  const client = new SQSClient({
+    region: config.get('aws.region'),
+    endpoint: config.get('aws.endpointUrl')
+  })
+
+  const command = new ReceiveMessageCommand({
+    QueueUrl: queueUrl,
+    MaxNumberOfMessages: limit,
+    VisibilityTimeout: 2,
+    WaitTimeSeconds: 0,
+    AttributeNames: ['All'],
+    MessageAttributeNames: ['All']
+  })
+  const result = await client.send(command)
+
+  logger.info(`Retrieved ${result.Messages?.length || 0} messages`)
+
+  return (result.Messages || []).map((msg) => ({
+    id: msg.MessageId,
+    body: msg.Body,
+    attributes: msg.Attributes,
+    messageAttributes: msg.MessageAttributes
+  }))
 }
