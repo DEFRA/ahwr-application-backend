@@ -4,7 +4,7 @@ import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0692_DATA={"datastoreUpdates":[{"claimRef":"RESH-CM1C-KYJQ"},{"claimRef":"RESH-6755-4TUH"},{"claimRef":"RESH-2CGP-1EM9"},{"claimRef":"RESH-8GSD-BIZ5","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}],"events":[{"sbi":"106746222","claimRef":"RESH-CM1C-KYJQ","applicationRef":"IAHW-3SEL-B5CP"},{"sbi":"106746222","claimRef":"RESH-6755-4TUH","applicationRef":"IAHW-Q4T3-YMBT"},{"sbi":"106746222","claimRef":"RESH-2CGP-1EM9","applicationRef":"IAHW-1FD0-6124"},{"sbi":"106746222","claimRef":"RESH-8GSD-BIZ5","applicationRef":"IAHW-GVJ6-33CY","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}]}
+// DATA_CHANGE_V0692_DATA={"datastoreUpdates":[{"claimRef":"RESH-CM1C-KYJQ"},{"claimRef":"RESH-6755-4TUH"},{"claimRef":"RESH-2CGP-1EM9"},{"claimRef":"RESH-8GSD-BIZ5","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}],"events":[{"sbi":"106746222","claimRef":"RESH-CM1C-KYJQ","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-6755-4TUH","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-2CGP-1EM9","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-8GSD-BIZ5","applicationRef":"IAHW-GVJ6-33CY","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}]}
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
