@@ -17,14 +17,14 @@ export const supportApplicationHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get application')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get application')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -38,14 +38,14 @@ export const supportClaimHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -59,14 +59,14 @@ export const supportHerdHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get herd')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get herd')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -81,13 +81,13 @@ export const supportQueueMessagesHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get queue messages')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get queue messages')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }

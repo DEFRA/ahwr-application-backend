@@ -61,7 +61,7 @@ describe('supportQueueMessagesHandler', () => {
     await expect(supportQueueMessagesHandler(request, h)).rejects.toThrow(boomError)
 
     expect(request.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to get queue messages'
     )
   })
@@ -73,7 +73,7 @@ describe('supportQueueMessagesHandler', () => {
     await expect(supportQueueMessagesHandler(request, h)).rejects.toThrow(Boom.internal(error))
 
     expect(request.logger.error).toHaveBeenCalledWith(
-      { err: error },
+      { error: error },
       'Failed to get queue messages'
     )
   })

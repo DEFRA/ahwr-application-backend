@@ -1,7 +1,6 @@
 import { getQueueMessages } from './support-service'
-import { SQSClient } from '@aws-sdk/client-sqs'
+import { sqsClient } from 'ffc-ahwr-common-library'
 
-jest.mock('@aws-sdk/client-sqs')
 jest.mock('../../../config/config.js', () => ({
   config: {
     get: (key) => {
@@ -14,46 +13,41 @@ jest.mock('../../../config/config.js', () => ({
     }
   }
 }))
+jest.mock('ffc-ahwr-common-library')
 
 describe('getQueueMessages', () => {
-  const sendMock = jest.fn()
   const loggerMock = {
     info: jest.fn()
   }
-
-  SQSClient.mockImplementation(() => ({
-    send: sendMock
-  }))
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
   it('should retrieve messages and render them', async () => {
-    sendMock.mockResolvedValue({
-      Messages: [
-        {
-          MessageId: '1',
-          Body: { sbi: '123456789', claimRef: 'FUBC-JTTU-SDQ7' },
-          Attributes: { attr: 'value' },
-          MessageAttributes: {
-            eventType: { DataType: 'String', StringValue: 'uk.gov.ffc.ahwr.set.paid.status' }
-          }
+    sqsClient.peekMessages.mockResolvedValue([
+      {
+        id: '1',
+        body: { sbi: '123456789', claimRef: 'FUBC-JTTU-SDQ7' },
+        attributes: { attr: 'value' },
+        messageAttributes: {
+          eventType: { DataType: 'String', StringValue: 'uk.gov.ffc.ahwr.set.paid.status' }
         }
-      ]
-    })
+      }
+    ])
 
     const result = await getQueueMessages({
-      queueUrl: 'localhost:45666',
+      queueUrl: 'http://localhost:45666/queueName',
       limit: 10,
       logger: loggerMock
     })
 
-    expect(SQSClient).toHaveBeenCalledWith({
-      region: 'eu-west-2',
-      endpoint: 'http://localhost:4566'
-    })
-    expect(sendMock).toHaveBeenCalled()
+    expect(sqsClient.setupClient).toHaveBeenCalledWith(
+      'eu-west-2',
+      'http://localhost:4566',
+      loggerMock
+    )
+    expect(sqsClient.peekMessages).toHaveBeenCalledWith('http://localhost:45666/queueName', 10)
     expect(result).toEqual([
       {
         id: '1',
@@ -67,7 +61,7 @@ describe('getQueueMessages', () => {
   })
 
   it('should return empty array when no messages', async () => {
-    sendMock.mockResolvedValue({ Messages: [] })
+    sqsClient.peekMessages.mockResolvedValue([])
 
     const result = await getQueueMessages({
       queueUrl: 'localhost:45666',
