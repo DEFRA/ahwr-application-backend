@@ -44,7 +44,7 @@
     "convict-format-with-validator": "6.2.0",
     "crypto-js": "4.2.0",
     "fast-xml-parser": "5.3.6",
-    "ffc-ahwr-common-library": "3.5.0",
+    "ffc-ahwr-common-library": "3.6.1",
     "ffc-messaging": "2.10.3",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",

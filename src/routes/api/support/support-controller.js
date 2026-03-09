@@ -1,6 +1,11 @@
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
-import { getSupportApplication, getSupportClaim, getSupportHerd } from './support-service.js'
+import {
+  getQueueMessages,
+  getSupportApplication,
+  getSupportClaim,
+  getSupportHerd
+} from './support-service.js'
 
 export const supportApplicationHandler = async (request, h) => {
   try {
@@ -12,14 +17,14 @@ export const supportApplicationHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get application')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get application')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -33,14 +38,14 @@ export const supportClaimHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -54,13 +59,35 @@ export const supportHerdHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get herd')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get herd')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
+  }
+}
+
+export const supportQueueMessagesHandler = async (request, h) => {
+  try {
+    const { queueUrl, limit } = request.query
+
+    const result = await getQueueMessages({
+      queueUrl,
+      limit,
+      logger: request.logger
+    })
+
+    return h.response(result).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get queue messages')
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+
+    throw Boom.internal(error)
   }
 }

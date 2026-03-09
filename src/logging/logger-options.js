@@ -2,55 +2,57 @@ import { ecsFormat } from '@elastic/ecs-pino-format'
 import { config } from '../config/config.js'
 import { getTraceId } from '@defra/hapi-tracing'
 
-const logConfig = config.get('log')
-const serviceName = config.get('serviceName')
-const serviceVersion = config.get('serviceVersion')
+export const getLoggerOptions = () => {
+  const logConfig = config.get('log')
+  const serviceName = config.get('serviceName')
+  const serviceVersion = config.get('serviceVersion')
 
-const formatters = {
-  ecs: {
-    ...ecsFormat({
-      serviceVersion,
-      serviceName
-    })
-  },
-  'pino-pretty': {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        singleLine: true,
-        colorize: true
+  const formatters = {
+    ecs: {
+      ...ecsFormat({
+        serviceVersion,
+        serviceName
+      })
+    },
+    'pino-pretty': {
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          singleLine: true,
+          colorize: true
+        }
       }
     }
   }
-}
 
-export const loggerOptions = {
-  ignorePaths: ['/health'],
-  redact: {
-    paths: logConfig.redact,
-    remove: true
-  },
-  level: logConfig.level,
-  ...formatters[logConfig.format],
-  nesting: true,
-  serializers: {
-    error: (err) => {
-      if (err instanceof Error) {
-        return {
-          message: err.message,
-          stack_trace: err.stack,
-          type: err.name
+  return {
+    ignorePaths: ['/health'],
+    redact: {
+      paths: logConfig.redact,
+      remove: true
+    },
+    level: logConfig.level,
+    ...formatters[logConfig.format],
+    nesting: true,
+    serializers: {
+      error: (err) => {
+        if (err instanceof Error) {
+          return {
+            message: err.message,
+            stack_trace: err.stack,
+            type: err.name
+          }
         }
+        return err
       }
-      return err
+    },
+    mixin() {
+      const mixinValues = {}
+      const traceId = getTraceId()
+      if (traceId) {
+        mixinValues.trace = { id: traceId }
+      }
+      return mixinValues
     }
-  },
-  mixin() {
-    const mixinValues = {}
-    const traceId = getTraceId()
-    if (traceId) {
-      mixinValues.trace = { id: traceId }
-    }
-    return mixinValues
   }
 }

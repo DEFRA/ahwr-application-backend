@@ -2,6 +2,8 @@ import Boom from '@hapi/boom'
 import { getApplicationWithFullFlags } from '../../../repositories/application-repository.js'
 import { getClaimByReference } from '../../../repositories/claim-repository.js'
 import { getAllHerdVersionsById } from '../../../repositories/herd-repository.js'
+import { config } from '../../../config/config.js'
+import { sqsClient } from 'ffc-ahwr-common-library'
 
 export const getSupportApplication = async ({ db, reference }) => {
   const application = await getApplicationWithFullFlags({ db, reference })
@@ -31,4 +33,13 @@ export const getSupportHerd = async ({ db, id }) => {
   }
 
   return claim
+}
+
+export const getQueueMessages = async ({ queueUrl, limit, logger }) => {
+  const region = config.get('aws.region')
+  const endpointUrl = config.get('aws.endpointUrl')
+
+  sqsClient.setupClient(region, endpointUrl, logger)
+
+  return sqsClient.peekMessages(queueUrl, limit)
 }
