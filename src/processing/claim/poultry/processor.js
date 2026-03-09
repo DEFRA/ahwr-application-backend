@@ -122,8 +122,7 @@ export async function generateEventsAndComms(
   herdIdSelected
 ) {
   const { reference: claimReference, status, type } = claim
-  const { amount, typeOfLivestock } =
-    claim.data
+  const { amount, typeOfLivestock } = claim.data
   const {
     reference: applicationReference,
     organisation: { crn, sbi }

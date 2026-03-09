@@ -5,15 +5,7 @@ import { herdSchema } from '../../../routes/api/schema/herd.schema.js'
 const getDataModel = () =>
   joi.object({
     amount: joi.string().optional(),
-    typeOfLivestock: joi
-      .string()
-      .valid(
-        'chicken',
-        'turkey',
-        'geese',
-        'etc'
-      )
-      .required(),
+    typeOfLivestock: joi.string().valid('chicken', 'turkey', 'geese', 'etc').required(),
     dateOfVisit: joi.date().required(),
     speciesNumbers: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
@@ -30,7 +22,6 @@ const getClaimModel = () =>
   })
 
 export const validatePoultryClaim = (claimData) => {
-
   return getClaimModel().validate(claimData, {
     abortEarly: false,
     convert: true

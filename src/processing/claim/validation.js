@@ -6,7 +6,8 @@ export const validateClaim = (scheme, claimData, applicationFlags) => {
   // forward on to scheme
   if (scheme === AHWR_SCHEME) {
     return validateAhwrClaim(claimData, applicationFlags)
-  } else if (scheme === 'poultry') { // TODO: update this to use constant when added to library
+  } else if (scheme === 'poultry') {
+    // TODO: update this to use constant when added to library
     return validatePoultryClaim(claimData, applicationFlags)
   }
 
