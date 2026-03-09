@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
+import { processClaim, isURNNumberUnique, getClaim, processPoultryClaim } from './claims-service.js'
 import {
   getClaimByReference,
   updateClaimData,
@@ -19,11 +19,18 @@ import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update
 
 export const createClaimHandler = async (request, h) => {
   try {
-    const { payload, logger, db } = request
+    const { payload, logger, db, params } = request
 
-    const claim = await processClaim({ payload, logger, db })
+    // could have new endpoint, or use a header, or param here to route to different processing
+    if (params?.scheme === 'poultry') {
+      const claim = await processPoultryClaim({ payload, logger, db })
 
-    return h.response(claim).code(StatusCodes.OK)
+      return h.response(claim).code(StatusCodes.OK)
+    } else {
+      const claim = await processClaim({ payload, logger, db })
+
+      return h.response(claim).code(StatusCodes.OK)
+    }
   } catch (err) {
     request.logger.error({ err }, 'Failed to create claim')
 

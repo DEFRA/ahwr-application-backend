@@ -3,7 +3,8 @@ import { claimType } from 'ffc-ahwr-common-library'
 const getPrefix = (typeOfClaim, typeOfLivestock) => {
   const claimTypeMap = {
     [claimType.review]: 'RE',
-    [claimType.endemics]: 'FU'
+    [claimType.endemics]: 'FU',
+    ['poultry']: 'PO'
   }
 
   const firstTwoCharacters = claimTypeMap[typeOfClaim]
@@ -16,7 +17,10 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
     beef: 'BC',
     dairy: 'DC',
     pigs: 'PI',
-    sheep: 'SH'
+    sheep: 'SH',
+    chicken: 'CH',
+    turkey: 'TU',
+    ducks: 'DU'
   }
 
   const lastTwoCharacters = typeOfLivestockMap[typeOfLivestock]

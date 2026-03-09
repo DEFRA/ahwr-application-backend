@@ -53,7 +53,7 @@ const buildUpdatedHerd = (existingHerd, herd, applicationReference, createdBy) =
   isCurrent: true
 })
 
-const createOrUpdateHerd = async (
+export const createOrUpdateHerd = async (
   herd,
   applicationReference,
   createdBy,

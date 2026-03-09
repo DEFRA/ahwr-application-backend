@@ -14,6 +14,10 @@ import {
   saveClaimAndRelatedData,
   generateEventsAndComms
 } from '../../../processing/claim/ahwr/processor.js'
+import {
+  saveClaimAndRelatedData as savePoultryClaim,
+  generateEventsAndComms as generatePoultryEvents
+} from '../../../processing/claim/poultry/processor.js'
 import Boom from '@hapi/boom'
 import { trackError } from '../../../logging/logger.js'
 
@@ -75,6 +79,51 @@ export const processClaim = async ({ payload, logger, db }) => {
   // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
   // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
   generateEventsAndComms(isMultiHerdsClaim, claim, application, herdData, herdGotUpdated, herd?.id)
+
+  return claim
+}
+
+export const processPoultryClaim = async ({ payload, logger, db }) => {
+  const { applicationReference, reference: tempClaimReference, data } = payload
+  const { typeOfLivestock, herd } = data || {}
+
+  const application = await getApplication({
+    db,
+    reference: applicationReference
+  })
+  if (!application) {
+    throw Boom.notFound('Application not found')
+  }
+
+  const {
+    flags,
+    organisation: { sbi }
+  } = application
+
+  const { value: validatedPayload, error } = validateClaim('poultry', payload, flags)
+  if (error) {
+    logger.setBindings({ error })
+    trackError(logger, error, 'failed-validation', 'Create claim validation error')
+    throw Boom.badRequest(error.message)
+  }
+
+  const claimReference = createClaimReference(tempClaimReference, 'poultry', typeOfLivestock)
+
+  const { claim, herdGotUpdated, herdData } = await savePoultryClaim({
+    db,
+    sbi,
+    claimPayload: validatedPayload,
+    claimReference,
+    flags,
+    logger
+  })
+  if (!claim) {
+    throw new Error('Claim was not created')
+  }
+
+  // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
+  // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
+  generatePoultryEvents(claim, application, herdData, herdGotUpdated, herd.id)
 
   return claim
 }
