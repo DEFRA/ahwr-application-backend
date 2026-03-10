@@ -21,7 +21,7 @@ export const runDistributedStartupJob = async (db, logger) => {
   }
 
   const serviceVersion = config.get('serviceVersion')
-  const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
+  const supportingDataVersion = `v${serviceVersion?.replaceAll('.', '')}SupportingData`
   const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
   if (isNotDataChangeVersion(supportingDataVersion)) {
