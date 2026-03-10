@@ -19,6 +19,23 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
+  it('should not run job when service version is not present', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { } })
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        serviceVersion: null,
+        'distributedJobs.vnullSupportingData': {}
+      }
+      return values[key]
+    })
+
+    await runDistributedStartupJob(mockDB, mockLogger)
+
+    expect(mockDB.collection).not.toHaveBeenCalled()
+    expect(mockCollection.insertOne).not.toHaveBeenCalled()
+  })
+
   it('should not run job when supporting data is default/empty', async () => {
     config.getProperties.mockReturnValue({ distributedJobs: { v0690SupportingData: {} } })
     config.get.mockImplementation((key) => {
