@@ -20,7 +20,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when service version is not present', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { } })
+    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
