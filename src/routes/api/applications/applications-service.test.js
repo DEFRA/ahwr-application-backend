@@ -214,7 +214,7 @@ describe('applications-service', () => {
       await expect(
         createApplication({
           applicationRequest: {
-            type: 'poultry',
+            type: 'POUL',
             organisation: {
               sbi: '123456789'
             }
@@ -515,7 +515,7 @@ describe('applications-service', () => {
 
   describe('successfully poultry create application', () => {
     const inputRequest = {
-      type: 'poultry',
+      type: 'POUL',
       reference: 'TEMP-8ZPZ-8CLI',
       declaration: true,
       offerStatus: 'accepted',
