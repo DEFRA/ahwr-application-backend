@@ -48,9 +48,9 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   logger.setBindings({ sbi: applicationRequest.organisation.sbi })
 
   const applications = await appRepo.getApplicationsBySbi(db, applicationRequest.organisation.sbi)
-  const latestApplication = applications?.filter((a) =>
+  const latestApplication = applications.find((a) =>
     a.reference.startsWith(applicationRequest.type)
-  )?.[0]
+  )
   if (isPreviousApplicationRelevant(latestApplication)) {
     throw new Error(
       `Recent application already exists: ${JSON.stringify({
