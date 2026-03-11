@@ -22,6 +22,7 @@ const organisationValidations = () => ({
 })
 
 export const newApplicationSchema = Joi.object({
+  type: Joi.string().optional(),
   confirmCheckDetails: Joi.string().required(),
   reference: Joi.string().allow(null).required(),
   declaration: Joi.boolean().required(),
