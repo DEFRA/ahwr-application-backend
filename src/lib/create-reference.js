@@ -36,6 +36,6 @@ export const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
   return id.replace('TEMP-CLAIM', prefix)
 }
 
-export const createApplicationReference = (id) => {
-  return id.replace('TEMP', 'IAHW')
+export const createApplicationReference = (id, type) => {
+  return id.replace('TEMP', type)
 }

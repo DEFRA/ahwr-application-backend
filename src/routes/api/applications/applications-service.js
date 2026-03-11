@@ -18,7 +18,7 @@ const buildApplication = (applicationRequest) => {
   const createdBy = 'admin'
 
   return {
-    reference: createApplicationReference(applicationRequest.reference),
+    reference: createApplicationReference(applicationRequest.reference, applicationRequest.type),
     data: {
       reference: applicationRequest.reference,
       declaration: applicationRequest.declaration,
@@ -48,7 +48,9 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
   logger.setBindings({ sbi: applicationRequest.organisation.sbi })
 
   const applications = await appRepo.getApplicationsBySbi(db, applicationRequest.organisation.sbi)
-  const latestApplication = applications?.[0]
+  const latestApplication = applications.find((a) =>
+    a.reference.startsWith(applicationRequest.type)
+  )
   if (isPreviousApplicationRelevant(latestApplication)) {
     throw new Error(
       `Recent application already exists: ${JSON.stringify({

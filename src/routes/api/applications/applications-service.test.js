@@ -183,6 +183,7 @@ describe('applications-service', () => {
       await expect(
         createApplication({
           applicationRequest: {
+            type: 'IAHW',
             organisation: {
               sbi: '123456789'
             }
@@ -197,6 +198,7 @@ describe('applications-service', () => {
 
     describe('successfully create application', () => {
       const inputRequest = {
+        type: 'IAHW',
         reference: 'TEMP-8ZPZ-8CLI',
         declaration: true,
         offerStatus: 'accepted',
@@ -366,6 +368,70 @@ describe('applications-service', () => {
         })
       })
 
+      it('should create application when previous application exists but is poultry', async () => {
+        const mockResult = [
+          {
+            reference: 'POUL-8ZPZ-8CLI',
+            data: {
+              reference: 'POUL-8ZPZ-8CLI',
+              declaration: true,
+              offerStatus: 'accepted',
+              confirmCheckDetails: 'yes'
+            },
+            status: 'AGREED',
+            createdAt: '2025-01-01T00:00:00Z'
+          }
+        ]
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
+
+        await createApplication({
+          applicationRequest: inputRequest,
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(mockLogger.setBindings).toHaveBeenCalledWith({
+          sbi: '118409263'
+        })
+        expect(appRepo.createApplication).toHaveBeenCalledWith(
+          expect.anything(),
+          expectedApplication
+        )
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: {
+            ...expectedApplication,
+            id: '690e04e10341b23a7d3cb9e5'
+          },
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          crn: '1101489790',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          name: 'High Oustley Farm',
+          reference: 'IAHW-8ZPZ-8CLI',
+          sbi: '118409263',
+          startDate: expect.any(String),
+          userType: 'newUser',
+          scheme: 'ahwr'
+        })
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: accepted sbi:118409263',
+            outcome: 'true',
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
+      })
+
       it('should create application in database, but not notify for document generation when not accepted', async () => {
         const mockResult = []
         jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
@@ -478,6 +544,194 @@ describe('applications-service', () => {
           }
         })
       })
+    })
+  })
+
+  describe('successfully poultry create application', () => {
+    const inputRequest = {
+      type: 'POUL',
+      reference: 'TEMP-8ZPZ-8CLI',
+      declaration: true,
+      offerStatus: 'accepted',
+      confirmCheckDetails: 'yes',
+      organisation: {
+        crn: '1101489790',
+        sbi: '118409263',
+        name: 'High Oustley Farm',
+        email: 'jparkinsong@nosnikrapjz.com.test',
+        address:
+          'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+        orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+        userType: 'newUser',
+        farmerName: 'J Parkinson'
+      }
+    }
+
+    const expectedApplication = {
+      contactHistory: [],
+      createdAt: expect.any(Date),
+      createdBy: 'admin',
+      data: {
+        confirmCheckDetails: 'yes',
+        declaration: true,
+        offerStatus: 'accepted',
+        reference: 'TEMP-8ZPZ-8CLI'
+      },
+      eligiblePiiRedaction: true,
+      flags: [],
+      organisation: {
+        address:
+          'THE FIRS,South Croxton Road,HULVER FARM,MAIN STREET,MALVERN,TS21 2HU,United Kingdom',
+        crn: '1101489790',
+        email: 'jparkinsong@nosnikrapjz.com.test',
+        farmerName: 'J Parkinson',
+        name: 'High Oustley Farm',
+        orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+        sbi: '118409263',
+        userType: 'newUser'
+      },
+      redactionHistory: {},
+      reference: 'POUL-8ZPZ-8CLI',
+      status: 'AGREED',
+      statusHistory: [
+        {
+          status: 'AGREED',
+          createdBy: 'admin',
+          createdAt: expect.any(Date)
+        }
+      ],
+      updateHistory: []
+    }
+
+    it('should create application when no previous application exists in repo', async () => {
+      const mockResult = []
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+      jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+        acknowledged: true,
+        insertedId: '690e04e10341b23a7d3cb9e5'
+      })
+
+      await createApplication({
+        applicationRequest: inputRequest,
+        logger: mockLogger,
+        db: {}
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        sbi: '118409263'
+      })
+      expect(appRepo.createApplication).toHaveBeenCalledWith(expect.anything(), expectedApplication)
+      expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+        message: 'New application has been created',
+        application: {
+          ...expectedApplication,
+          id: '690e04e10341b23a7d3cb9e5'
+        },
+        raisedBy: 'admin',
+        raisedOn: expect.any(Date)
+      })
+      expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+        email: 'jparkinsong@nosnikrapjz.com.test',
+        farmerName: 'J Parkinson',
+        crn: '1101489790',
+        orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+        name: 'High Oustley Farm',
+        reference: 'POUL-8ZPZ-8CLI',
+        sbi: '118409263',
+        startDate: expect.any(String),
+        userType: 'newUser',
+        scheme: 'ahwr' // TODO does this need to be different for poultry?
+      })
+      expect(mockLogger.info).toHaveBeenCalledWith({
+        event: {
+          category: 'status: accepted sbi:118409263',
+          outcome: 'true',
+          reference: 'POUL-8ZPZ-8CLI',
+          type: 'process-application-api'
+        }
+      })
+    })
+
+    it('should create application when previous application exists but is not poultry', async () => {
+      const mockResult = [
+        {
+          reference: 'IAHW-8ZPZ-8CLI',
+          data: {
+            reference: 'IAHW-8ZPZ-8CLI',
+            declaration: true,
+            offerStatus: 'accepted',
+            confirmCheckDetails: 'yes'
+          },
+          status: 'AGREED',
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ]
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+      jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+        acknowledged: true,
+        insertedId: '690e04e10341b23a7d3cb9e5'
+      })
+
+      await createApplication({
+        applicationRequest: inputRequest,
+        logger: mockLogger,
+        db: {}
+      })
+
+      expect(appRepo.createApplication).toHaveBeenCalledWith(expect.anything(), expectedApplication)
+      expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+        message: 'New application has been created',
+        application: {
+          ...expectedApplication,
+          id: '690e04e10341b23a7d3cb9e5'
+        },
+        raisedBy: 'admin',
+        raisedOn: expect.any(Date)
+      })
+      expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+        email: 'jparkinsong@nosnikrapjz.com.test',
+        farmerName: 'J Parkinson',
+        crn: '1101489790',
+        orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+        name: 'High Oustley Farm',
+        reference: 'POUL-8ZPZ-8CLI',
+        sbi: '118409263',
+        startDate: expect.any(String),
+        userType: 'newUser',
+        scheme: 'ahwr'
+      })
+    })
+
+    it('should not create poultry application when previous open poultry application exists in repo', async () => {
+      const mockResult = [
+        {
+          reference: 'POUL-8ZPZ-8CLI',
+          data: {
+            reference: 'POUL-8ZPZ-8CLI',
+            declaration: true,
+            offerStatus: 'accepted',
+            confirmCheckDetails: 'yes'
+          },
+          status: 'AGREED',
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ]
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+
+      await expect(
+        createApplication({
+          applicationRequest: {
+            type: 'POUL',
+            organisation: {
+              sbi: '123456789'
+            }
+          },
+          logger: mockLogger,
+          db: {}
+        })
+      ).rejects.toThrow(
+        'Recent application already exists: {"reference":"POUL-8ZPZ-8CLI","createdAt":"2025-01-01T00:00:00Z"}'
+      )
     })
   })
 
