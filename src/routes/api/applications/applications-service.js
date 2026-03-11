@@ -49,7 +49,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 
   const applications = await appRepo.getApplicationsBySbi(db, applicationRequest.organisation.sbi)
   const latestApplication = applications?.filter((a) =>
-    a.reference.startsWith(applicationRequest.type ?? 'IAHW')
+    a.reference.startsWith(applicationRequest.type)
   )?.[0]
   if (isPreviousApplicationRelevant(latestApplication)) {
     throw new Error(

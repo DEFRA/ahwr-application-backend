@@ -183,6 +183,7 @@ describe('applications-service', () => {
       await expect(
         createApplication({
           applicationRequest: {
+            type: 'IAHW',
             organisation: {
               sbi: '123456789'
             }
@@ -229,6 +230,7 @@ describe('applications-service', () => {
 
     describe('successfully create application', () => {
       const inputRequest = {
+        type: 'IAHW',
         reference: 'TEMP-8ZPZ-8CLI',
         declaration: true,
         offerStatus: 'accepted',
