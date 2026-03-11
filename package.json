@@ -84,6 +84,7 @@
     "jest": "30.2.0",
     "jest-junit": "16.0.0",
     "jest-when": "3.7.0",
+    "lint-staged": "16.3.3",
     "mongodb-memory-server": "10.4.3",
     "neostandard": "0.12.1",
     "nodemon": "3.1.10",
@@ -95,6 +96,15 @@
   "nodemonConfig": {
     "ignore": [
       "**/test-output/**"
+    ]
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
     ]
   }
 }
