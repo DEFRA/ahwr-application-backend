@@ -195,7 +195,7 @@ describe('applications-service', () => {
       )
     })
 
-    it.skip('should not create poultry application when previous open poultry application exists in repo', async () => {
+    it('should not create poultry application when previous open poultry application exists in repo', async () => {
       const mockResult = [
         {
           reference: 'POUL-8ZPZ-8CLI',
@@ -213,8 +213,8 @@ describe('applications-service', () => {
 
       await expect(
         createApplication({
-          type: 'poultry',
           applicationRequest: {
+            type: 'poultry',
             organisation: {
               sbi: '123456789'
             }
