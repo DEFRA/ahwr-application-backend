@@ -196,38 +196,6 @@ describe('applications-service', () => {
       )
     })
 
-    it('should not create poultry application when previous open poultry application exists in repo', async () => {
-      const mockResult = [
-        {
-          reference: 'POUL-8ZPZ-8CLI',
-          data: {
-            reference: 'POUL-8ZPZ-8CLI',
-            declaration: true,
-            offerStatus: 'accepted',
-            confirmCheckDetails: 'yes'
-          },
-          status: 'AGREED',
-          createdAt: '2025-01-01T00:00:00Z'
-        }
-      ]
-      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
-
-      await expect(
-        createApplication({
-          applicationRequest: {
-            type: 'POUL',
-            organisation: {
-              sbi: '123456789'
-            }
-          },
-          logger: mockLogger,
-          db: {}
-        })
-      ).rejects.toThrow(
-        'Recent application already exists: {"reference":"POUL-8ZPZ-8CLI","createdAt":"2025-01-01T00:00:00Z"}'
-      )
-    })
-
     describe('successfully create application', () => {
       const inputRequest = {
         type: 'IAHW',
@@ -347,6 +315,70 @@ describe('applications-service', () => {
               confirmCheckDetails: 'yes'
             },
             status: 'WITHDRAWN',
+            createdAt: '2025-01-01T00:00:00Z'
+          }
+        ]
+        jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+        jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+          acknowledged: true,
+          insertedId: '690e04e10341b23a7d3cb9e5'
+        })
+
+        await createApplication({
+          applicationRequest: inputRequest,
+          logger: mockLogger,
+          db: {}
+        })
+
+        expect(mockLogger.setBindings).toHaveBeenCalledWith({
+          sbi: '118409263'
+        })
+        expect(appRepo.createApplication).toHaveBeenCalledWith(
+          expect.anything(),
+          expectedApplication
+        )
+        expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+          message: 'New application has been created',
+          application: {
+            ...expectedApplication,
+            id: '690e04e10341b23a7d3cb9e5'
+          },
+          raisedBy: 'admin',
+          raisedOn: expect.any(Date)
+        })
+        expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+          email: 'jparkinsong@nosnikrapjz.com.test',
+          farmerName: 'J Parkinson',
+          crn: '1101489790',
+          orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+          name: 'High Oustley Farm',
+          reference: 'IAHW-8ZPZ-8CLI',
+          sbi: '118409263',
+          startDate: expect.any(String),
+          userType: 'newUser',
+          scheme: 'ahwr'
+        })
+        expect(mockLogger.info).toHaveBeenCalledWith({
+          event: {
+            category: 'status: accepted sbi:118409263',
+            outcome: 'true',
+            reference: 'IAHW-8ZPZ-8CLI',
+            type: 'process-application-api'
+          }
+        })
+      })
+
+      it('should create application when previous application exists but is poultry', async () => {
+        const mockResult = [
+          {
+            reference: 'POUL-8ZPZ-8CLI',
+            data: {
+              reference: 'POUL-8ZPZ-8CLI',
+              declaration: true,
+              offerStatus: 'accepted',
+              confirmCheckDetails: 'yes'
+            },
+            status: 'AGREED',
             createdAt: '2025-01-01T00:00:00Z'
           }
         ]
@@ -618,6 +650,88 @@ describe('applications-service', () => {
           type: 'process-application-api'
         }
       })
+    })
+
+    it('should create application when previous application exists but is not poultry', async () => {
+      const mockResult = [
+        {
+          reference: 'IAHW-8ZPZ-8CLI',
+          data: {
+            reference: 'IAHW-8ZPZ-8CLI',
+            declaration: true,
+            offerStatus: 'accepted',
+            confirmCheckDetails: 'yes'
+          },
+          status: 'AGREED',
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ]
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+      jest.spyOn(appRepo, 'createApplication').mockResolvedValue({
+        acknowledged: true,
+        insertedId: '690e04e10341b23a7d3cb9e5'
+      })
+
+      await createApplication({
+        applicationRequest: inputRequest,
+        logger: mockLogger,
+        db: {}
+      })
+
+      expect(appRepo.createApplication).toHaveBeenCalledWith(expect.anything(), expectedApplication)
+      expect(raiseApplicationStatusEvent).toHaveBeenCalledWith({
+        message: 'New application has been created',
+        application: {
+          ...expectedApplication,
+          id: '690e04e10341b23a7d3cb9e5'
+        },
+        raisedBy: 'admin',
+        raisedOn: expect.any(Date)
+      })
+      expect(publishDocumentRequestEvent).toHaveBeenCalledWith(mockLogger, {
+        email: 'jparkinsong@nosnikrapjz.com.test',
+        farmerName: 'J Parkinson',
+        crn: '1101489790',
+        orgEmail: 'highoustleyfarmm@mrafyeltsuohgihh.com.test',
+        name: 'High Oustley Farm',
+        reference: 'POUL-8ZPZ-8CLI',
+        sbi: '118409263',
+        startDate: expect.any(String),
+        userType: 'newUser',
+        scheme: 'ahwr'
+      })
+    })
+
+    it('should not create poultry application when previous open poultry application exists in repo', async () => {
+      const mockResult = [
+        {
+          reference: 'POUL-8ZPZ-8CLI',
+          data: {
+            reference: 'POUL-8ZPZ-8CLI',
+            declaration: true,
+            offerStatus: 'accepted',
+            confirmCheckDetails: 'yes'
+          },
+          status: 'AGREED',
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ]
+      jest.spyOn(appRepo, 'getApplicationsBySbi').mockResolvedValue(mockResult)
+
+      await expect(
+        createApplication({
+          applicationRequest: {
+            type: 'POUL',
+            organisation: {
+              sbi: '123456789'
+            }
+          },
+          logger: mockLogger,
+          db: {}
+        })
+      ).rejects.toThrow(
+        'Recent application already exists: {"reference":"POUL-8ZPZ-8CLI","createdAt":"2025-01-01T00:00:00Z"}'
+      )
     })
   })
 
