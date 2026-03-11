@@ -54,7 +54,7 @@ export const supportHandlers = [
       validate: {
         query: joi.object({
           queueUrl: joi.string().required(),
-          limit: joi.string().optional()
+          limit: joi.number().integer().optional()
         })
       },
       handler: supportQueueMessagesHandler
