@@ -513,7 +513,7 @@ describe('applications-service', () => {
     })
   })
 
-  describe.skip('successfully poultry create application', () => {
+  describe('successfully poultry create application', () => {
     const inputRequest = {
       type: 'poultry',
       reference: 'TEMP-8ZPZ-8CLI',
@@ -541,7 +541,7 @@ describe('applications-service', () => {
         confirmCheckDetails: 'yes',
         declaration: true,
         offerStatus: 'accepted',
-        reference: 'POUL-8ZPZ-8CLI'
+        reference: 'TEMP-8ZPZ-8CLI'
       },
       eligiblePiiRedaction: true,
       flags: [],
@@ -612,7 +612,7 @@ describe('applications-service', () => {
         event: {
           category: 'status: accepted sbi:118409263',
           outcome: 'true',
-          reference: 'IAHW-8ZPZ-8CLI',
+          reference: 'POUL-8ZPZ-8CLI',
           type: 'process-application-api'
         }
       })
