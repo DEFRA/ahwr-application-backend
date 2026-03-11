@@ -2,11 +2,11 @@ import { createApplicationReference, createClaimReference } from './create-refer
 
 describe('createApplicationReference', () => {
   test('should take an existing TEMP reference and swap the prefix for IAHW', () => {
-    expect(createApplicationReference('TEMP-A2SQ-PFNF')).toEqual('IAHW-A2SQ-PFNF')
+    expect(createApplicationReference('TEMP-A2SQ-PFNF', 'IAHW')).toEqual('IAHW-A2SQ-PFNF')
   })
 
   test('should only replace the first instance of TEMP, incase the ID randomly has TEMP inside it', () => {
-    expect(createApplicationReference('TEMP-TEMP-TEMP')).toEqual('IAHW-TEMP-TEMP')
+    expect(createApplicationReference('TEMP-TEMP-TEMP', 'IAHW')).toEqual('IAHW-TEMP-TEMP')
   })
 })
 
