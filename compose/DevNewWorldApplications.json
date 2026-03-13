@@ -1,5 +1,39 @@
 [
   {
+    "_id": "690dc73317e3f38b41fe6926",
+    "reference": "POUL-1LZ5-ELVQ",
+    "createdAt": "2025-09-22T13:28:17.013Z",
+    "updatedAt": "2025-09-22T13:28:17.013Z",
+    "createdBy": "admin",
+    "updatedBy": null,
+    "data": {
+      "reference": "TEMP-1LZ5-ELVA",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100077049",
+      "frn": "1100918140",
+      "sbi": "107167406",
+      "name": "madeUpCo",
+      "email": "farmer@farm.com",
+      "address": "Somewhere",
+      "orgEmail": "org@company.com",
+      "userType": "newUser",
+      "farmerName": "John Smith"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      { "status": "AGREED", "createdBy": "admin", "createdAt": "2025-09-22T13:28:17.013Z" }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "eligiblePiiRedaction": true
+  },
+  {
     "_id": "690dc73317e3f39b41fe6911",
     "reference": "AHWR-1234-APP1",
     "createdAt": "2022-08-11T00:00:00.000Z",
