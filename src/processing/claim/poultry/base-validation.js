@@ -5,7 +5,6 @@ import { herdSchema } from '../../../routes/api/schema/herd.schema.js'
 
 const getDataModel = () =>
   joi.object({
-    amount: joi.string().optional(),
     typeOfLivestock: joi
       .string()
       .valid(
