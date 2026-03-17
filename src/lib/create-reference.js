@@ -1,7 +1,27 @@
 import { claimType } from 'ffc-ahwr-common-library'
 
 const getPoultryPrefix = (typeOfClaim, typeOfLivestock) => {
-  return 'POBR'
+  if (typeOfClaim !== claimType.review) {
+    throw new Error(`Reference cannot be created due to invalid type of reference: ${typeOfClaim}`)
+  }
+
+  const typeOfLivestockMap = {
+    ducks: 'DK',
+    turkeys: 'TK',
+    geese: 'GE',
+    broilers: 'BR',
+    laying: 'LY'
+  }
+
+  const lastTwoCharacters = typeOfLivestockMap[typeOfLivestock]
+
+  if (!lastTwoCharacters) {
+    throw new Error(
+      `Reference cannot be created due to invalid type of livestock: ${typeOfLivestock}`
+    )
+  }
+
+  return `PO${lastTwoCharacters}`
 }
 
 const getPrefix = (typeOfClaim, typeOfLivestock) => {
