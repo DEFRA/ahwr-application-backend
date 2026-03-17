@@ -113,7 +113,7 @@ describe('processClaim', () => {
     })
 
     expect(result).toEqual(saveClaimResult.claim)
-    expect(createClaimReference).toHaveBeenCalledWith('TEMP-O9UD-0025', 'REVIEW', 'beef')
+    expect(createClaimReference).toHaveBeenCalledWith('TEMP-O9UD-0025', 'REVIEW', 'beef', false)
     expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
       db: mockDb,
       sbi: '123456789',
