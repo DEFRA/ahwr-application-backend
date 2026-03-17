@@ -1,3 +1,4 @@
+import { ValidationError } from 'joi'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getApplication,
@@ -9,18 +10,15 @@ import {
   getClaimByReference
 } from '../../../repositories/claim-repository.js'
 import * as createReference from '../../../lib/create-reference.js'
-import { validateClaim } from '../../../processing/claim/validation.js'
 import {
   saveClaimAndRelatedData,
   generateEventsAndComms
 } from '../../../processing/claim/ahwr/processor.js'
-import { AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import { trackError } from '../../../logging/logger.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/ow-application-repository.js')
-jest.mock('../../../processing/claim/validation.js')
 jest.mock('../../../processing/claim/ahwr/processor.js')
 jest.mock('../../../logging/logger.js')
 jest.mock('@hapi/boom', () => ({
@@ -36,10 +34,22 @@ describe('processClaim', () => {
       applicationReference: 'POUL-AAAA-AAAA',
       type: 'REVIEW',
       reference: 'TEMP-CLAIM-O9UD-0025',
+      createdBy: '2025-12-30T12:00:00Z',
       data: {
         typeOfLivestock: 'broilers',
+        dateOfVisit: new Date('2025-12-30T12:00:00Z'),
+        speciesNumbers: 'yes',
+        vetsName: 'vet name',
+        vetRCVSNumber: '2323232',
+        assuranceScheme: 'yes',
+        biosecurity: 'yes',
         herd: {
-          id: 'db32152a-724a-4c5d-8073-0901c8d307f7'
+          id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
+          version: 2,
+          name: 'Poultry Unit',
+          cph: '22/222/2222',
+          reasons: [],
+          same: 'no'
         }
       }
     }
@@ -97,7 +107,6 @@ describe('processClaim', () => {
         organisation: { sbi: '123456789' }
       }
       getApplication.mockResolvedValue(application)
-      validateClaim.mockReturnValue({ value: payload })
       saveClaimAndRelatedData.mockResolvedValue(saveClaimResult)
 
       const result = await processClaim({
@@ -139,11 +148,49 @@ describe('processClaim', () => {
       applicationReference: 'IAHW-AAAA-AAAA',
       type: 'REVIEW',
       reference: 'TEMP-CLAIM-O9UD-0025',
+      createdBy: '2025-12-30T12:00:00Z',
       data: {
         typeOfLivestock: 'beef',
+        dateOfVisit: new Date('2025-12-30T12:00:00Z'),
+        dateOfTesting: new Date('2025-12-30T12:00:00Z'),
+        vetsName: 'vet name',
+        vetRCVSNumber: '2323232',
+        speciesNumbers: 'yes',
         laboratoryURN: 'AK-2024-38',
+        testResults: 'negative',
+        numberAnimalsTested: 5,
         herd: {
-          id: 'db32152a-724a-4c5d-8073-0901c8d307f7'
+          id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
+          version: 2,
+          name: 'Beef Herd',
+          cph: '22/222/2222',
+          reasons: [],
+          same: 'no'
+        }
+      }
+    }
+
+    const wrongPayload = {
+      applicationReference: 'IAHW-AAAA-AAAA',
+      type: 'REVIEW',
+      reference: 'TEMP-CLAIM-O9UD-0025',
+      createdBy: '2025-12-30T12:00:00Z',
+      data: {
+        typeOfLivestock: 'beef',
+        dateOfTesting: new Date('2025-12-30T12:00:00Z'),
+        vetsName: 'vet name',
+        vetRCVSNumber: '2323232',
+        speciesNumbers: 'yes',
+        laboratoryURN: 'AK-2024-38',
+        testResults: 'negative',
+        numberAnimalsTested: 5,
+        herd: {
+          id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
+          version: 2,
+          name: 'Beef Herd',
+          cph: '22/222/2222',
+          reasons: [],
+          same: 'no'
         }
       }
     }
@@ -208,7 +255,6 @@ describe('processClaim', () => {
         organisation: { sbi: '123456789' }
       }
       getApplication.mockResolvedValue(application)
-      validateClaim.mockReturnValue({ value: payload })
       mockIsURNNumberUnique(true)
       saveClaimAndRelatedData.mockResolvedValue(saveClaimResult)
 
@@ -261,14 +307,16 @@ describe('processClaim', () => {
         flags: [],
         organisation: { sbi: '123456789' }
       })
-      const validationError = new Error('Invalid claim')
-      validateClaim.mockReturnValue({ error: validationError })
 
-      await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
-        'BadRequest'
+      await expect(
+        processClaim({ payload: wrongPayload, logger: mockLogger, db: mockDb })
+      ).rejects.toThrow('BadRequest')
+
+      const validationError = new ValidationError(
+        '"data.dateOfVisit" is required',
+        ['data.dateOfVisit'],
+        ''
       )
-
-      expect(validateClaim).toHaveBeenCalledWith(AHWR_SCHEME, payload, [])
       expect(trackError).toHaveBeenCalledWith(
         mockLogger,
         validationError,
@@ -282,7 +330,6 @@ describe('processClaim', () => {
         flags: [],
         organisation: { sbi: '123456789' }
       })
-      validateClaim.mockReturnValue({ value: payload })
       mockIsURNNumberUnique(false)
 
       await expect(processClaim({ payload, logger: mockLogger, db: mockDb })).rejects.toThrow(
@@ -306,7 +353,6 @@ describe('processClaim', () => {
         flags: [],
         organisation: { sbi: '123456789' }
       })
-      validateClaim.mockReturnValue({ value: payload })
       mockIsURNNumberUnique(true)
       saveClaimAndRelatedData.mockResolvedValue({ claim: null })
 
