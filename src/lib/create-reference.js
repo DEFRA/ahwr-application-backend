@@ -1,5 +1,9 @@
 import { claimType } from 'ffc-ahwr-common-library'
 
+const getPoultryPrefix = (typeOfClaim, typeOfLivestock) => {
+  return 'POBR'
+}
+
 const getPrefix = (typeOfClaim, typeOfLivestock) => {
   const claimTypeMap = {
     [claimType.review]: 'RE',
@@ -30,8 +34,10 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
   return `${firstTwoCharacters}${lastTwoCharacters}`
 }
 
-export const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
-  const prefix = getPrefix(typeOfClaim, typeOfLivestock)
+export const createClaimReference = (id, typeOfClaim, typeOfLivestock, isPoultryAgreement) => {
+  const prefix = isPoultryAgreement
+    ? getPoultryPrefix(typeOfClaim, typeOfLivestock)
+    : getPrefix(typeOfClaim, typeOfLivestock)
 
   return id.replace('TEMP-CLAIM', prefix)
 }

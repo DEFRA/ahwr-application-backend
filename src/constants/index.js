@@ -18,6 +18,11 @@ export const biosecurity = {
   no: 'no'
 }
 
+export const assuranceScheme = {
+  yes: 'yes',
+  no: 'no'
+}
+
 export const piHunt = {
   yes: 'yes',
   no: 'no'
