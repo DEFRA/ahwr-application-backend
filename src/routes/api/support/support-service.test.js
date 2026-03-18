@@ -90,4 +90,17 @@ describe('getQueueMessages', () => {
       })
     ).rejects.toThrow(Boom.notFound(`Queue not found: localhost:45666`))
   })
+
+  it('should rethrow errors that are not QueueDoesNotExist', async () => {
+    const error = new Error('Unable to retrieve queue messages')
+    sqsClient.peekMessages.mockRejectedValue(error)
+
+    await expect(
+      getQueueMessages({
+        queueUrl: 'localhost:45666',
+        limit: 10,
+        logger: loggerMock
+      })
+    ).rejects.toThrow(error)
+  })
 })
