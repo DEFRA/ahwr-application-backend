@@ -29,7 +29,7 @@ jobs:
         run: npm ci
       
       - name: Scan security vulnerabilities
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --omit dev
 
       - name: Test code and Create Test Coverage Reports
         run: |

@@ -1,5 +1,7 @@
+import { QueueDoesNotExist } from '@aws-sdk/client-sqs'
 import { getQueueMessages } from './support-service'
 import { sqsClient } from 'ffc-ahwr-common-library'
+import Boom from '@hapi/boom'
 
 jest.mock('../../../config/config.js', () => ({
   config: {
@@ -70,5 +72,35 @@ describe('getQueueMessages', () => {
     })
 
     expect(result).toEqual([])
+  })
+
+  it('should throw 404 error when queue does not exist', async () => {
+    sqsClient.peekMessages.mockRejectedValue(
+      new QueueDoesNotExist({
+        message: 'The specified queue does not exist.',
+        $metadata: {}
+      })
+    )
+
+    await expect(
+      getQueueMessages({
+        queueUrl: 'localhost:45666',
+        limit: 10,
+        logger: loggerMock
+      })
+    ).rejects.toThrow(Boom.notFound(`Queue not found: localhost:45666`))
+  })
+
+  it('should rethrow errors that are not QueueDoesNotExist', async () => {
+    const error = new Error('Unable to retrieve queue messages')
+    sqsClient.peekMessages.mockRejectedValue(error)
+
+    await expect(
+      getQueueMessages({
+        queueUrl: 'localhost:45666',
+        limit: 10,
+        logger: loggerMock
+      })
+    ).rejects.toThrow(error)
   })
 })
