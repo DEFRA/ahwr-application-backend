@@ -124,6 +124,7 @@ git config --global core.autocrlf false
 | `GET: /api/support/applications/{reference}`           | Request DB view of a given application, for support area in backoffice              |
 | `GET: /api/support/claims/{reference}`                 | Request DB view of a given claim, for support area in backoffice                    |
 | `GET: /api/support/herds/{id}`                         | Request DB view of a given herd, for support area in backoffice                     |
+| `GET: /api/support/queue-messages`                     | Request messages from SQS queue                                                     |
 | `GET: /api/applications/{oldWorldAppRef}/history`      | Request history for a specific old world application                                |
 | `GET: /api/claims/{claimRef}/history`                  | Request history for a specific claim                                                |
 | `PUT: /api/applications/{ref}`                         | Update status of old world application. <Deprecated>                                |
