@@ -1,6 +1,11 @@
 import { config } from '../../src/config/config.js'
 import { createServer } from '../../src/server.js'
 
+jest.mock('../../src/scheduled/cron-scheduler.js', () => ({
+  startPulseScheduling: jest.fn(),
+  stopPulseScheduling: jest.fn()
+}))
+
 jest.mock('ffc-ahwr-common-library', () => {
   const actual = jest.requireActual('ffc-ahwr-common-library')
   return {
