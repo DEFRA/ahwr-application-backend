@@ -1,4 +1,28 @@
-import { claimType } from 'ffc-ahwr-common-library'
+import { claimType, POULTRY_SCHEME } from 'ffc-ahwr-common-library'
+
+const getPoultryPrefix = (typeOfClaim, typeOfLivestock) => {
+  if (typeOfClaim !== claimType.review) {
+    throw new Error(`Reference cannot be created due to invalid type of reference: ${typeOfClaim}`)
+  }
+
+  const typeOfLivestockMap = {
+    ducks: 'DK',
+    turkeys: 'TK',
+    geese: 'GE',
+    broilers: 'BR',
+    laying: 'LY'
+  }
+
+  const lastTwoCharacters = typeOfLivestockMap[typeOfLivestock]
+
+  if (!lastTwoCharacters) {
+    throw new Error(
+      `Reference cannot be created due to invalid type of livestock: ${typeOfLivestock}`
+    )
+  }
+
+  return `PO${lastTwoCharacters}`
+}
 
 const getPrefix = (typeOfClaim, typeOfLivestock) => {
   const claimTypeMap = {
@@ -30,8 +54,11 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
   return `${firstTwoCharacters}${lastTwoCharacters}`
 }
 
-export const createClaimReference = (id, typeOfClaim, typeOfLivestock) => {
-  const prefix = getPrefix(typeOfClaim, typeOfLivestock)
+export const createClaimReference = (id, typeOfClaim, typeOfLivestock, scheme) => {
+  const prefix =
+    scheme === POULTRY_SCHEME
+      ? getPoultryPrefix(typeOfClaim, typeOfLivestock)
+      : getPrefix(typeOfClaim, typeOfLivestock)
 
   return id.replace('TEMP-CLAIM', prefix)
 }

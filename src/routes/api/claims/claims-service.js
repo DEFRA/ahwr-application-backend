@@ -9,7 +9,13 @@ import {
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference } from '../../../lib/create-reference.js'
 import { validateClaim } from '../../../processing/claim/validation.js'
-import { AHWR_SCHEME, claimType } from 'ffc-ahwr-common-library'
+import {
+  AHWR_SCHEME,
+  APPLICATION_REFERENCE_PREFIX_POULTRY,
+  claimType,
+  POULTRY_SCHEME
+} from 'ffc-ahwr-common-library'
+
 import {
   saveClaimAndRelatedData,
   generateEventsAndComms
@@ -18,6 +24,10 @@ import Boom from '@hapi/boom'
 import { trackError } from '../../../logging/logger.js'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
+
+export const checkIfPoultryAgreement = (reference) => {
+  return reference?.startsWith(APPLICATION_REFERENCE_PREFIX_POULTRY)
+}
 
 export const processClaim = async ({ payload, logger, db }) => {
   const { applicationReference, type, reference: tempClaimReference, data } = payload
@@ -36,14 +46,18 @@ export const processClaim = async ({ payload, logger, db }) => {
     organisation: { sbi }
   } = application
 
-  const { value: validatedPayload, error } = validateClaim(AHWR_SCHEME, payload, flags)
+  const isPoultryAgreement = checkIfPoultryAgreement(applicationReference)
+  const scheme = isPoultryAgreement ? POULTRY_SCHEME : AHWR_SCHEME
+
+  const { value: validatedPayload, error } = validateClaim(scheme, payload, flags)
+
   if (error) {
     logger.setBindings({ error })
     trackError(logger, error, 'failed-validation', 'Create claim validation error')
     throw Boom.badRequest(error.message)
   }
 
-  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
+  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock, scheme)
 
   logger.setBindings({
     isFollowUp: isFollowUp(validatedPayload),
@@ -68,6 +82,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     flags,
     logger
   })
+
   if (!claim) {
     throw new Error('Claim was not created')
   }

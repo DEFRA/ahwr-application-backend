@@ -97,6 +97,7 @@ export async function saveClaimAndRelatedData({
   const { applicationReference } = claimPayload
 
   const amount = await getAmount({ ...claimPayload.data, type: claimPayload.type })
+
   const isMultiHerdsClaim = isMultipleHerdsUserJourney(dateOfVisit, flags)
 
   const { claim, herdGotUpdated, herdData } = await addClaimAndHerdToDatabase({

@@ -1,5 +1,10 @@
-import { startServer } from '../../src/common/helpers/start-server.js'
 import { config } from '../../src/config/config.js'
+import { createServer } from '../../src/server.js'
+
+jest.mock('../../src/scheduled/cron-scheduler.js', () => ({
+  startPulseScheduling: jest.fn(),
+  stopPulseScheduling: jest.fn()
+}))
 
 jest.mock('ffc-ahwr-common-library', () => {
   const actual = jest.requireActual('ffc-ahwr-common-library')
@@ -23,7 +28,7 @@ let server
 
 export const setupTestEnvironment = async () => {
   config.set('apiKeys.backofficeUiApiKey', 'test-backoffice-ui-api-key')
-  server = await startServer({ testPort: 6000 })
+  server = await createServer()
   return server
 }
 
