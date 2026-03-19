@@ -33,10 +33,6 @@ describe('claims-routes', () => {
     await server.initialize()
   })
 
-  afterAll(async () => {
-    await server.stop()
-  })
-
   beforeEach(() => {
     jest.clearAllMocks()
   })

@@ -36,10 +36,6 @@ describe('Claim history test', () => {
     server = await createServer()
   })
 
-  afterAll(async () => {
-    await server.stop()
-  })
-
   beforeEach(async () => {
     jest.clearAllMocks()
   })
