@@ -1,4 +1,4 @@
-import { claimType } from 'ffc-ahwr-common-library'
+import { claimType, POULTRY_SCHEME } from 'ffc-ahwr-common-library'
 
 const getPoultryPrefix = (typeOfClaim, typeOfLivestock) => {
   if (typeOfClaim !== claimType.review) {
@@ -54,10 +54,11 @@ const getPrefix = (typeOfClaim, typeOfLivestock) => {
   return `${firstTwoCharacters}${lastTwoCharacters}`
 }
 
-export const createClaimReference = (id, typeOfClaim, typeOfLivestock, isPoultryAgreement) => {
-  const prefix = isPoultryAgreement
-    ? getPoultryPrefix(typeOfClaim, typeOfLivestock)
-    : getPrefix(typeOfClaim, typeOfLivestock)
+export const createClaimReference = (id, typeOfClaim, typeOfLivestock, scheme) => {
+  const prefix =
+    scheme === POULTRY_SCHEME
+      ? getPoultryPrefix(typeOfClaim, typeOfLivestock)
+      : getPrefix(typeOfClaim, typeOfLivestock)
 
   return id.replace('TEMP-CLAIM', prefix)
 }

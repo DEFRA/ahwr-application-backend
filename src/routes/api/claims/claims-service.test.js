@@ -15,6 +15,7 @@ import {
   generateEventsAndComms
 } from '../../../processing/claim/ahwr/processor.js'
 import { trackError } from '../../../logging/logger.js'
+import { AHWR_SCHEME, POULTRY_SCHEME } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
@@ -120,7 +121,7 @@ describe('processClaim', () => {
         'TEMP-CLAIM-O9UD-0025',
         'REVIEW',
         'broilers',
-        true
+        POULTRY_SCHEME
       )
       expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
         db: mockDb,
@@ -269,7 +270,7 @@ describe('processClaim', () => {
         'TEMP-CLAIM-O9UD-0025',
         'REVIEW',
         'beef',
-        false
+        AHWR_SCHEME
       )
       expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
         db: mockDb,

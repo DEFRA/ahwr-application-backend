@@ -57,12 +57,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     throw Boom.badRequest(error.message)
   }
 
-  const claimReference = createClaimReference(
-    tempClaimReference,
-    type,
-    typeOfLivestock,
-    isPoultryAgreement
-  )
+  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock, scheme)
 
   logger.setBindings({
     isFollowUp: isFollowUp(validatedPayload),
