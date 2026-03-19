@@ -4,10 +4,13 @@ import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0692_DATA={"datastoreUpdates":[{"claimRef":"RESH-CM1C-KYJQ"},{"claimRef":"RESH-6755-4TUH"},{"claimRef":"RESH-2CGP-1EM9"},{"claimRef":"RESH-8GSD-BIZ5","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}],"events":[{"sbi":"106746222","claimRef":"RESH-CM1C-KYJQ","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-6755-4TUH","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-2CGP-1EM9","applicationRef":"IAHW-GVJ6-33CY"},{"sbi":"106746222","claimRef":"RESH-8GSD-BIZ5","applicationRef":"IAHW-GVJ6-33CY","newValue":"SH-0000-0000-4008-1","oldValue":"887764"}]}
+// DATA_CHANGE_V0712_DATA={"datastoreUpdates":[{"claimRef":"RESH-ZCPC-LXQZ"},{"claimRef":"RESH-XFD7-AD9W"},{"claimRef":"RESH-3UJR-ZR84"},{"claimRef":"RESH-QN69-YVH6","newValue":"999964","oldValue":"887764"},{"claimRef":"RESH-77DN-N9GS","newValue":"2025-11-18T00:00:00.000Z","oldValue":"2026-03-19T00:00:00.000Z"}],"events":[{"claimRef":"RESH-ZCPC-LXQZ","sbi":"168785858","applicationRef":"IAHW-7FYA-JW2M"},{"claimRef":"RESH-XFD7-AD9W","sbi":"168785858","applicationRef":"IAHW-7FYA-JW2M"},{"claimRef":"RESH-3UJR-ZR84","sbi":"168785858","applicationRef":"IAHW-7FYA-JW2M"},{"claimRef":"RESH-QN69-YVH6","sbi":"168785858","applicationRef":"IAHW-7FYA-JW2M","newValue":"999964","oldValue":"887764"},{"claimRef":"RESH-77DN-N9GS","sbi":"168785858","applicationRef":"IAHW-7FYA-JW2M","newValue":"2025-11-18T00:00:00.000Z","oldValue":"2026-03-19T00:00:00.000Z"}]}
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
+  // common data across events
+  const raisedBy = 'Admin2'
+  const updateNotes = 'Requested change from Samantha Smith via email on 10th March 2026'
 
   await deleteClaim(db, datastoreUpdates[0].claimRef)
 
@@ -22,8 +25,20 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'laboratoryURN',
     newValue: update4.newValue,
     oldValue: update4.oldValue,
-    note: 'Requested change from Samantha Smith via email on 23rd February 2026',
-    user: 'Admin2',
+    note: updateNotes,
+    user: raisedBy,
+    updatedAt: new Date()
+  })
+
+  const update5 = datastoreUpdates[4]
+  await updateClaimData({
+    db,
+    reference: update5.claimRef,
+    updatedProperty: 'dateOfTesting',
+    newValue: update5.newValue,
+    oldValue: update5.oldValue,
+    note: updateNotes,
+    user: raisedBy,
     updatedAt: new Date()
   })
 }
@@ -34,6 +49,7 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
   const raisedBy = 'Admin2'
   const withdrawnStatusId = 'WITHDRAWN'
   const withdrawnMessage = 'Claim has been updated'
+  const updateNotes = 'Requested change from Samantha Smith via email on 10th March 2026'
 
   const event1 = events[0]
   await raiseClaimEvents(
@@ -84,13 +100,24 @@ export const sendEvents = async (serviceVersion, { events }, logger) => {
   )
 
   const event4 = events[3]
-  const eventData = {
+  const eventData4 = {
     applicationReference: event4.applicationRef,
     reference: event4.claimRef,
     newValue: event4.newValue,
     oldValue: event4.oldValue,
     updatedProperty: 'urnResult',
-    note: 'Requested change from Samantha Smith via email on 23rd February 2026'
+    note: updateNotes
   }
-  await claimDataUpdateEvent(eventData, 'claim-urnResult', 'Admin2', new Date(), event4.sbi)
+  await claimDataUpdateEvent(eventData4, 'claim-urnResult', raisedBy, new Date(), event4.sbi)
+
+  const event5 = events[4]
+  const eventData5 = {
+    applicationReference: event5.applicationRef,
+    reference: event5.claimRef,
+    newValue: event5.newValue,
+    oldValue: event5.oldValue,
+    updatedProperty: 'dateOfTesting',
+    note: updateNotes
+  }
+  await claimDataUpdateEvent(eventData5, 'claim-dateOfTesting', raisedBy, new Date(), event5.sbi)
 }
