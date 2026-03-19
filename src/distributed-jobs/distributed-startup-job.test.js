@@ -89,7 +89,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should run job if config present but no data changes for service version', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0690SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v000SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
