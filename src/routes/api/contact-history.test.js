@@ -41,6 +41,10 @@ describe('PUT /api/applications/contact-history handler', () => {
     server = await createServer()
   })
 
+  afterAll(async () => {
+    await server.stop()
+  })
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -280,6 +284,10 @@ describe('GET /api/applications/contact-history/{REF} handler', () => {
 
   beforeAll(async () => {
     server = await createServer()
+  })
+
+  afterAll(async () => {
+    await server.stop()
   })
 
   beforeEach(() => {
