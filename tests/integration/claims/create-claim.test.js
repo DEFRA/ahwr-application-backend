@@ -4,6 +4,8 @@ import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
+jest.mock('../../../src/event-publisher/index.js')
+
 describe('Create claim', () => {
   let server
   let options
