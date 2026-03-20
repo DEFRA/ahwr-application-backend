@@ -2,7 +2,7 @@ import { updateClaimData } from '../../repositories/claim-repository.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0713_DATA={"datastoreUpdates":[{"claimRef":"FUSH-MPSK-5DH3","newValue":"2025-03-04T00:00:00.000Z","oldValue":"2025-04-26T00:00:00.000Z"}],"events":[{"claimRef":"FUSH-MPSK-5DH3","sbi":"106308119","applicationRef":"IAHW-2E02-3601","newValue":"2025-03-04T00:00:00.000Z","oldValue":"2025-04-26T00:00:00.000Z"}]}
+// DATA_CHANGE_V0721_DATA={"datastoreUpdates":[{"claimRef":"FUSH-MPSK-5DH3","newValue":"2025-03-04T00:00:00.000Z","oldValue":"2025-04-26T00:00:00.000Z"}],"events":[{"claimRef":"FUSH-MPSK-5DH3","sbi":"106308119","applicationRef":"IAHW-2E02-3601","newValue":"2025-03-04T00:00:00.000Z","oldValue":"2025-04-26T00:00:00.000Z"}]}
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
