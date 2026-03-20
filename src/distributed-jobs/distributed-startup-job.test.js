@@ -2,7 +2,7 @@ import { runDistributedStartupJob } from './distributed-startup-job.js'
 import { config } from '../config/config.js'
 
 jest.mock('../config/config.js')
-jest.mock('./data-changes/v0712-data-changes.js')
+jest.mock('./data-changes/v0721-data-changes.js')
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
 const mockCollection = { insertOne: jest.fn(() => {}) }
@@ -109,7 +109,7 @@ describe('Test runDistributedStartupJob', () => {
 
   // This test should change from data change to data change, don't forget to mock vXXXX-data-changes.js
   it('should run job and executes data changes', async () => {
-    const serviceVersion = '0.71.2'
+    const serviceVersion = '0.72.1'
     const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
