@@ -640,7 +640,7 @@ describe('applications-service', () => {
         sbi: '118409263',
         startDate: expect.any(String),
         userType: 'newUser',
-        scheme: 'ahwr' // TODO does this need to be different for poultry?
+        scheme: 'poul'
       })
       expect(mockLogger.info).toHaveBeenCalledWith({
         event: {
@@ -698,7 +698,7 @@ describe('applications-service', () => {
         sbi: '118409263',
         startDate: expect.any(String),
         userType: 'newUser',
-        scheme: 'ahwr'
+        scheme: 'poul'
       })
     })
 

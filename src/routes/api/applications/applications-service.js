@@ -6,7 +6,7 @@ import { getHerdsByAppRefAndSpecies } from '../../../repositories/herd-repositor
 import Boom from '@hapi/boom'
 import { raiseApplicationStatusEvent } from '../../../event-publisher/index.js'
 import { publishDocumentRequestEvent } from '../../../messaging/publish-outbound-notification.js'
-import { AHWR_SCHEME, STATUS } from 'ffc-ahwr-common-library'
+import { AHWR_SCHEME, POULTRY_SCHEME, STATUS } from 'ffc-ahwr-common-library'
 
 const isPreviousApplicationRelevant = (application) => {
   return application && ![STATUS.WITHDRAWN, STATUS.NOT_AGREED].includes(application.status)
@@ -76,7 +76,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
         farmerName: application.organisation.farmerName,
         name: application.organisation.name,
         crn: application.organisation.crn,
-        scheme: AHWR_SCHEME,
+        scheme: applicationRequest.type === 'POUL' ? POULTRY_SCHEME : AHWR_SCHEME,
         ...(orgEmail && { orgEmail })
       })
     } catch (error) {
