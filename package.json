@@ -39,7 +39,7 @@
     "aws-embedded-metrics": "4.2.0",
     "aws4": "1.13.2",
     "cls-hooked": "4.2.2",
-    "convict": "6.2.4",
+    "convict": "6.2.5",
     "convict-format-with-validator": "6.2.0",
     "crypto-js": "4.2.0",
     "fast-xml-parser": "5.5.6",
