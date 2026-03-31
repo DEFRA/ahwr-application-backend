@@ -39,7 +39,6 @@
     "convict": "6.2.4",
     "convict-format-with-validator": "6.2.0",
     "ffc-ahwr-common-library": "3.6.6",
-    "ffc-messaging": "2.10.3",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
     "hapi-pulse": "3.0.1",
