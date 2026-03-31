@@ -36,7 +36,6 @@
     "@hapi/hapi": "21.4.3",
     "@pulsecron/pulse": "1.6.8",
     "aws-embedded-metrics": "4.2.0",
-    "cls-hooked": "4.2.2",
     "convict": "6.2.4",
     "convict-format-with-validator": "6.2.0",
     "crypto-js": "4.2.0",
