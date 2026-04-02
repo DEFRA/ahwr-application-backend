@@ -36,6 +36,7 @@
     "@hapi/hapi": "21.4.3",
     "@pulsecron/pulse": "1.6.8",
     "aws-embedded-metrics": "4.2.0",
+    "aws4": "1.13.2",
     "convict": "6.2.5",
     "convict-format-with-validator": "6.2.0",
     "ffc-ahwr-common-library": "3.6.6",
