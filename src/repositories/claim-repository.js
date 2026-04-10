@@ -5,7 +5,9 @@ import { v4 as uuid } from 'uuid'
 
 export const createClaimIndexes = async (db) => {
   await db.collection(CLAIMS_COLLECTION).createIndex({
-    createdAt: -1
+    createdAt: -1,
+    'herd.cph': 1,
+    'herd.id': 1
   })
 }
 
@@ -96,6 +98,17 @@ export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) 
   const result = await db.collection(CLAIMS_COLLECTION).findOne({
     applicationReference: { $in: applicationReferences },
     'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
+  })
+  return !result
+}
+
+export const isCPHUnique = async ({ db, cph, herdId }) => {
+  const result = await db.collection(CLAIMS_COLLECTION).findOne({
+    'herd.cph': cph,
+    'herd.id': { $ne: herdId }
+  })
+  console.log({
+    result
   })
   return !result
 }

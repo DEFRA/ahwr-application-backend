@@ -5,11 +5,13 @@ import {
   isURNUniqueHandler,
   getClaimHandler,
   updateClaimStatusHandler,
-  updateClaimDataHandler
+  updateClaimDataHandler,
+  isCPHUniqueHandler
 } from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getClaimByReference,
+  isCPHUnique,
   updateClaimData,
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
@@ -195,6 +197,67 @@ describe('isURNUniqueHandler', () => {
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { err: genericError },
       'Failed to check if URN is unique'
+    )
+  })
+})
+
+describe('isCPHUniqueHandler', () => {
+  const mockRequest = {
+    query: {
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+    },
+    logger: { error: jest.fn(), info: jest.fn() },
+    db: {}
+  }
+  const mockResult = {
+    isCPHUnique: true
+  }
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return 200 and the result', async () => {
+    isCPHUnique.mockResolvedValue(true)
+
+    const result = await isCPHUniqueHandler(mockRequest, mockH)
+
+    expect(isCPHUnique).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      db: mockRequest.db
+    })
+    expect(mockH.response).toHaveBeenCalledWith(mockResult)
+    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockH)
+  })
+
+  it('should rethrow Boom errors', async () => {
+    const boomError = Boom.badRequest('Invalid input')
+    isCPHUnique.mockRejectedValue(boomError)
+
+    await expect(isCPHUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: boomError },
+      'Failed to check if CPH is unique'
+    )
+  })
+
+  it('should wrap non-Boom errors in Boom.internal', async () => {
+    const genericError = new Error('Database failure')
+    isCPHUnique.mockRejectedValue(genericError)
+
+    await expect(isCPHUniqueHandler(mockRequest, mockH)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { err: genericError },
+      'Failed to check if CPH is unique'
     )
   })
 })

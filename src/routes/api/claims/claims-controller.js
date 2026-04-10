@@ -3,6 +3,7 @@ import Boom from '@hapi/boom'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getClaimByReference,
+  isCPHUnique,
   updateClaimData,
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
@@ -48,6 +49,32 @@ export const isURNUniqueHandler = async (request, h) => {
     return h.response(result).code(StatusCodes.OK)
   } catch (err) {
     request.logger.error({ err }, 'Failed to check if URN is unique')
+
+    if (Boom.isBoom(err)) {
+      throw err
+    }
+
+    throw Boom.internal(err)
+  }
+}
+
+export const isCPHUniqueHandler = async (request, h) => {
+  try {
+    const { cph, herdId } = request.query
+
+    const result = await isCPHUnique({
+      db: request.db,
+      cph,
+      herdId
+    })
+
+    const response = {
+      isCPHUnique: result
+    }
+
+    return h.response(response).code(StatusCodes.OK)
+  } catch (err) {
+    request.logger.error({ err }, 'Failed to check if CPH is unique')
 
     if (Boom.isBoom(err)) {
       throw err

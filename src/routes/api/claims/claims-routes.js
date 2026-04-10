@@ -7,7 +7,8 @@ import {
   isURNUniqueHandler,
   getClaimHandler,
   updateClaimStatusHandler,
-  updateClaimDataHandler
+  updateClaimDataHandler,
+  isCPHUniqueHandler
 } from './claims-controller.js'
 
 export const claimsHandlers = [
@@ -71,6 +72,20 @@ export const claimsHandlers = [
         })
       },
       handler: isURNUniqueHandler
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/claims/is-cph-unique',
+    options: {
+      description: 'Check a claim CPH is unique',
+      validate: {
+        query: joi.object({
+          cph: joi.string().required(),
+          herdId: joi.string().optional()
+        })
+      },
+      handler: isCPHUniqueHandler
     }
   },
   {
