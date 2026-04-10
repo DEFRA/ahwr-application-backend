@@ -121,7 +121,7 @@ describe('createClaimHandler', () => {
 
     await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to create claim'
     )
   })
@@ -134,7 +134,7 @@ describe('createClaimHandler', () => {
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to create claim'
     )
   })
@@ -182,7 +182,7 @@ describe('isURNUniqueHandler', () => {
 
     await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to check if URN is unique'
     )
   })
@@ -195,7 +195,7 @@ describe('isURNUniqueHandler', () => {
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to check if URN is unique'
     )
   })
@@ -243,7 +243,7 @@ describe('isCPHUniqueHandler', () => {
 
     await expect(isCPHUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to check if CPH is unique'
     )
   })
@@ -256,7 +256,7 @@ describe('isCPHUniqueHandler', () => {
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to check if CPH is unique'
     )
   })
@@ -321,7 +321,6 @@ describe('getClaimHandler', () => {
 
     expect(getClaim).toHaveBeenCalledWith({
       db: mockRequest.db,
-      logger: mockRequest.logger,
       reference: 'REBC-VA4R-TRL7'
     })
     expect(mockH.response).toHaveBeenCalledWith(mockResult)
@@ -335,7 +334,10 @@ describe('getClaimHandler', () => {
 
     await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
 
-    expect(mockRequest.logger.error).toHaveBeenCalledWith({ err: boomError }, 'Failed to get claim')
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: boomError },
+      'Failed to get claim'
+    )
   })
 
   it('should wrap non-Boom errors in Boom.internal', async () => {
@@ -344,7 +346,7 @@ describe('getClaimHandler', () => {
 
     await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(Boom.internal(genericError))
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to get claim'
     )
   })

@@ -25,14 +25,14 @@ export const createClaimHandler = async (request, h) => {
     const claim = await processClaim({ payload, logger, db })
 
     return h.response(claim).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to create claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to create claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -47,14 +47,14 @@ export const isURNUniqueHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to check if URN is unique')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to check if URN is unique')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -73,14 +73,14 @@ export const isCPHUniqueHandler = async (request, h) => {
     }
 
     return h.response(response).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to check if CPH is unique')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to check if CPH is unique')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -90,19 +90,18 @@ export const getClaimHandler = async (request, h) => {
 
     const result = await getClaim({
       db: request.db,
-      logger: request.logger,
       reference
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 

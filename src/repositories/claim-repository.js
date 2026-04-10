@@ -107,9 +107,6 @@ export const isCPHUnique = async ({ db, cph, herdId }) => {
     'herd.cph': cph,
     'herd.id': { $ne: herdId }
   })
-  console.log({
-    result
-  })
   return !result
 }
 
