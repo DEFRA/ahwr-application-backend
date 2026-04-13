@@ -6,7 +6,7 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  isCPHUniqueHandler
+  getClaimsCountHandler
 } from './claims-controller.js'
 
 jest.mock('./claims-controller.js')
@@ -119,30 +119,30 @@ describe('claims-routes', () => {
     })
   })
 
-  describe('GET /api/claims/is-cph-unique', () => {
+  describe('GET /api/claims/count', () => {
     it('should validate payload and call correct handler', async () => {
-      isCPHUniqueHandler.mockImplementation(async (_, h) => {
-        return h.response({ isCPHUnique: true }).code(200)
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 2 }).code(200)
       })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/api/claims/is-cph-unique?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
       })
 
       expect(res.statusCode).toBe(200)
-      expect(res.result).toEqual({ isCPHUnique: true })
-      expect(isCPHUniqueHandler).toHaveBeenCalledTimes(1)
+      expect(res.result).toEqual({ count: 2 })
+      expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
     })
 
     it('should handle errors from handler', async () => {
-      isCPHUniqueHandler.mockImplementation(async () => {
+      getClaimsCountHandler.mockImplementation(async () => {
         throw new Error('Database error')
       })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/api/claims/is-cph-unique?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
       })
 
       expect(res.statusCode).toBe(500)

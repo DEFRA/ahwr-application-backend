@@ -8,7 +8,7 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  isCPHUniqueHandler
+  getClaimsCountHandler
 } from './claims-controller.js'
 
 export const claimsHandlers = [
@@ -76,16 +76,16 @@ export const claimsHandlers = [
   },
   {
     method: 'GET',
-    path: '/api/claims/is-cph-unique',
+    path: '/api/claims/count',
     options: {
-      description: 'Check a claim CPH is unique',
+      description: 'Retrieve count of claims',
       validate: {
         query: joi.object({
-          cph: joi.string().required(),
+          cph: joi.string().optional(),
           herdId: joi.string().optional()
         })
       },
-      handler: isCPHUniqueHandler
+      handler: getClaimsCountHandler
     }
   },
   {

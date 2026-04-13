@@ -6,12 +6,12 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  isCPHUniqueHandler
+  getClaimsCountHandler
 } from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getClaimByReference,
-  isCPHUnique,
+  getClaimsCount,
   updateClaimData,
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
@@ -201,7 +201,7 @@ describe('isURNUniqueHandler', () => {
   })
 })
 
-describe('isCPHUniqueHandler', () => {
+describe('getClaimsCountHandler', () => {
   const mockRequest = {
     query: {
       cph: '22/333/4444',
@@ -211,7 +211,7 @@ describe('isCPHUniqueHandler', () => {
     db: {}
   }
   const mockResult = {
-    isCPHUnique: true
+    count: 2
   }
   const mockH = {
     response: jest.fn().mockReturnThis(),
@@ -222,12 +222,12 @@ describe('isCPHUniqueHandler', () => {
     jest.clearAllMocks()
   })
 
-  it('should return 200 and the result', async () => {
-    isCPHUnique.mockResolvedValue(true)
+  it('should return count of claims', async () => {
+    getClaimsCount.mockResolvedValue(2)
 
-    const result = await isCPHUniqueHandler(mockRequest, mockH)
+    const result = await getClaimsCountHandler(mockRequest, mockH)
 
-    expect(isCPHUnique).toHaveBeenCalledWith({
+    expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
       herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
       db: mockRequest.db
@@ -239,25 +239,25 @@ describe('isCPHUniqueHandler', () => {
 
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
-    isCPHUnique.mockRejectedValue(boomError)
+    getClaimsCount.mockRejectedValue(boomError)
 
-    await expect(isCPHUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: boomError },
-      'Failed to check if CPH is unique'
+      'Failed to retrieve claims count'
     )
   })
 
   it('should wrap non-Boom errors in Boom.internal', async () => {
     const genericError = new Error('Database failure')
-    isCPHUnique.mockRejectedValue(genericError)
+    getClaimsCount.mockRejectedValue(genericError)
 
-    await expect(isCPHUniqueHandler(mockRequest, mockH)).rejects.toThrow(
+    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: genericError },
-      'Failed to check if CPH is unique'
+      'Failed to retrieve claims count'
     )
   })
 })

@@ -9,7 +9,7 @@ import {
   createClaimIndexes,
   removeHerdFromClaimData,
   deleteClaim,
-  isCPHUnique
+  getClaimsCount
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -528,66 +528,66 @@ describe('claim-repository', () => {
     })
   })
 
-  describe('isCPHUnique', () => {
+  describe('getClaimsCount', () => {
     let mockDb
     let mockCollection
-    const mockFindOne = jest.fn()
+    const mockCountDocuments = jest.fn()
     const cph = '22/333/4444'
     const herdId = '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
 
     beforeEach(() => {
-      mockCollection = { findOne: mockFindOne }
+      mockCollection = { countDocuments: mockCountDocuments }
       mockDb = {
         collection: jest.fn().mockReturnValue(mockCollection)
       }
     })
 
-    it('returns true when cph has not been used for a different herd', async () => {
-      mockFindOne.mockResolvedValue(null)
+    it('returns count when cph has not been used for a different herd', async () => {
+      mockCountDocuments.mockResolvedValue(2)
 
-      const result = await isCPHUnique({ db: mockDb, cph, herdId })
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
 
       expect(mockDb.collection).toHaveBeenCalledWith('claims')
-      expect(result).toEqual(true)
+      expect(result).toEqual(2)
     })
 
-    it('returns false when cph is already used by a different herd', async () => {
-      mockFindOne.mockResolvedValue({ _id: 'some-id' })
+    it('returns 0 when cph is already used by a different herd', async () => {
+      mockCountDocuments.mockResolvedValue(0)
 
-      const result = await isCPHUnique({ db: mockDb, cph, herdId })
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
 
-      expect(result).toEqual(false)
+      expect(result).toEqual(0)
     })
 
-    it('returns true when cph exists but only for the same herd', async () => {
-      mockFindOne.mockResolvedValue(null)
+    it('returns count when cph exists but only for the same herd', async () => {
+      mockCountDocuments.mockResolvedValue(2)
 
-      const result = await isCPHUnique({ db: mockDb, cph, herdId })
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
 
-      expect(mockFindOne).toHaveBeenCalledWith({
+      expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
         'herd.id': { $ne: herdId }
       })
-      expect(result).toEqual(true)
+      expect(result).toEqual(2)
     })
 
-    it('handles optional herdId', async () => {
-      mockFindOne.mockResolvedValue(null)
+    it('handles optional herdId when not present', async () => {
+      mockCountDocuments.mockResolvedValue(2)
 
-      const result = await isCPHUnique({ db: mockDb, cph, herdId: undefined })
+      const result = await getClaimsCount({ db: mockDb, cph, herdId: undefined })
 
-      expect(mockFindOne).toHaveBeenCalledWith({
+      expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
         'herd.id': { $ne: undefined }
       })
-      expect(result).toEqual(true)
+      expect(result).toEqual(2)
     })
 
     it('propagates errors from the database', async () => {
       const error = new Error('DB failure')
-      mockFindOne.mockRejectedValue(error)
+      mockCountDocuments.mockRejectedValue(error)
 
-      await expect(isCPHUnique({ db: mockDb, cph, herdId })).rejects.toThrow('DB failure')
+      await expect(getClaimsCount({ db: mockDb, cph, herdId })).rejects.toThrow('DB failure')
     })
   })
 })

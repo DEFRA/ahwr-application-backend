@@ -102,12 +102,11 @@ export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) 
   return !result
 }
 
-export const isCPHUnique = async ({ db, cph, herdId }) => {
-  const result = await db.collection(CLAIMS_COLLECTION).findOne({
+export const getClaimsCount = async ({ db, cph, herdId }) => {
+  return db.collection(CLAIMS_COLLECTION).countDocuments({
     'herd.cph': cph,
     'herd.id': { $ne: herdId }
   })
-  return !result
 }
 
 export const updateClaimData = async ({
