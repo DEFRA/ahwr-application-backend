@@ -3,6 +3,7 @@ import Boom from '@hapi/boom'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getClaimByReference,
+  getClaimsCount,
   updateClaimData,
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
@@ -24,14 +25,14 @@ export const createClaimHandler = async (request, h) => {
     const claim = await processClaim({ payload, logger, db })
 
     return h.response(claim).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to create claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to create claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 
@@ -46,14 +47,40 @@ export const isURNUniqueHandler = async (request, h) => {
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to check if URN is unique')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to check if URN is unique')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
+  }
+}
+
+export const getClaimsCountHandler = async (request, h) => {
+  try {
+    const { cph, herdId } = request.query
+
+    const count = await getClaimsCount({
+      db: request.db,
+      cph,
+      herdId
+    })
+
+    const response = {
+      count
+    }
+
+    return h.response(response).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to retrieve claims count')
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+
+    throw Boom.internal(error)
   }
 }
 
@@ -63,19 +90,18 @@ export const getClaimHandler = async (request, h) => {
 
     const result = await getClaim({
       db: request.db,
-      logger: request.logger,
       reference
     })
 
     return h.response(result).code(StatusCodes.OK)
-  } catch (err) {
-    request.logger.error({ err }, 'Failed to get claim')
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to get claim')
 
-    if (Boom.isBoom(err)) {
-      throw err
+    if (Boom.isBoom(error)) {
+      throw error
     }
 
-    throw Boom.internal(err)
+    throw Boom.internal(error)
   }
 }
 

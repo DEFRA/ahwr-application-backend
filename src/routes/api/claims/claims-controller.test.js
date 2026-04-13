@@ -5,11 +5,13 @@ import {
   isURNUniqueHandler,
   getClaimHandler,
   updateClaimStatusHandler,
-  updateClaimDataHandler
+  updateClaimDataHandler,
+  getClaimsCountHandler
 } from './claims-controller.js'
 import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
 import {
   getClaimByReference,
+  getClaimsCount,
   updateClaimData,
   updateClaimStatus
 } from '../../../repositories/claim-repository.js'
@@ -119,7 +121,7 @@ describe('createClaimHandler', () => {
 
     await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to create claim'
     )
   })
@@ -132,7 +134,7 @@ describe('createClaimHandler', () => {
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to create claim'
     )
   })
@@ -180,7 +182,7 @@ describe('isURNUniqueHandler', () => {
 
     await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: boomError },
+      { error: boomError },
       'Failed to check if URN is unique'
     )
   })
@@ -193,8 +195,69 @@ describe('isURNUniqueHandler', () => {
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to check if URN is unique'
+    )
+  })
+})
+
+describe('getClaimsCountHandler', () => {
+  const mockRequest = {
+    query: {
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+    },
+    logger: { error: jest.fn(), info: jest.fn() },
+    db: {}
+  }
+  const mockResult = {
+    count: 2
+  }
+  const mockH = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return count of claims', async () => {
+    getClaimsCount.mockResolvedValue(2)
+
+    const result = await getClaimsCountHandler(mockRequest, mockH)
+
+    expect(getClaimsCount).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      db: mockRequest.db
+    })
+    expect(mockH.response).toHaveBeenCalledWith(mockResult)
+    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockH)
+  })
+
+  it('should rethrow Boom errors', async () => {
+    const boomError = Boom.badRequest('Invalid input')
+    getClaimsCount.mockRejectedValue(boomError)
+
+    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: boomError },
+      'Failed to retrieve claims count'
+    )
+  })
+
+  it('should wrap non-Boom errors in Boom.internal', async () => {
+    const genericError = new Error('Database failure')
+    getClaimsCount.mockRejectedValue(genericError)
+
+    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: genericError },
+      'Failed to retrieve claims count'
     )
   })
 })
@@ -258,7 +321,6 @@ describe('getClaimHandler', () => {
 
     expect(getClaim).toHaveBeenCalledWith({
       db: mockRequest.db,
-      logger: mockRequest.logger,
       reference: 'REBC-VA4R-TRL7'
     })
     expect(mockH.response).toHaveBeenCalledWith(mockResult)
@@ -272,7 +334,10 @@ describe('getClaimHandler', () => {
 
     await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
 
-    expect(mockRequest.logger.error).toHaveBeenCalledWith({ err: boomError }, 'Failed to get claim')
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: boomError },
+      'Failed to get claim'
+    )
   })
 
   it('should wrap non-Boom errors in Boom.internal', async () => {
@@ -281,7 +346,7 @@ describe('getClaimHandler', () => {
 
     await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(Boom.internal(genericError))
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
-      { err: genericError },
+      { error: genericError },
       'Failed to get claim'
     )
   })

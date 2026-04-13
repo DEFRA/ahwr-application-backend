@@ -8,7 +8,8 @@ import {
   findOnHoldClaims,
   createClaimIndexes,
   removeHerdFromClaimData,
-  deleteClaim
+  deleteClaim,
+  getClaimsCount
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -519,7 +520,74 @@ describe('claim-repository', () => {
       await createClaimIndexes(mockDb)
 
       expect(mockDb.collection).toHaveBeenCalledWith('claims')
-      expect(mockCollection.createIndex).toHaveBeenCalledWith({ createdAt: -1 })
+      expect(mockCollection.createIndex).toHaveBeenCalledWith({
+        createdAt: -1,
+        'herd.cph': 1,
+        'herd.id': 1
+      })
+    })
+  })
+
+  describe('getClaimsCount', () => {
+    let mockDb
+    let mockCollection
+    const mockCountDocuments = jest.fn()
+    const cph = '22/333/4444'
+    const herdId = '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+
+    beforeEach(() => {
+      mockCollection = { countDocuments: mockCountDocuments }
+      mockDb = {
+        collection: jest.fn().mockReturnValue(mockCollection)
+      }
+    })
+
+    it('returns count when cph has not been used for a different herd', async () => {
+      mockCountDocuments.mockResolvedValue(2)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
+
+      expect(mockDb.collection).toHaveBeenCalledWith('claims')
+      expect(result).toEqual(2)
+    })
+
+    it('returns 0 when cph is already used by a different herd', async () => {
+      mockCountDocuments.mockResolvedValue(0)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
+
+      expect(result).toEqual(0)
+    })
+
+    it('returns count when cph exists but only for the same herd', async () => {
+      mockCountDocuments.mockResolvedValue(2)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId })
+
+      expect(mockCountDocuments).toHaveBeenCalledWith({
+        'herd.cph': cph,
+        'herd.id': { $ne: herdId }
+      })
+      expect(result).toEqual(2)
+    })
+
+    it('handles optional herdId when not present', async () => {
+      mockCountDocuments.mockResolvedValue(2)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId: undefined })
+
+      expect(mockCountDocuments).toHaveBeenCalledWith({
+        'herd.cph': cph,
+        'herd.id': { $ne: undefined }
+      })
+      expect(result).toEqual(2)
+    })
+
+    it('propagates errors from the database', async () => {
+      const error = new Error('DB failure')
+      mockCountDocuments.mockRejectedValue(error)
+
+      await expect(getClaimsCount({ db: mockDb, cph, herdId })).rejects.toThrow('DB failure')
     })
   })
 })

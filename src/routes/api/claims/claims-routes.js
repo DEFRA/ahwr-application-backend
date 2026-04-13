@@ -7,7 +7,8 @@ import {
   isURNUniqueHandler,
   getClaimHandler,
   updateClaimStatusHandler,
-  updateClaimDataHandler
+  updateClaimDataHandler,
+  getClaimsCountHandler
 } from './claims-controller.js'
 
 export const claimsHandlers = [
@@ -71,6 +72,20 @@ export const claimsHandlers = [
         })
       },
       handler: isURNUniqueHandler
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/claims/count',
+    options: {
+      description: 'Retrieve count of claims',
+      validate: {
+        query: joi.object({
+          cph: joi.string().optional(),
+          herdId: joi.string().optional()
+        })
+      },
+      handler: getClaimsCountHandler
     }
   },
   {

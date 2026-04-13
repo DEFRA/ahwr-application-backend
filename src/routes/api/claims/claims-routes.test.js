@@ -5,7 +5,8 @@ import {
   isURNUniqueHandler,
   getClaimHandler,
   updateClaimStatusHandler,
-  updateClaimDataHandler
+  updateClaimDataHandler,
+  getClaimsCountHandler
 } from './claims-controller.js'
 
 jest.mock('./claims-controller.js')
@@ -112,6 +113,36 @@ describe('claims-routes', () => {
         method: 'POST',
         url: '/api/claims/is-urn-unique',
         payload
+      })
+
+      expect(res.statusCode).toBe(500)
+    })
+  })
+
+  describe('GET /api/claims/count', () => {
+    it('should validate payload and call correct handler', async () => {
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 2 }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.result).toEqual({ count: 2 })
+      expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle errors from handler', async () => {
+      getClaimsCountHandler.mockImplementation(async () => {
+        throw new Error('Database error')
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
       })
 
       expect(res.statusCode).toBe(500)
