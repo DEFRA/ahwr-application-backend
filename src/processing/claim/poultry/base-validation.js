@@ -1,27 +1,57 @@
 import { claimType, TYPE_OF_POULTRY } from 'ffc-ahwr-common-library'
 import joi from 'joi'
-import { assuranceScheme, biosecurity, speciesNumbers } from '../../../constants/index.js'
-import { herdSchema } from '../../../routes/api/schema/herd.schema.js'
+import {
+  biosecurity,
+  biosecurityUsefulness,
+  changesInBiosecurity,
+  costOfChanges,
+  interview,
+  speciesNumbers
+} from '../../../constants/index.js'
+import { poultrySchema } from '../../../routes/api/schema/herd.schema.js'
 
 const getDataModel = () =>
   joi.object({
-    typeOfLivestock: joi
-      .string()
-      .valid(
-        TYPE_OF_POULTRY.BROILERS,
-        TYPE_OF_POULTRY.LAYING,
-        TYPE_OF_POULTRY.DUCKS,
-        TYPE_OF_POULTRY.GEESE,
-        TYPE_OF_POULTRY.TURKEYS
+    typesOfPoultry: joi
+      .array()
+      .items(
+        joi
+          .string()
+          .valid(
+            TYPE_OF_POULTRY.BROILERS,
+            TYPE_OF_POULTRY.LAYING,
+            TYPE_OF_POULTRY.BREEDERS,
+            TYPE_OF_POULTRY.DUCKS,
+            TYPE_OF_POULTRY.GEESE,
+            TYPE_OF_POULTRY.TURKEYS
+          )
       )
       .required(),
-    ...herdSchema,
-    dateOfVisit: joi.date().required(),
-    speciesNumbers: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
+    ...poultrySchema,
+    dateOfReview: joi.date().required(),
+    minimumNumberOfBirds: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
     vetRCVSNumber: joi.string().required(),
-    assuranceScheme: joi.string().valid(assuranceScheme.yes, assuranceScheme.no).required(),
-    biosecurity: joi.string().valid(biosecurity.yes, biosecurity.no).required()
+    biosecurity: joi
+      .string()
+      .valid(...Object.values(biosecurity))
+      .required(),
+    biosecurityUsefulness: joi
+      .string()
+      .valid(...Object.values(biosecurityUsefulness))
+      .required(),
+    changesInBiosecurity: joi
+      .string()
+      .valid(...Object.values(changesInBiosecurity))
+      .required(),
+    costOfChanges: joi
+      .string()
+      .valid(...Object.values(costOfChanges))
+      .required(),
+    interview: joi
+      .string()
+      .valid(...Object.values(interview))
+      .required()
   })
 
 const getClaimModel = () =>

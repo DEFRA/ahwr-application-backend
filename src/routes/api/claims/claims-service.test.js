@@ -14,13 +14,17 @@ import {
   saveClaimAndRelatedData,
   generateEventsAndComms
 } from '../../../processing/claim/ahwr/processor.js'
+import {
+  generatePoultryEventsAndComms,
+  savePoultryClaimAndRelatedData
+} from '../../../processing/claim/poultry/processor.js'
 import { trackError } from '../../../logging/logger.js'
-import { AHWR_SCHEME, POULTRY_SCHEME } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/ow-application-repository.js')
 jest.mock('../../../processing/claim/ahwr/processor.js')
+jest.mock('../../../processing/claim/poultry/processor.js')
 jest.mock('../../../logging/logger.js')
 jest.mock('@hapi/boom', () => ({
   notFound: jest.fn((msg) => new Error(`NotFound: ${msg}`)),
@@ -37,26 +41,28 @@ describe('processClaim', () => {
       reference: 'TEMP-CLAIM-O9UD-0025',
       createdBy: '2025-12-30T12:00:00Z',
       data: {
-        typeOfLivestock: 'broilers',
-        dateOfVisit: new Date('2025-12-30T12:00:00Z'),
-        speciesNumbers: 'yes',
+        typesOfPoultry: ['broilers', 'ducks'],
+        dateOfReview: new Date('2025-12-30T12:00:00Z'),
+        minimumNumberOfBirds: 'yes',
         vetsName: 'vet name',
         vetRCVSNumber: '2323232',
-        assuranceScheme: 'yes',
         biosecurity: 'yes',
-        herd: {
+        biosecurityUsefulness: 'very-useful',
+        changesInBiosecurity: 'bird-handling',
+        costOfChanges: 'over-4500',
+        interview: 'no',
+        site: {
           id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
           version: 2,
           name: 'Poultry Unit',
           cph: '22/222/2222',
-          reasons: [],
           same: 'no'
         }
       }
     }
 
     beforeEach(() => {
-      jest.spyOn(createReference, 'createClaimReference')
+      jest.spyOn(createReference, 'createPoultryClaimReference')
     })
 
     afterEach(() => {
@@ -74,17 +80,18 @@ describe('processClaim', () => {
       const saveClaimResult = {
         claim: {
           applicationReference: 'POUL-AAAA-AAAA',
-          reference: 'POBR-O9UD-0025',
+          reference: 'PORE-O9UD-0025',
           data: {
-            typeOfLivestock: 'broilers',
-            dateOfVisit: '2025-10-20T00:00:00.000Z',
-            dateOfTesting: '2024-01-22T00:00:00.000Z',
-            vetsName: 'Jane Doe',
-            vetRCVSNumber: 'AK-2024',
-            laboratoryURN: 'AK-2024-38',
-            numberAnimalsTested: 30,
-            speciesNumbers: 'yes',
-            amount: 4,
+            typesOfPoultry: ['broilers', 'ducks'],
+            dateOfReview: new Date('2025-12-30T12:00:00Z'),
+            minimumNumberOfBirds: 'yes',
+            vetsName: 'vet name',
+            vetRCVSNumber: '2323232',
+            biosecurity: 'yes',
+            biosecurityUsefulness: 'very-useful',
+            changesInBiosecurity: 'bird-handling',
+            costOfChanges: 'over-4500',
+            interview: 'no',
             claimType: 'REVIEW'
           },
           type: 'REVIEW',
@@ -95,12 +102,10 @@ describe('processClaim', () => {
             version: 1,
             cph: '12/345/6789',
             name: 'Sheep herd 2',
-            reasons: ['uniqueHealthNeeds'],
             associatedAt: '2025-10-21T09:28:49.760Z'
           }
         },
-        isMultiHerdsClaim: true,
-        herdGotUpdated: true,
+        siteCreated: true,
         herdData
       }
       const application = {
@@ -108,7 +113,7 @@ describe('processClaim', () => {
         organisation: { sbi: '123456789' }
       }
       getApplication.mockResolvedValue(application)
-      saveClaimAndRelatedData.mockResolvedValue(saveClaimResult)
+      savePoultryClaimAndRelatedData.mockResolvedValue(saveClaimResult)
 
       const result = await processClaim({
         payload,
@@ -117,26 +122,20 @@ describe('processClaim', () => {
       })
 
       expect(result).toEqual(saveClaimResult.claim)
-      expect(createReference.createClaimReference).toHaveBeenCalledWith(
-        'TEMP-CLAIM-O9UD-0025',
-        'REVIEW',
-        'broilers',
-        POULTRY_SCHEME
+      expect(createReference.createPoultryClaimReference).toHaveBeenCalledWith(
+        'TEMP-CLAIM-O9UD-0025'
       )
-      expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
+      expect(savePoultryClaimAndRelatedData).toHaveBeenCalledWith({
         db: mockDb,
         sbi: '123456789',
         claimPayload: payload,
-        claimReference: 'POBR-O9UD-0025',
-        flags: [],
+        claimReference: 'PORE-O9UD-0025',
         logger: mockLogger
       })
-      expect(generateEventsAndComms).toHaveBeenCalledWith(
-        true,
+      expect(generatePoultryEventsAndComms).toHaveBeenCalledWith(
         saveClaimResult.claim,
         application,
         herdData,
-        true,
         'db32152a-724a-4c5d-8073-0901c8d307f7'
       )
     })
@@ -269,8 +268,7 @@ describe('processClaim', () => {
       expect(createReference.createClaimReference).toHaveBeenCalledWith(
         'TEMP-CLAIM-O9UD-0025',
         'REVIEW',
-        'beef',
-        AHWR_SCHEME
+        'beef'
       )
       expect(saveClaimAndRelatedData).toHaveBeenCalledWith({
         db: mockDb,

@@ -7,14 +7,8 @@ import {
   getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
-import { createClaimReference } from '../../../lib/create-reference.js'
-import { validateClaim } from '../../../processing/claim/validation.js'
-import {
-  AHWR_SCHEME,
-  APPLICATION_REFERENCE_PREFIX_POULTRY,
-  claimType,
-  POULTRY_SCHEME
-} from 'ffc-ahwr-common-library'
+import { createClaimReference, createPoultryClaimReference } from '../../../lib/create-reference.js'
+import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType } from 'ffc-ahwr-common-library'
 
 import {
   saveClaimAndRelatedData,
@@ -22,6 +16,12 @@ import {
 } from '../../../processing/claim/ahwr/processor.js'
 import Boom from '@hapi/boom'
 import { trackError } from '../../../logging/logger.js'
+import { validateAhwrClaim } from '../../../processing/claim/ahwr/base-validation.js'
+import { validatePoultryClaim } from '../../../processing/claim/poultry/base-validation.js'
+import {
+  generatePoultryEventsAndComms,
+  savePoultryClaimAndRelatedData
+} from '../../../processing/claim/poultry/processor.js'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
 
@@ -29,27 +29,21 @@ export const checkIfPoultryAgreement = (reference) => {
   return reference?.startsWith(APPLICATION_REFERENCE_PREFIX_POULTRY)
 }
 
-export const processClaim = async ({ payload, logger, db }) => {
-  const { applicationReference, type, reference: tempClaimReference, data } = payload
+const processLivestockClaim = async ({
+  application,
+  applicationReference,
+  payload,
+  flags,
+  data,
+  type,
+  logger,
+  tempClaimReference,
+  sbi,
+  db
+}) => {
   const { typeOfLivestock, laboratoryURN, herd } = data || {}
 
-  const application = await getApplication({
-    db,
-    reference: applicationReference
-  })
-  if (!application) {
-    throw Boom.notFound('Application not found')
-  }
-
-  const {
-    flags,
-    organisation: { sbi }
-  } = application
-
-  const isPoultryAgreement = checkIfPoultryAgreement(applicationReference)
-  const scheme = isPoultryAgreement ? POULTRY_SCHEME : AHWR_SCHEME
-
-  const { value: validatedPayload, error } = validateClaim(scheme, payload, flags)
+  const { value: validatedPayload, error } = validateAhwrClaim(payload, flags)
 
   if (error) {
     logger.setBindings({ error })
@@ -57,7 +51,7 @@ export const processClaim = async ({ payload, logger, db }) => {
     throw Boom.badRequest(error.message)
   }
 
-  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock, scheme)
+  const claimReference = createClaimReference(tempClaimReference, type, typeOfLivestock)
 
   logger.setBindings({
     isFollowUp: isFollowUp(validatedPayload),
@@ -92,6 +86,97 @@ export const processClaim = async ({ payload, logger, db }) => {
   generateEventsAndComms(isMultiHerdsClaim, claim, application, herdData, herdGotUpdated, herd?.id)
 
   return claim
+}
+
+const processPoultryClaim = async ({
+  application,
+  applicationReference,
+  payload,
+  data,
+  logger,
+  tempClaimReference,
+  sbi,
+  db
+}) => {
+  const { site } = data || {}
+
+  const { value: validatedPayload, error } = validatePoultryClaim(payload)
+
+  if (error) {
+    logger.setBindings({ error })
+    trackError(logger, error, 'failed-validation', 'Create claim validation error')
+    throw Boom.badRequest(error.message)
+  }
+
+  const claimReference = createPoultryClaimReference(tempClaimReference)
+
+  logger.setBindings({
+    applicationReference,
+    claimReference,
+    sbi
+  })
+
+  const { claim, herdData } = await savePoultryClaimAndRelatedData({
+    db,
+    sbi,
+    claimPayload: validatedPayload,
+    claimReference,
+    logger
+  })
+
+  if (!claim) {
+    throw new Error('Claim was not created')
+  }
+
+  // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
+  // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
+  generatePoultryEventsAndComms(claim, application, herdData, site?.id)
+
+  return claim
+}
+
+export const processClaim = async ({ payload, logger, db }) => {
+  const { applicationReference, type, reference: tempClaimReference, data } = payload
+  const isPoultryAgreement = checkIfPoultryAgreement(applicationReference)
+
+  const application = await getApplication({
+    db,
+    reference: applicationReference
+  })
+  if (!application) {
+    throw Boom.notFound('Application not found')
+  }
+
+  const {
+    flags,
+    organisation: { sbi }
+  } = application
+
+  if (isPoultryAgreement) {
+    return processPoultryClaim({
+      application,
+      applicationReference,
+      payload,
+      data,
+      logger,
+      tempClaimReference,
+      sbi,
+      db
+    })
+  } else {
+    return processLivestockClaim({
+      application,
+      applicationReference,
+      payload,
+      flags,
+      sbi,
+      type,
+      tempClaimReference,
+      data,
+      logger,
+      db
+    })
+  }
 }
 
 export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {

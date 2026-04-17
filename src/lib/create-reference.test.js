@@ -1,5 +1,8 @@
-import { AHWR_SCHEME, POULTRY_SCHEME } from 'ffc-ahwr-common-library'
-import { createApplicationReference, createClaimReference } from './create-reference'
+import {
+  createApplicationReference,
+  createClaimReference,
+  createPoultryClaimReference
+} from './create-reference'
 
 describe('createApplicationReference', () => {
   test('should take an existing TEMP reference and swap the prefix for IAHW', () => {
@@ -13,14 +16,12 @@ describe('createApplicationReference', () => {
   describe('createClaimReference', () => {
     describe('standard herds', () => {
       test('should throw an error if an incorrect claim type is passed', () => {
-        expect(() =>
-          createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'Q', 'beef', AHWR_SCHEME)
-        ).toThrow()
+        expect(() => createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'Q', 'beef')).toThrow()
       })
 
       test('should throw an error if an incorrect livestock type is passed', () => {
         expect(() =>
-          createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'REVIEW', 'beef cattle', AHWR_SCHEME)
+          createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'REVIEW', 'beef cattle')
         ).toThrow()
       })
 
@@ -32,12 +33,7 @@ describe('createApplicationReference', () => {
       ])(
         'should return a proper reference for a $livestock review claim',
         ({ livestock, prefix }) => {
-          const result = createClaimReference(
-            'TEMP-CLAIM-A2SQ-PFNF',
-            'REVIEW',
-            livestock,
-            AHWR_SCHEME
-          )
+          const result = createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'REVIEW', livestock)
 
           expect(result).toEqual(`${prefix}-A2SQ-PFNF`)
         }
@@ -51,49 +47,18 @@ describe('createApplicationReference', () => {
       ])(
         'should return a proper reference for a $livestock endemics claim',
         ({ livestock, prefix }) => {
-          const result = createClaimReference(
-            'TEMP-CLAIM-A2SQ-PFNF',
-            'FOLLOW_UP',
-            livestock,
-            AHWR_SCHEME
-          )
+          const result = createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'FOLLOW_UP', livestock)
 
           expect(result).toEqual(`${prefix}-A2SQ-PFNF`)
         }
       )
     })
     describe('poultry references', () => {
-      test('should throw an error if an incorrect claim type is passed', () => {
-        expect(() =>
-          createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'Q', 'ducks', POULTRY_SCHEME)
-        ).toThrow()
+      test('should return proper reference for a poultry review claim', () => {
+        const result = createPoultryClaimReference('TEMP-CLAIM-A2SQ-PFNF')
+
+        expect(result).toEqual(`PORE-A2SQ-PFNF`)
       })
-
-      test('should throw an error if an incorrect livestock type is passed', () => {
-        expect(() =>
-          createClaimReference('TEMP-CLAIM-A2SQ-PFNF', 'REVIEW', 'beef', POULTRY_SCHEME)
-        ).toThrow()
-      })
-
-      test.each([
-        { poultry: 'broilers', reference: 'POBR' },
-        { poultry: 'laying', reference: 'POLY' },
-        { poultry: 'ducks', reference: 'PODK' },
-        { poultry: 'geese', reference: 'POGE' },
-        { poultry: 'turkeys', reference: 'POTK' }
-      ])(
-        'should return proper reference for a $poultry  review claim',
-        ({ poultry, reference }) => {
-          const result = createClaimReference(
-            'TEMP-CLAIM-A2SQ-PFNF',
-            'REVIEW',
-            poultry,
-            POULTRY_SCHEME
-          )
-
-          expect(result).toEqual(`${reference}-A2SQ-PFNF`)
-        }
-      )
     })
   })
 })

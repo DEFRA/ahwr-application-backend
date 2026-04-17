@@ -18,7 +18,33 @@ export const biosecurity = {
   no: 'no'
 }
 
-export const assuranceScheme = {
+export const biosecurityUsefulness = {
+  veryUseful: 'very-useful',
+  somewhatUseful: 'somewhat-useful',
+  notVeryUsefu: 'not-very-useful',
+  notUseful: 'not-useful',
+  notSure: 'not-sure'
+}
+
+export const changesInBiosecurity = {
+  infraAndControl: 'infra-and-control',
+  peopleAndHygiene: 'people-and-hygiene',
+  movementAndManagement: 'movement-and-management',
+  birdHandling: 'bird-handling',
+  cleaning: 'cleaning',
+  noRecommendation: 'no-recommendation'
+}
+
+export const costOfChanges = {
+  between0And1500: '0-1500',
+  between1500And3000: '1500-3000',
+  between3000And4500: '3000-4500',
+  over4500: 'over-4500',
+  notSure: 'not-sure',
+  noIntention: 'no-intention'
+}
+
+export const interview = {
   yes: 'yes',
   no: 'no'
 }
