@@ -1,13 +1,19 @@
-import { savePoultryClaimAndRelatedData } from './processor.js'
+import { savePoultryClaimAndRelatedData, generatePoultryEventsAndComms } from './processor.js'
 import { createClaim } from '../../../repositories/claim-repository.js'
 import { generateClaimStatus } from '../../../lib/requires-compliance-check.js'
 import { processSite } from './site-processor.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
+import { emitHerdMIEvents } from '../../../lib/emit-herd-MI-events.js'
+import { getLogger } from '../../../logging/logger.js'
+import { publishStatusChangeEvent } from '../../../messaging/publish-outbound-notification.js'
 
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../lib/requires-compliance-check.js')
 jest.mock('./site-processor.js')
 jest.mock('../../../event-publisher/index.js')
+jest.mock('../../../lib/emit-herd-MI-events.js')
+jest.mock('../../../logging/logger.js')
+jest.mock('../../../messaging/publish-outbound-notification.js')
 
 const mockSession = {
   withTransaction: jest.fn((fn) => fn()),
@@ -306,5 +312,96 @@ describe('savePoultryClaimAndRelatedData', () => {
     })
 
     expect(result.herdData.reasons).toEqual([])
+  })
+})
+
+describe('generatePoultryEventsAndComms', () => {
+  const mockApp = {
+    reference: 'POUL-8ZPZ-8CLI',
+    organisation: { sbi: '123456789', crn: 'CRN-999' }
+  }
+
+  const claim = {
+    reference: 'PORE-O9UD-0025',
+    type: 'REVIEW',
+    status: 'ON_HOLD',
+    data: {
+      amount: 430,
+      typesOfPoultry: ['broilers', 'ducks']
+    }
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should emit herd events, send status notification, and log event message', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
+    const herdData = { name: 'Broilers Unit' }
+
+    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1')
+
+    expect(emitHerdMIEvents).toHaveBeenCalledWith({
+      sbi: '123456789',
+      herdData,
+      herdIdSelected: 'SITE-1',
+      herdGotUpdated: false,
+      claimReference: 'PORE-O9UD-0025',
+      applicationReference: 'POUL-8ZPZ-8CLI'
+    })
+
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
+      agreementReference: 'POUL-8ZPZ-8CLI',
+      claimAmount: 430,
+      claimReference: 'PORE-O9UD-0025',
+      claimStatus: 'ON_HOLD',
+      claimType: 'REVIEW',
+      crn: 'CRN-999',
+      dateTime: expect.any(Date),
+      herdName: 'Broilers Unit',
+      sbi: '123456789',
+      typesOfPoultry: ['broilers', 'ducks']
+    })
+
+    expect(mockLogger.info).toHaveBeenCalledWith({
+      event: {
+        category: 'Poultry',
+        created: expect.any(Date),
+        kind: 'REVIEW',
+        outcome: 'Status - ON_HOLD',
+        reference: '123456789 - POUL-8ZPZ-8CLI - PORE-O9UD-0025',
+        type: 'process-claim'
+      }
+    })
+  })
+
+  it('should always pass herdGotUpdated as false since sites are never updated', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
+    const herdData = { name: 'Laying Hens Unit' }
+
+    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-2')
+
+    expect(emitHerdMIEvents).toHaveBeenCalledWith(
+      expect.objectContaining({
+        herdGotUpdated: false
+      })
+    )
+  })
+
+  it('should use site name directly as herdName', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
+    const herdData = { name: 'Turkey Farm' }
+
+    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-3')
+
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(
+      mockLogger,
+      expect.objectContaining({
+        herdName: 'Turkey Farm'
+      })
+    )
   })
 })
