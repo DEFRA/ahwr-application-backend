@@ -15,22 +15,6 @@ export const getClaimByReference = async (db, reference) => {
   return db.collection(CLAIMS_COLLECTION).findOne({ reference }, { projection: { _id: 0 } })
 }
 
-export const getByPoultryApplicationReference = async ({
-  db,
-  applicationReference,
-  typesOfPoultry
-}) => {
-  const filter = {
-    applicationReference
-  }
-
-  if (typesOfPoultry) {
-    filter['data.typesOfPoultry'] = typesOfPoultry
-  }
-
-  return db.collection(CLAIMS_COLLECTION).find(filter).sort({ createdAt: -1 }).toArray()
-}
-
 export const getByApplicationReference = async ({ db, applicationReference, typeOfLivestock }) => {
   const filter = {
     applicationReference
