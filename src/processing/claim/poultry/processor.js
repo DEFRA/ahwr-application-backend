@@ -133,7 +133,7 @@ export async function generatePoultryEventsAndComms(claim, application, herdData
     claimReference,
     claimStatus: status,
     claimType: type,
-    typesOfPoultry,
+    typesOfLivestock: typesOfPoultry.join(', '),
     claimAmount: amount,
     dateTime: new Date(),
     herdName: herdData.name // will never be the case we have an unnamed site
