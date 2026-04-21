@@ -16,6 +16,16 @@ export const updateHerd = Joi.object({
   reasons: Joi.array().required()
 })
 
+export const poultrySchema = {
+  site: Joi.object({
+    id: Joi.string().required(),
+    version: Joi.number().required(),
+    name: Joi.string().required(),
+    cph: Joi.string().required(),
+    same: Joi.string().valid('yes', 'no')
+  })
+}
+
 export const herdSchema = {
   herd: Joi.alternatives().try(newHerd, updateHerd).required()
 }

@@ -1,3 +1,8 @@
 package-lock.json
 node_modules
 coverage
+helm
+snyk-cli
+snyk_report.html
+snyk-result.json
+.claude

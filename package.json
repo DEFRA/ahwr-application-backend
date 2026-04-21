@@ -39,7 +39,7 @@
     "aws4": "1.13.2",
     "convict": "6.2.5",
     "convict-format-with-validator": "6.2.0",
-    "ffc-ahwr-common-library": "3.6.6",
+    "ffc-ahwr-common-library": "3.7.2",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
     "hapi-pulse": "3.0.1",
