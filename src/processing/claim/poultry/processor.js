@@ -46,6 +46,7 @@ const addClaimAndSiteToDatabase = async ({
         ...claimPayload,
         reference: claimReference,
         data: {
+          typeOfLivestock: 'poultry',
           ...payloadData,
           amount,
           claimType: claimPayload.type

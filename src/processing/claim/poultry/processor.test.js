@@ -99,6 +99,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       createdAt: expect.any(Date),
       createdBy: 'admin',
       data: {
+        typeOfLivestock: 'poultry',
         typesOfPoultry: ['broilers', 'ducks'],
         dateOfReview: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
