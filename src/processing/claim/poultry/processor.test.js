@@ -361,7 +361,7 @@ describe('generatePoultryEventsAndComms', () => {
       dateTime: expect.any(Date),
       herdName: 'Broilers Unit',
       sbi: '123456789',
-      typesOfPoultry: ['broilers', 'ducks']
+      typesOfLivestock: 'broilers, ducks'
     })
 
     expect(mockLogger.info).toHaveBeenCalledWith({
