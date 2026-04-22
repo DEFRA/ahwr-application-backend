@@ -32,7 +32,7 @@ const addClaimAndSiteToDatabase = async ({
         site,
         applicationReference,
         createdBy: claimPayload.createdBy,
-        species: claimPayload.data.typesOfPoultry,
+        species: 'poultry',
         db
       })
       claimSiteData = siteResult.claimSiteData
@@ -133,7 +133,7 @@ export async function generatePoultryEventsAndComms(claim, application, herdData
     claimReference,
     claimStatus: status,
     claimType: type,
-    typesOfLivestock: typesOfPoultry.join(', '),
+    typesOfPoultry,
     claimAmount: amount,
     dateTime: new Date(),
     herdName: herdData.name // will never be the case we have an unnamed site
