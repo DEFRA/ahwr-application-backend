@@ -28,7 +28,7 @@ describe('savePoultryClaimAndRelatedData', () => {
     jest.clearAllMocks()
   })
 
-  it('should save claim and site', async () => {
+  it('saves claim and site', async () => {
     const claimPayload = {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
@@ -91,7 +91,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       applicationReference: 'POUL-8ZPZ-8CLI',
       createdBy: 'admin',
       db: mockDb,
-      species: ['broilers', 'ducks']
+      species: 'poultry'
     })
 
     const expectedClaim = {
@@ -160,7 +160,7 @@ describe('savePoultryClaimAndRelatedData', () => {
     expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb)
   })
 
-  it('should use fixed poultry price for amount', async () => {
+  it('uses fixed poultry price for amount', async () => {
     const claimPayload = {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
@@ -217,7 +217,7 @@ describe('savePoultryClaimAndRelatedData', () => {
     expect(result.claim.data.amount).toBe(430)
   })
 
-  it('should throw error when site update is attempted', async () => {
+  it('throws error when site update is attempted', async () => {
     const claimPayload = {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
@@ -257,7 +257,7 @@ describe('savePoultryClaimAndRelatedData', () => {
     expect(createClaim).not.toHaveBeenCalled()
   })
 
-  it('should include empty reasons array in herdData for compatibility', async () => {
+  it('includes empty reasons array in herdData for compatibility', async () => {
     const claimPayload = {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
@@ -335,7 +335,7 @@ describe('generatePoultryEventsAndComms', () => {
     jest.clearAllMocks()
   })
 
-  it('should emit herd events, send status notification, and log event message', async () => {
+  it('emits herd events, send status notification, and log event message', async () => {
     const mockLogger = { info: jest.fn(), error: jest.fn() }
     getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'Broilers Unit' }
@@ -376,7 +376,7 @@ describe('generatePoultryEventsAndComms', () => {
     })
   })
 
-  it('should always pass herdGotUpdated as false since sites are never updated', async () => {
+  it('always pass herdGotUpdated as false since sites are never updated', async () => {
     const mockLogger = { info: jest.fn(), error: jest.fn() }
     getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'Laying Hens Unit' }
@@ -390,7 +390,7 @@ describe('generatePoultryEventsAndComms', () => {
     )
   })
 
-  it('should use site name directly as herdName', async () => {
+  it('use site name directly as herdName', async () => {
     const mockLogger = { info: jest.fn(), error: jest.fn() }
     getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'Turkey Farm' }

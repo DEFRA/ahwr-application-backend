@@ -32,7 +32,7 @@ const addClaimAndSiteToDatabase = async ({
         site,
         applicationReference,
         createdBy: claimPayload.createdBy,
-        species: claimPayload.data.typesOfPoultry,
+        species: 'poultry',
         db
       })
       claimSiteData = siteResult.claimSiteData
