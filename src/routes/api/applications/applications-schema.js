@@ -54,8 +54,5 @@ export const getApplicationClaimsQuerySchema = Joi.object({
 })
 
 export const getApplicationHerdsQuerySchema = Joi.object({
-  species: Joi.string().valid(
-    ...Object.values(TYPE_OF_LIVESTOCK),
-    ...Object.values(TYPE_OF_POULTRY)
-  )
+  species: Joi.string().valid(...Object.values(TYPE_OF_LIVESTOCK), 'poultry')
 })

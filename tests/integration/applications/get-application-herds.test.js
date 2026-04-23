@@ -72,4 +72,22 @@ describe('Get application herds', () => {
 
     expect(res.statusCode).toBe(StatusCodes.UNAUTHORIZED)
   })
+
+  test('accepts poultry as a valid species', async () => {
+    const res = await server.inject({
+      ...options,
+      url: buildUrl('IAHW-G3CL-V59P', 'poultry')
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+  })
+
+  test('rejects individual poultry types as invalid species', async () => {
+    const res = await server.inject({
+      ...options,
+      url: buildUrl('IAHW-G3CL-V59P', 'broilers')
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST)
+  })
 })
