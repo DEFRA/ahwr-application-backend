@@ -783,6 +783,84 @@ describe('updateClaimStatusHandler', () => {
 
     expect(publishStatusChangeEvent).not.toHaveBeenCalled()
   })
+
+  test('Update claim status to status "READY_TO_PAY" for poultry', async () => {
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'PORE-CH1C-K3NS',
+        status: 'READY_TO_PAY',
+        user: 'admin'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'PORE-CH1C-K3NS',
+      applicationReference: 'POUL-CH1C-K3NS',
+      data: {
+        typesOfPoultry: ['ducks']
+      },
+      herd: {
+        name: 'test site 1'
+      },
+      type: 'REVIEW'
+    })
+    updateClaimStatus.mockResolvedValueOnce({
+      _id: new ObjectId('691df90a35d046309ef9fe46'),
+      reference: 'PORE-CH1C-K3NS',
+      status: 'READY_TO_PAY',
+      updatedAt: new Date('2026-04-24T08:24:24.092Z'),
+      updatedBy: 'user'
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockH)
+
+    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(updateClaimStatus).toHaveBeenCalledWith({
+      db: {},
+      reference: 'PORE-CH1C-K3NS',
+      status: 'READY_TO_PAY',
+      updatedAt: expect.any(Date),
+      user: 'admin'
+    })
+    expect(raiseClaimEvents).toHaveBeenCalledWith(
+      {
+        message: 'Claim has been updated',
+        claim: {
+          _id: new ObjectId('691df90a35d046309ef9fe46'),
+          id: '691df90a35d046309ef9fe46',
+          reference: 'PORE-CH1C-K3NS',
+          status: 'READY_TO_PAY',
+          updatedAt: new Date('2026-04-24T08:24:24.092Z'),
+          updatedBy: 'user'
+        },
+        note: undefined,
+        raisedBy: 'user',
+        raisedOn: new Date('2026-04-24T08:24:24.092Z')
+      },
+      '106705779'
+    )
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
+      crn: '1100014934',
+      sbi: '106705779',
+      agreementReference: 'POUL-CH1C-K3NS',
+      claimReference: 'PORE-CH1C-K3NS',
+      claimAmount: undefined,
+      claimStatus: 'READY_TO_PAY',
+      claimType: 'REVIEW',
+      typesOfPoultry: ['ducks'],
+      dateTime: expect.any(Date),
+      herdName: 'test site 1'
+    })
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(mockLogger, {
+      whichReview: 'poultry',
+      reference: 'PORE-CH1C-K3NS',
+      sbi: '106705779',
+      frn: '1102569649'
+    })
+  })
 })
 
 describe('updateClaimDataHandler', () => {
