@@ -12,7 +12,7 @@ const addClaimAndSiteToDatabase = async ({
   applicationReference,
   claimReference,
   amount,
-  dateOfReview,
+  dateOfVisit,
   claimPayload,
   logger,
   db
@@ -39,7 +39,7 @@ const addClaimAndSiteToDatabase = async ({
       siteData = siteResult.siteData
       siteCreated = siteResult.created
 
-      const status = await generateClaimStatus(dateOfReview, logger, db)
+      const status = await generateClaimStatus(dateOfVisit, logger, db)
 
       const createdAt = new Date()
       claim = {
@@ -82,7 +82,7 @@ export async function savePoultryClaimAndRelatedData({
   claimReference,
   logger
 }) {
-  const { dateOfReview } = claimPayload.data
+  const { dateOfVisit } = claimPayload.data
   const { applicationReference } = claimPayload
 
   const amount = poultryPrice.value
@@ -92,7 +92,7 @@ export async function savePoultryClaimAndRelatedData({
     applicationReference,
     claimReference,
     amount,
-    dateOfReview,
+    dateOfVisit,
     claimPayload,
     logger,
     db

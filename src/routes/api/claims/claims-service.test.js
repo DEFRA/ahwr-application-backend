@@ -42,7 +42,7 @@ describe('processClaim', () => {
       createdBy: '2025-12-30T12:00:00Z',
       data: {
         typesOfPoultry: ['broilers', 'ducks'],
-        dateOfReview: new Date('2025-12-30T12:00:00Z'),
+        dateOfVisit: new Date('2025-12-30T12:00:00Z'),
         minimumNumberOfBirds: 'yes',
         vetsName: 'vet name',
         vetRCVSNumber: '2323232',
@@ -83,7 +83,7 @@ describe('processClaim', () => {
           reference: 'PORE-O9UD-0025',
           data: {
             typesOfPoultry: ['broilers', 'ducks'],
-            dateOfReview: new Date('2025-12-30T12:00:00Z'),
+            dateOfVisit: new Date('2025-12-30T12:00:00Z'),
             minimumNumberOfBirds: 'yes',
             vetsName: 'vet name',
             vetRCVSNumber: '2323232',

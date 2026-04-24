@@ -33,7 +33,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
         typesOfPoultry: ['broilers', 'ducks'],
-        dateOfReview: '2025-01-01T00:00:00Z',
+        dateOfVisit: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
         vetsName: 'Dr Smith',
         vetRCVSNumber: '1234567',
@@ -100,7 +100,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       createdBy: 'admin',
       data: {
         typesOfPoultry: ['broilers', 'ducks'],
-        dateOfReview: '2025-01-01T00:00:00Z',
+        dateOfVisit: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
         vetsName: 'Dr Smith',
         vetRCVSNumber: '1234567',
@@ -165,7 +165,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
         typesOfPoultry: ['broilers'],
-        dateOfReview: '2025-01-01T00:00:00Z',
+        dateOfVisit: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
         vetsName: 'Dr Smith',
         vetRCVSNumber: '1234567',
@@ -222,7 +222,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
         typesOfPoultry: ['broilers'],
-        dateOfReview: '2025-01-01T00:00:00Z',
+        dateOfVisit: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
         vetsName: 'Dr Smith',
         vetRCVSNumber: '1234567',
@@ -262,7 +262,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       applicationReference: 'POUL-8ZPZ-8CLI',
       data: {
         typesOfPoultry: ['laying'],
-        dateOfReview: '2025-01-01T00:00:00Z',
+        dateOfVisit: '2025-01-01T00:00:00Z',
         minimumNumberOfBirds: 'yes',
         vetsName: 'Dr Smith',
         vetRCVSNumber: '1234567',

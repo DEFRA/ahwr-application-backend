@@ -28,7 +28,7 @@ const getDataModel = () =>
       )
       .required(),
     ...poultrySchema,
-    dateOfReview: joi.date().required(),
+    dateOfVisit: joi.date().required(),
     minimumNumberOfBirds: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
     vetRCVSNumber: joi.string().required(),
