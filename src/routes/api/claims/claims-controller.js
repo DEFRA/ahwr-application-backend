@@ -15,7 +15,14 @@ import {
 } from '../../../messaging/publish-outbound-notification.js'
 import { isVisitDateAfterPIHuntAndDairyGoLive } from '../../../lib/context-helper.js'
 import { piHunt } from '../../../constants/index.js'
-import { STATUS, TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD } from 'ffc-ahwr-common-library'
+import {
+  STATUS,
+  TYPE_OF_LIVESTOCK,
+  UNNAMED_FLOCK,
+  UNNAMED_HERD,
+  getScheme,
+  POULTRY_SCHEME
+} from 'ffc-ahwr-common-library'
 import { claimDataUpdateEvent } from '../../../event-publisher/claim-data-update-event.js'
 
 export const createClaimHandler = async (request, h) => {
@@ -117,6 +124,7 @@ export const updateClaimStatusHandler = async (request, h) => {
   const {
     amount,
     typeOfLivestock,
+    typesOfPoultry,
     reviewTestResults,
     vetVisitsReviewTestResults,
     piHuntRecommended,
@@ -157,36 +165,63 @@ export const updateClaimStatusHandler = async (request, h) => {
     sbi
   )
 
-  await publishStatusChangeEvent(logger, {
-    crn,
-    sbi,
-    agreementReference: applicationReference,
-    claimReference: reference,
-    claimStatus: status,
-    claimType: type,
-    typeOfLivestock,
-    reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
-    piHuntRecommended,
-    piHuntAllAnimals,
-    claimAmount: amount,
-    dateTime: new Date(),
-    herdName: claim.herd?.name ?? getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
-  })
+  let statusChangeMessageBody
+  if (getScheme(applicationReference) === POULTRY_SCHEME) {
+    statusChangeMessageBody = {
+      crn,
+      sbi,
+      agreementReference: applicationReference,
+      claimReference: reference,
+      claimStatus: status,
+      claimType: type,
+      typesOfPoultry,
+      claimAmount: amount,
+      dateTime: new Date(),
+      herdName: claim.herd.name
+    }
+  } else {
+    statusChangeMessageBody = {
+      crn,
+      sbi,
+      agreementReference: applicationReference,
+      claimReference: reference,
+      claimStatus: status,
+      claimType: type,
+      typeOfLivestock,
+      reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
+      piHuntRecommended,
+      piHuntAllAnimals,
+      claimAmount: amount,
+      dateTime: new Date(),
+      herdName: claim.herd?.name ?? getUnnamedHerdValueByTypeOfLivestock(typeOfLivestock)
+    }
+  }
+  await publishStatusChangeEvent(logger, statusChangeMessageBody)
 
   if (status === STATUS.READY_TO_PAY) {
-    const optionalPiHuntValue = getOptionalPiHuntValue(claim)
-
-    await publishRequestForPaymentEvent(logger, {
-      reference,
-      sbi,
-      whichReview: typeOfLivestock,
-      isEndemics: true,
-      claimType: claim.type,
-      dateOfVisit: claim.data.dateOfVisit,
-      reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
-      frn,
-      optionalPiHuntValue
-    })
+    let messageBody
+    if (getScheme(applicationReference) === POULTRY_SCHEME) {
+      messageBody = {
+        whichReview: 'poultry',
+        reference,
+        sbi,
+        frn
+      }
+    } else {
+      const optionalPiHuntValue = getOptionalPiHuntValue(claim)
+      messageBody = {
+        reference,
+        sbi,
+        whichReview: typeOfLivestock,
+        isEndemics: true,
+        claimType: claim.type,
+        dateOfVisit: claim.data.dateOfVisit,
+        reviewTestResults: reviewTestResults ?? vetVisitsReviewTestResults,
+        frn,
+        optionalPiHuntValue
+      }
+    }
+    await publishRequestForPaymentEvent(logger, messageBody)
   }
 
   return h.response().code(StatusCodes.OK)
