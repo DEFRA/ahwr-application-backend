@@ -9,7 +9,8 @@ import {
   createClaimIndexes,
   removeHerdFromClaimData,
   deleteClaim,
-  getClaimsCount
+  getClaimsCount,
+  updateHerd
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
@@ -358,6 +359,67 @@ describe('claim-repository', () => {
               createdBy: 'test-user',
               eventType: 'claim-herdAssociated',
               updatedProperty: 'herdName'
+            }
+          }
+        }
+      )
+    })
+  })
+
+  describe('updateHerd', () => {
+    const mockDb = { collection: jest.fn() }
+    const mockCollection = { findOneAndUpdate: jest.fn() }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockDb.collection.mockReturnValue(mockCollection)
+    })
+
+    it('should update claim herd data and add history entry', async () => {
+      const associatedAt = new Date('2024-11-20T13:51:24.291Z')
+
+      await updateHerd({
+        db: mockDb,
+        claimRef: 'FUBC-JTTU-SDQ7',
+        claimHerdData: {
+          id: 'herd-id-123',
+          version: 2,
+          associatedAt,
+          name: 'New Herd Name',
+          cph: '34/432/9213',
+          reasons: ['diseaseControl', 'uniqueHealthNeeds']
+        },
+        createdBy: 'test-user',
+        note: 'Reason for update',
+        newValue: '34/432/9213',
+        oldValue: '12/345/6789',
+        updatedProperty: 'herdCph'
+      })
+
+      expect(mockDb.collection).toHaveBeenCalledWith('claims')
+      expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+        { reference: 'FUBC-JTTU-SDQ7' },
+        {
+          $set: {
+            'herd.id': 'herd-id-123',
+            'herd.version': 2,
+            'herd.associatedAt': associatedAt,
+            'herd.name': 'New Herd Name',
+            'herd.cph': '34/432/9213',
+            'herd.reasons': ['diseaseControl', 'uniqueHealthNeeds'],
+            updatedBy: 'test-user',
+            updatedAt: expect.any(Date)
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              note: 'Reason for update',
+              newValue: '34/432/9213',
+              oldValue: '12/345/6789',
+              createdAt: expect.any(Date),
+              createdBy: 'test-user',
+              eventType: 'claim-herdCph',
+              updatedProperty: 'herdCph'
             }
           }
         }
