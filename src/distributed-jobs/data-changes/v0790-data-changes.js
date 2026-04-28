@@ -25,7 +25,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'testResults',
     newValue: update1.newValue,
     oldValue: update1.oldValue,
-    note: 'Requested change from Sally Harrison via email on 25th March 2026',
+    note: 'Requested change from Sally Harrison via email on 16th April 2026',
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -41,7 +41,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'dateOfTesting',
     newValue: update3.newValue,
     oldValue: update3.oldValue,
-    note: 'Requested change from Sally Harrison via email on 14th April 2026',
+    note: 'Requested change from Sally Harrison via email on 16th April 2026',
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -99,7 +99,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event1.newValue,
     oldValue: event1.oldValue,
     updatedProperty: 'testResults',
-    note: 'Requested change from Sally Harrison via email on 25th March 2026'
+    note: 'Requested change from Sally Harrison via email on 16th April 2026'
   }
   await claimDataUpdateEvent(eventData1, 'claim-testResults', raisedBy, new Date(), event1.sbi)
 
@@ -128,7 +128,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event3.newValue,
     oldValue: event3.oldValue,
     updatedProperty: 'dateOfTesting',
-    note: 'Requested change from Sally Harrison via email on 14th April 2026'
+    note: 'Requested change from Sally Harrison via email on 16th April 2026'
   }
   await claimDataUpdateEvent(eventData3, 'claim-dateOfTesting', raisedBy, new Date(), event3.sbi)
 
