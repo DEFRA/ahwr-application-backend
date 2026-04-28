@@ -12,6 +12,8 @@ import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories
 // Example supportingData, add to secrets via CDP portal:
 // DATA_CHANGE_V0723_DATA={"datastoreUpdates":[{"claimRef":"RESH-YFE2-A4ZB"},{"claimRef":"RESH-9TBQ-E4TP"},{"claimRef":"RESH-4SUJ-BDWB"},{"claimRef":"RESH-6PRX-MWVV"},{"claimRef":"RESH-R6LQ-ZP8W","newValue":"887761","oldValue":"887760"},{"claimRef":"RESH-B7L3-5PTA","newValue":"887771","oldValue":"887770"}],"events":[{"claimRef":"RESH-YFE2-A4ZB","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-9TBQ-E4TP","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-4SUJ-BDWB","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-6PRX-MWVV","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-R6LQ-ZP8W","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD","newValue":"887761","oldValue":"887760"},{"claimRef":"RESH-B7L3-5PTA","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD","newValue":"887771","oldValue":"887770"}]}
 
+const note = 'Requested change from Sally Harrison via email on 16th April 2026'
+
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
 
@@ -25,7 +27,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'testResults',
     newValue: update1.newValue,
     oldValue: update1.oldValue,
-    note: 'Requested change from Sally Harrison via email on 16th April 2026',
+    note,
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -41,7 +43,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'dateOfTesting',
     newValue: update3.newValue,
     oldValue: update3.oldValue,
-    note: 'Requested change from Sally Harrison via email on 16th April 2026',
+    note,
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -73,7 +75,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     claimRef: update4.claimRef,
     newValue: update4.cph,
     oldValue,
-    note: 'Requested change from Sally Harrison via email on 16th April 2026',
+    note,
     createdBy: raisedBy,
     db,
     updatedProperty: 'herdCph',
@@ -99,7 +101,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event1.newValue,
     oldValue: event1.oldValue,
     updatedProperty: 'testResults',
-    note: 'Requested change from Sally Harrison via email on 16th April 2026'
+    note
   }
   await claimDataUpdateEvent(eventData1, 'claim-testResults', raisedBy, new Date(), event1.sbi)
 
@@ -128,7 +130,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event3.newValue,
     oldValue: event3.oldValue,
     updatedProperty: 'dateOfTesting',
-    note: 'Requested change from Sally Harrison via email on 16th April 2026'
+    note
   }
   await claimDataUpdateEvent(eventData3, 'claim-dateOfTesting', raisedBy, new Date(), event3.sbi)
 
