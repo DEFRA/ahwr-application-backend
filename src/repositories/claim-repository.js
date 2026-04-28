@@ -182,6 +182,47 @@ export const addHerdToClaimData = async ({
   )
 }
 
+export const updateHerd = async ({
+  claimRef,
+  createdBy,
+  db,
+  note,
+  newValue,
+  oldValue,
+  updatedProperty,
+  claimHerdData
+}) => {
+  const { id, version, associatedAt, name, cph, reasons } = claimHerdData
+
+  await db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference: claimRef },
+    {
+      $set: {
+        'herd.id': id,
+        'herd.version': version,
+        'herd.associatedAt': associatedAt,
+        'herd.name': name,
+        'herd.cph': cph,
+        'herd.reasons': reasons,
+        updatedBy: createdBy,
+        updatedAt: new Date()
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note,
+          updatedProperty,
+          newValue,
+          oldValue,
+          eventType: `claim-${updatedProperty}`,
+          createdBy,
+          createdAt: new Date()
+        }
+      }
+    }
+  )
+}
+
 export const removeHerdFromClaimData = async ({
   claimRef,
   oldClaimHerdName,
