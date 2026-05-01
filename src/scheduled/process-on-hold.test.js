@@ -21,6 +21,7 @@ describe('processOnHoldClaims', () => {
   let mockInfo
   let mockError
 
+  const mockDate = new Date()
   const objectIdString = '507f191e810c19729de860ea'
   const claimsFromDb = [
     {
@@ -31,7 +32,7 @@ describe('processOnHoldClaims', () => {
       data: {
         typeOfLivestock: 'beef',
         reviewTestResults: 'positive',
-        dateOfVisit: new Date(),
+        dateOfVisit: mockDate,
         piHunt: 'no',
         piHuntRecommended: 'no',
         piHuntAllAnimals: 'no',
@@ -48,7 +49,7 @@ describe('processOnHoldClaims', () => {
       data: {
         typeOfLivestock: 'beef',
         reviewTestResults: 'positive',
-        dateOfVisit: new Date(),
+        dateOfVisit: mockDate,
         piHunt: 'yes',
         piHuntRecommended: 'yes',
         piHuntAllAnimals: 'yes',
@@ -56,9 +57,21 @@ describe('processOnHoldClaims', () => {
       },
       herd: { name: 'Beefers' },
       _id: new ObjectId(objectIdString)
+    },
+    {
+      applicationReference: 'POUL-VBNI-W1DB',
+      reference: 'PORE-5H7G-JDES',
+      status: 'ON_HOLD',
+      type: 'REVIEW',
+      data: {
+        typesOfPoultry: ['geese'],
+        dateOfVisit: mockDate,
+        amount: 460
+      },
+      herd: { name: 'Dummy Site' },
+      _id: new ObjectId(objectIdString)
     }
   ]
-  const mockDate = new Date()
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -77,7 +90,7 @@ describe('processOnHoldClaims', () => {
     }
 
     findOnHoldClaims.mockResolvedValue(claimsFromDb)
-    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
+    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 3 })
 
     getApplication.mockResolvedValue({
       organisation
@@ -89,7 +102,11 @@ describe('processOnHoldClaims', () => {
     expect(updateClaimStatuses).toHaveBeenCalledWith(
       expect.objectContaining({
         db: mockDb,
-        references: [claimsFromDb[0].reference, claimsFromDb[1].reference],
+        references: [
+          claimsFromDb[0].reference,
+          claimsFromDb[1].reference,
+          claimsFromDb[2].reference
+        ],
         status: STATUS.READY_TO_PAY,
         user: 'admin',
         updatedAt: mockDate
@@ -134,6 +151,22 @@ describe('processOnHoldClaims', () => {
       }
     )
 
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        crn: organisation.crn,
+        sbi: organisation.sbi,
+        agreementReference: claimsFromDb[2].applicationReference,
+        claimReference: claimsFromDb[2].reference,
+        claimStatus: 'READY_TO_PAY',
+        claimType: claimsFromDb[2].type,
+        dateTime: mockDate,
+        herdName: claimsFromDb[2].herd.name,
+        typesOfPoultry: claimsFromDb[2].data.typesOfPoultry,
+        claimAmount: 460
+      }
+    )
+
     expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
@@ -164,7 +197,17 @@ describe('processOnHoldClaims', () => {
       }
     )
 
-    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims on hold, 2 updated to ready to pay.')
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        whichReview: 'poultry',
+        reference: claimsFromDb[2].reference,
+        sbi: organisation.sbi,
+        frn: organisation.frn
+      }
+    )
+
+    expect(mockInfo).toHaveBeenCalledWith('Of 3 claims on hold, 3 updated to ready to pay.')
 
     expect(raiseClaimEvents).toHaveBeenNthCalledWith(
       1,
@@ -189,11 +232,23 @@ describe('processOnHoldClaims', () => {
       },
       '106705779'
     )
+
+    expect(raiseClaimEvents).toHaveBeenNthCalledWith(
+      3,
+      {
+        message: 'Claim has been updated',
+        claim: { ...claimsFromDb[2], status: 'READY_TO_PAY', id: objectIdString },
+        raisedBy: 'admin',
+        raisedOn: mockDate,
+        note: 'Automatic update'
+      },
+      '106705779'
+    )
   })
 
   it('works without organization information', async () => {
     findOnHoldClaims.mockResolvedValue(claimsFromDb)
-    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 2 })
+    updateClaimStatuses.mockResolvedValue({ updatedRecordCount: 3 })
 
     getApplication.mockResolvedValue({
       organisation: undefined
@@ -205,7 +260,11 @@ describe('processOnHoldClaims', () => {
     expect(updateClaimStatuses).toHaveBeenCalledWith(
       expect.objectContaining({
         db: mockDb,
-        references: [claimsFromDb[0].reference, claimsFromDb[1].reference],
+        references: [
+          claimsFromDb[0].reference,
+          claimsFromDb[1].reference,
+          claimsFromDb[2].reference
+        ],
         status: STATUS.READY_TO_PAY,
         user: 'admin',
         updatedAt: mockDate
@@ -250,6 +309,22 @@ describe('processOnHoldClaims', () => {
       }
     )
 
+    expect(publishStatusChangeEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        crn: undefined,
+        sbi: undefined,
+        agreementReference: claimsFromDb[2].applicationReference,
+        claimReference: claimsFromDb[2].reference,
+        claimStatus: 'READY_TO_PAY',
+        claimType: claimsFromDb[2].type,
+        dateTime: mockDate,
+        herdName: claimsFromDb[2].herd.name,
+        typesOfPoultry: claimsFromDb[2].data.typesOfPoultry,
+        claimAmount: 460
+      }
+    )
+
     expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
       { error: mockError, info: mockInfo },
       {
@@ -280,7 +355,17 @@ describe('processOnHoldClaims', () => {
       }
     )
 
-    expect(mockInfo).toHaveBeenCalledWith('Of 2 claims on hold, 2 updated to ready to pay.')
+    expect(publishRequestForPaymentEvent).toHaveBeenCalledWith(
+      { error: mockError, info: mockInfo },
+      {
+        whichReview: 'poultry',
+        reference: claimsFromDb[2].reference,
+        sbi: undefined,
+        frn: undefined
+      }
+    )
+
+    expect(mockInfo).toHaveBeenCalledWith('Of 3 claims on hold, 3 updated to ready to pay.')
 
     expect(raiseClaimEvents).toHaveBeenNthCalledWith(
       1,
@@ -299,6 +384,18 @@ describe('processOnHoldClaims', () => {
       {
         message: 'Claim has been updated',
         claim: { ...claimsFromDb[1], status: 'READY_TO_PAY', id: objectIdString },
+        raisedBy: 'admin',
+        raisedOn: mockDate,
+        note: 'Automatic update'
+      },
+      undefined
+    )
+
+    expect(raiseClaimEvents).toHaveBeenNthCalledWith(
+      3,
+      {
+        message: 'Claim has been updated',
+        claim: { ...claimsFromDb[2], status: 'READY_TO_PAY', id: objectIdString },
         raisedBy: 'admin',
         raisedOn: mockDate,
         note: 'Automatic update'
