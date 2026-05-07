@@ -346,7 +346,7 @@ describe('generatePoultryEventsAndComms', () => {
       sbi: '123456789',
       herdData,
       herdIdSelected: 'SITE-1',
-      herdGotUpdated: false,
+      herdGotUpdated: true,
       claimReference: 'PORE-O9UD-0025',
       applicationReference: 'POUL-8ZPZ-8CLI'
     })
@@ -374,20 +374,6 @@ describe('generatePoultryEventsAndComms', () => {
         type: 'process-claim'
       }
     })
-  })
-
-  it('always pass herdGotUpdated as false since sites are never updated', async () => {
-    const mockLogger = { info: jest.fn(), error: jest.fn() }
-    getLogger.mockReturnValueOnce(mockLogger)
-    const herdData = { name: 'Laying Hens Unit' }
-
-    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-2')
-
-    expect(emitHerdMIEvents).toHaveBeenCalledWith(
-      expect.objectContaining({
-        herdGotUpdated: false
-      })
-    )
   })
 
   it('use site name directly as herdName', async () => {

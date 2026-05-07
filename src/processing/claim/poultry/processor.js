@@ -120,7 +120,7 @@ export async function generatePoultryEventsAndComms(claim, application, herdData
     sbi,
     herdData,
     herdIdSelected,
-    herdGotUpdated: false, // They are created, never updated
+    herdGotUpdated: true,
     claimReference,
     applicationReference
   })
