@@ -13,6 +13,11 @@ export const speciesNumbers = {
   no: 'no'
 }
 
+export const isOnlyHerdOnSbi = {
+  yes: 'yes',
+  no: 'no'
+}
+
 export const biosecurity = {
   yes: 'yes',
   no: 'no'

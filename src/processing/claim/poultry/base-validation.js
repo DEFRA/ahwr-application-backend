@@ -6,6 +6,7 @@ import {
   changesInBiosecurity,
   costOfChanges,
   interview,
+  isOnlyHerdOnSbi,
   speciesNumbers
 } from '../../../constants/index.js'
 import { poultrySchema } from '../../../routes/api/schema/herd.schema.js'
@@ -28,6 +29,7 @@ const getDataModel = () =>
       )
       .required(),
     ...poultrySchema,
+    isOnlyHerdOnSbi: joi.string().valid(isOnlyHerdOnSbi.yes, isOnlyHerdOnSbi.no).required(),
     dateOfVisit: joi.date().required(),
     minimumNumberOfBirds: joi.string().valid(speciesNumbers.yes, speciesNumbers.no).required(),
     vetsName: joi.string().required(),
