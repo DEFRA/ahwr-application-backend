@@ -137,7 +137,8 @@ describe('processClaim', () => {
         saveClaimResult.claim,
         application,
         herdData,
-        'db32152a-724a-4c5d-8073-0901c8d307f7'
+        'db32152a-724a-4c5d-8073-0901c8d307f7',
+        true
       )
     })
   })

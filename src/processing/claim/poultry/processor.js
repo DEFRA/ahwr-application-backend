@@ -108,7 +108,13 @@ export async function savePoultryClaimAndRelatedData({
   }
 }
 
-export async function generatePoultryEventsAndComms(claim, application, herdData, herdIdSelected) {
+export async function generatePoultryEventsAndComms(
+  claim,
+  application,
+  herdData,
+  herdIdSelected,
+  siteCreated
+) {
   const { reference: claimReference, status, type } = claim
   const { amount, typesOfPoultry } = claim.data
   const {
@@ -120,7 +126,7 @@ export async function generatePoultryEventsAndComms(claim, application, herdData
     sbi,
     herdData,
     herdIdSelected,
-    herdGotUpdated: false, // They are created, never updated
+    herdGotUpdated: siteCreated,
     claimReference,
     applicationReference
   })

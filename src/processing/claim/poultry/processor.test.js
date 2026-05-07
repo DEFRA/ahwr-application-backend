@@ -71,7 +71,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         createdBy: 'admin',
         isCurrent: true
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -145,7 +145,8 @@ describe('savePoultryClaimAndRelatedData', () => {
         createdBy: 'admin',
         isCurrent: true,
         reasons: []
-      }
+      },
+      siteCreated: true
     })
     expect(mockSession.endSession).toHaveBeenCalled()
     expect(raiseClaimEvents).toHaveBeenCalledWith(
@@ -199,7 +200,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         name: 'Broilers Unit',
         cph: '81/445/6789'
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -296,7 +297,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         name: 'Laying Hens Unit',
         cph: '81/445/6789'
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -340,13 +341,13 @@ describe('generatePoultryEventsAndComms', () => {
     getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'Broilers Unit' }
 
-    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1')
+    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1', true)
 
     expect(emitHerdMIEvents).toHaveBeenCalledWith({
       sbi: '123456789',
       herdData,
       herdIdSelected: 'SITE-1',
-      herdGotUpdated: false,
+      herdGotUpdated: true,
       claimReference: 'PORE-O9UD-0025',
       applicationReference: 'POUL-8ZPZ-8CLI'
     })
@@ -374,20 +375,6 @@ describe('generatePoultryEventsAndComms', () => {
         type: 'process-claim'
       }
     })
-  })
-
-  it('always pass herdGotUpdated as false since sites are never updated', async () => {
-    const mockLogger = { info: jest.fn(), error: jest.fn() }
-    getLogger.mockReturnValueOnce(mockLogger)
-    const herdData = { name: 'Laying Hens Unit' }
-
-    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-2')
-
-    expect(emitHerdMIEvents).toHaveBeenCalledWith(
-      expect.objectContaining({
-        herdGotUpdated: false
-      })
-    )
   })
 
   it('use site name directly as herdName', async () => {
