@@ -46,6 +46,7 @@ describe('processClaim', () => {
         minimumNumberOfBirds: 'yes',
         vetsName: 'vet name',
         vetRCVSNumber: '2323232',
+        isOnlyHerdOnSbi: 'no',
         biosecurity: 'yes',
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
