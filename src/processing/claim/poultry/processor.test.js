@@ -71,7 +71,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         createdBy: 'admin',
         isCurrent: true
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -145,7 +145,8 @@ describe('savePoultryClaimAndRelatedData', () => {
         createdBy: 'admin',
         isCurrent: true,
         reasons: []
-      }
+      },
+      siteCreated: true
     })
     expect(mockSession.endSession).toHaveBeenCalled()
     expect(raiseClaimEvents).toHaveBeenCalledWith(
@@ -199,7 +200,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         name: 'Broilers Unit',
         cph: '81/445/6789'
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -296,7 +297,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         name: 'Laying Hens Unit',
         cph: '81/445/6789'
       },
-      updated: true
+      created: true
     })
     generateClaimStatus.mockResolvedValue('ON_HOLD')
     createClaim.mockResolvedValue({
@@ -340,7 +341,7 @@ describe('generatePoultryEventsAndComms', () => {
     getLogger.mockReturnValueOnce(mockLogger)
     const herdData = { name: 'Broilers Unit' }
 
-    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1')
+    await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1', true)
 
     expect(emitHerdMIEvents).toHaveBeenCalledWith({
       sbi: '123456789',

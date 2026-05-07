@@ -116,7 +116,7 @@ const processPoultryClaim = async ({
     sbi
   })
 
-  const { claim, herdData } = await savePoultryClaimAndRelatedData({
+  const { claim, siteCreated, herdData } = await savePoultryClaimAndRelatedData({
     db,
     sbi,
     claimPayload: validatedPayload,
@@ -130,7 +130,7 @@ const processPoultryClaim = async ({
 
   // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
   // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
-  generatePoultryEventsAndComms(claim, application, herdData, site?.id)
+  generatePoultryEventsAndComms(claim, application, herdData, site?.id, siteCreated)
 
   return claim
 }
