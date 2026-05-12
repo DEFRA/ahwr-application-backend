@@ -16,7 +16,7 @@ import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories
 const noteOne = 'Request change from Sally Harrison via email on 5th of May 2026'
 const noteTwo = 'Request change from Sally Harrison via email on 28th of April 2026'
 
-export const updateDataStore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
+export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
 
   const raisedBy = 'Admin2'
