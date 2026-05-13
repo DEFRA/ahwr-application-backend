@@ -93,7 +93,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
   // common data across events
   const raisedBy = 'Admin2'
   const withdrawnStatusId = 'WITHDRAWN'
-  const withdrawnMessage = 'Claim with wrong dates'
+  const withdrawnMessage = 'Claim has been updated'
 
   const herdAssociatedEvent = 'claim-herdAssociated'
   const herdAssociatedMessage = 'Herd associated with claim updated'
