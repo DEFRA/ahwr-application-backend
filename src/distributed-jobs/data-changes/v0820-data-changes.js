@@ -11,10 +11,9 @@ import {
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0820_DATA={"datastoreUpdates":[{"claimRef":"REBC-QDDX-71T6","sbi":"106535089"},{"claimRef":"RESH-R6LQ-ZP8W","sbi":"106284031","newReason"":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"REDC-B9WM-TU3M","sbi":"106484157","newValue":"2026-04-02T00:00:00.000Z","oldValue":"2026-04-14T00:00:00.000Z"},{"claimRef":"REBC-8UI1-CD5M","sbi":"200954224","newValue":"2026-03-05T00:00:00.000Z","oldValue":"2026-03-04T00:00:00.000Z"}]}
+//DATA_CHANGE_V0820_DATA = {"datastoreUpdates":[{"claimRef":"REBC-GI8I-XYW6"},{"claimRef":"FUBC-JTTU-SDQ7","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}],"events":[{"claimRef":"REBC-GI8I-XYW6","sbi":"200219893","applicationRef":"IAHW-9ZXQ-PG89"},{"claimRef":"FUBC-JTTU-SDQ7","sbi":"123456789","applicationRef":"IAHW-G7B4-UTZ5","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","sbi":"107695939","applicationRef":"IAHW-21C5-1417","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","sbi":"106275882","applicationRef":"IAHW-LTYF-KXEC","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}]}
 
-const noteOne = 'Request change from Sally Harrison via email on 5th of May 2026'
-const noteTwo = 'Request change from Sally Harrison via email on 28th of April 2026'
+const note = 'Request change from Sally Harrison via email on 28th of April 2026'
 
 export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, logger) => {
   logger.info(`Running datastore updates for service version: ${serviceVersion}`)
@@ -53,10 +52,10 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
   await updateHerd({
     db,
     claimRef: update2.claimRef,
-    updatedProperty: 'reasons',
+    updatedProperty: 'herdReasons',
     newValue: update2.newReason,
     oldValue: update2.oldReason,
-    note: noteTwo,
+    note,
     createdBy: raisedBy,
     claimHerdData
   })
@@ -69,7 +68,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'dateOfTesting',
     newValue: update3.newValue,
     oldValue: update3.oldValue,
-    note: noteTwo,
+    note,
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -82,7 +81,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     updatedProperty: 'dateOfTesting',
     newValue: update4.newValue,
     oldValue: update4.oldValue,
-    note: noteTwo,
+    note,
     user: raisedBy,
     updatedAt: new Date()
   })
@@ -122,7 +121,8 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
   const raisedOn1 = new Date(raisedOn.getTime() + 1).toISOString()
   const raisedOn2 = new Date(raisedOn.getTime() + 2).toISOString()
 
-  const herd = await getHerdById(db, event2.id)
+  const claim = await getClaimByReference(db, event2.claimRef)
+  const herd = await getHerdById(db, claim.herd.id)
 
   await raiseHerdEvent({
     sbi: event2.sbi,
@@ -168,7 +168,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event3.newValue,
     oldValue: event3.oldValue,
     updatedProperty: 'dateOfTesting',
-    note: noteOne
+    note
   }
   await claimDataUpdateEvent(eventData3, 'claim-testResults', raisedBy, new Date(), event3.sbi)
 
@@ -180,7 +180,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     newValue: event4.newValue,
     oldValue: event4.oldValue,
     updatedProperty: 'dateOfTesting',
-    note: noteOne
+    note
   }
   await claimDataUpdateEvent(eventData4, 'claim-testResults', raisedBy, new Date(), event4.sbi)
 }
