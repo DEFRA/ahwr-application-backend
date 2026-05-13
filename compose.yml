@@ -35,6 +35,7 @@ services:
       - ./compose/DevNewWorldApplications.json:/temp/DevNewWorldApplications.json:ro
       - ./compose/DevOldWorldApplications.json:/temp/DevOldWorldApplications.json:ro
       - ./compose/DevClaims.json:/temp/DevClaims.json:ro
+      - ./compose/DevHerds.json:/temp/DevHerds.json:ro
     restart: always
 
   ahwr-application-backend:
