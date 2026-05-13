@@ -1,17 +1,17 @@
 import crypto from 'node:crypto'
 
-import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher'
-import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event'
+import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher/index.js'
+import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import {
   deleteClaim,
   getClaimByReference,
   updateClaimData,
   updateHerd
-} from '../../repositories/claim-repository'
-import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository'
+} from '../../repositories/claim-repository.js'
+import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 
 // Example supportingData, add to secrets via CDP portal:
-// DATA_CHANGE_V0723_DATA={"datastoreUpdates":[{"claimRef":"RESH-YFE2-A4ZB"},{"claimRef":"RESH-9TBQ-E4TP"},{"claimRef":"RESH-4SUJ-BDWB"},{"claimRef":"RESH-6PRX-MWVV"},{"claimRef":"RESH-R6LQ-ZP8W","newValue":"887761","oldValue":"887760"},{"claimRef":"RESH-B7L3-5PTA","newValue":"887771","oldValue":"887770"}],"events":[{"claimRef":"RESH-YFE2-A4ZB","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-9TBQ-E4TP","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-4SUJ-BDWB","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-6PRX-MWVV","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD"},{"claimRef":"RESH-R6LQ-ZP8W","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD","newValue":"887761","oldValue":"887760"},{"claimRef":"RESH-B7L3-5PTA","sbi":"106440483","applicationRef":"IAHW-2DFD-0FAD","newValue":"887771","oldValue":"887770"}]}
+// DATA_CHANGE_V0820_DATA={"datastoreUpdates":[{"claimRef":"REBC-QDDX-71T6","sbi":"106535089"},{"claimRef":"RESH-R6LQ-ZP8W","sbi":"106284031","newReason"":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"REDC-B9WM-TU3M","sbi":"106484157","newValue":"2026-04-02T00:00:00.000Z","oldValue":"2026-04-14T00:00:00.000Z"},{"claimRef":"REBC-8UI1-CD5M","sbi":"200954224","newValue":"2026-03-05T00:00:00.000Z","oldValue":"2026-03-04T00:00:00.000Z"}]}
 
 const noteOne = 'Request change from Sally Harrison via email on 5th of May 2026'
 const noteTwo = 'Request change from Sally Harrison via email on 28th of April 2026'
