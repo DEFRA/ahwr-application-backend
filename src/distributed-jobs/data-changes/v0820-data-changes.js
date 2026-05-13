@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid'
+import crypto from 'node:crypto'
 
 import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event'
@@ -103,7 +103,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
   await raiseClaimEvents(
     {
       claim: {
-        id: uuid(),
+        id: crypto.randomUUID(),
         reference: event1.claimRef,
         applicationReference: event1.applicationRef,
         status: withdrawnStatusId

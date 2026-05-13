@@ -1,7 +1,6 @@
 import { STATUS } from 'ffc-ahwr-common-library'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
-import { v4 as uuid } from 'uuid'
 
 export const createClaimIndexes = async (db) => {
   await db.collection(CLAIMS_COLLECTION).createIndex({
@@ -129,7 +128,7 @@ export const updateClaimData = async ({
       },
       $push: {
         updateHistory: {
-          id: uuid(),
+          id: crypto.randomUUID(),
           note,
           newValue,
           oldValue,

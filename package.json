@@ -49,8 +49,7 @@
     "mongodb": "6.21.0",
     "p-limit": "7.1.1",
     "pino": "10.3.1",
-    "undici": "7.24.4",
-    "uuid": "11.1.0"
+    "undici": "7.24.4"
   },
   "overrides": {
     "standard": {
@@ -58,7 +57,7 @@
     },
     "semver": "7.5.2",
     "brace-expansion": "2.0.2",
-    "fast-xml-parser": "5.5.7"
+    "fast-xml-parser": "5.7.0"
   },
   "devDependencies": {
     "@babel/core": "7.27.4",
