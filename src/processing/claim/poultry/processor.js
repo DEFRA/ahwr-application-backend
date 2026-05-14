@@ -116,7 +116,7 @@ export async function generatePoultryEventsAndComms(
   siteCreated
 ) {
   const { reference: claimReference, status, type } = claim
-  const { amount, typesOfPoultry } = claim.data
+  const { amount, typesOfPoultry, isOnlyHerdOnSbi } = claim.data
   const {
     reference: applicationReference,
     organisation: { crn, sbi }
@@ -124,7 +124,10 @@ export async function generatePoultryEventsAndComms(
 
   await emitHerdMIEvents({
     sbi,
-    herdData,
+    herdData: {
+      ...herdData,
+      reasons: isOnlyHerdOnSbi === 'yes' ? ['onlyHerd'] : []
+    },
     herdIdSelected,
     herdGotUpdated: siteCreated,
     claimReference,
