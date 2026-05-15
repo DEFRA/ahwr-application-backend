@@ -67,7 +67,7 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.0') {
+  if (serviceVersion === '0.82.1') {
     await v0820DatastoreUpdates(serviceVersion, supportingData, db, logger)
     await v0820SendEvents(serviceVersion, supportingData, db, logger)
   } else {
