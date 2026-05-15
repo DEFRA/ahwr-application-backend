@@ -5,10 +5,6 @@ import {
   getOWApplicationsBySbi
 } from './ow-application-repository.js'
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mocked-uuid')
-}))
-
 describe('isOWURNUnique', () => {
   const mockDb = {
     collection: jest.fn(() => mockCollection)
@@ -168,7 +164,7 @@ describe('updateOWApplication', () => {
         },
         $push: {
           updateHistory: {
-            id: 'mocked-uuid',
+            id: expect.any(String),
             note: 'Status updated',
             newValue: 'Jane',
             oldValue: 'John',

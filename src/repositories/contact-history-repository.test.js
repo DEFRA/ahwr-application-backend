@@ -3,10 +3,6 @@ import {
   updateApplicationValuesAndContactHistory
 } from './contact-history-repository.js'
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mocked-uuid')
-}))
-
 describe('getAllByApplicationReference', () => {
   const mockDb = {
     collection: jest.fn(() => mockCollection)

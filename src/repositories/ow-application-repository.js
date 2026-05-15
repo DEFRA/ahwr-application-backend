@@ -1,5 +1,5 @@
 import { OW_APPLICATION_COLLECTION } from '../constants/index.js'
-import { v4 as uuid } from 'uuid'
+import crypto from 'node:crypto'
 import { getApplicationsFromCollectionBySbi } from './common.js'
 
 export const isOWURNUnique = async ({ db, sbi, laboratoryURN }) => {
@@ -66,7 +66,7 @@ export const updateOWApplication = async ({
       },
       $push: {
         updateHistory: {
-          id: uuid(),
+          id: crypto.randomUUID(),
           note,
           newValue,
           oldValue,

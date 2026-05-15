@@ -15,10 +15,6 @@ import {
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS } from 'ffc-ahwr-common-library'
 
-jest.mock('uuid', () => ({
-  v4: jest.fn(() => 'mocked-uuid')
-}))
-
 describe('claim-repository', () => {
   describe('getByApplicationReference', () => {
     const mockToArray = jest.fn()
@@ -294,7 +290,7 @@ describe('claim-repository', () => {
           },
           $push: {
             updateHistory: {
-              id: 'mocked-uuid',
+              id: expect.any(String),
               note: 'Vets name updated',
               newValue: 'Jane',
               oldValue: 'John',

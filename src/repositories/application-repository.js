@@ -2,7 +2,7 @@ import { STATUS } from 'ffc-ahwr-common-library'
 import { startAndEndDate } from '../lib/date-utils.js'
 // import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
-import { v4 as uuid } from 'uuid'
+import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
 
 export const createApplicationIndexes = async (db) => {
@@ -229,7 +229,7 @@ export const updateApplication = async ({
       },
       $push: {
         updateHistory: {
-          id: uuid(),
+          id: crypto.randomUUID(),
           note,
           newValue,
           oldValue,
