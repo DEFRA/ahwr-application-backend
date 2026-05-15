@@ -368,7 +368,7 @@ const config = convict({
     }
   },
   distributedJobs: {
-    v0820SupportingData: {
+    v0821SupportingData: {
       doc: 'Data to support v0.82.1 data changes',
       format: Object,
       default: {},

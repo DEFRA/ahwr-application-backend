@@ -36,12 +36,12 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0820SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0821SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
         serviceVersion: '0.82.1',
-        'distributedJobs.v0820SupportingData': {}
+        'distributedJobs.v0821SupportingData': {}
       }
       return values[key]
     })
@@ -52,12 +52,12 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when already been run', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0820SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0821SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
         serviceVersion: '0.82.1',
-        'distributedJobs.v0820SupportingData': {
+        'distributedJobs.v0821SupportingData': {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
