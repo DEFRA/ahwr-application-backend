@@ -328,7 +328,8 @@ describe('generatePoultryEventsAndComms', () => {
     status: 'ON_HOLD',
     data: {
       amount: 430,
-      typesOfPoultry: ['broilers', 'ducks']
+      typesOfPoultry: ['broilers', 'ducks'],
+      isOnlyHerdOnSbi: 'yes'
     }
   }
 
@@ -339,13 +340,16 @@ describe('generatePoultryEventsAndComms', () => {
   it('emits herd events, send status notification, and log event message', async () => {
     const mockLogger = { info: jest.fn(), error: jest.fn() }
     getLogger.mockReturnValueOnce(mockLogger)
-    const herdData = { name: 'Broilers Unit' }
+    const herdData = { name: 'Broilers Unit', reasons: [] }
 
     await generatePoultryEventsAndComms(claim, mockApp, herdData, 'SITE-1', true)
 
     expect(emitHerdMIEvents).toHaveBeenCalledWith({
       sbi: '123456789',
-      herdData,
+      herdData: {
+        ...herdData,
+        reasons: ['onlyHerd']
+      },
       herdIdSelected: 'SITE-1',
       herdGotUpdated: true,
       claimReference: 'PORE-O9UD-0025',
@@ -374,6 +378,29 @@ describe('generatePoultryEventsAndComms', () => {
         reference: '123456789 - POUL-8ZPZ-8CLI - PORE-O9UD-0025',
         type: 'process-claim'
       }
+    })
+  })
+
+  it('emits herd events with empty reasons when onlyHerd is no', async () => {
+    const mockLogger = { info: jest.fn(), error: jest.fn() }
+    getLogger.mockReturnValueOnce(mockLogger)
+    const herdData = { name: 'Broilers Unit', reasons: [] }
+
+    await generatePoultryEventsAndComms(
+      { ...claim, data: { ...claim.data, isOnlyHerdOnSbi: 'no' } },
+      mockApp,
+      herdData,
+      'SITE-1',
+      true
+    )
+
+    expect(emitHerdMIEvents).toHaveBeenCalledWith({
+      sbi: '123456789',
+      herdData,
+      herdIdSelected: 'SITE-1',
+      herdGotUpdated: true,
+      claimReference: 'PORE-O9UD-0025',
+      applicationReference: 'POUL-8ZPZ-8CLI'
     })
   })
 
