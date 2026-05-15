@@ -39,6 +39,8 @@ services:
     restart: always
 
   ahwr-application-backend:
+    image: ahwr-application-backend-development
+    container_name: ahwr-application-backend-development
     build:
       context: .
       target: development
