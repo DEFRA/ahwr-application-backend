@@ -8,7 +8,7 @@ import {
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 
 // Example supportingData, add to secrets via CDP portal:
-//DATA_CHANGE_V0822_DATA = {"datastoreUpdates":[{"claimRef":"FUBC-JTTU-SDQ7","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}],"events":[{"claimRef":"REBC-GI8I-XYW6","sbi":"200219893","applicationRef":"IAHW-9ZXQ-PG89"},{"claimRef":"FUBC-JTTU-SDQ7","sbi":"123456789","applicationRef":"IAHW-G7B4-UTZ5","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","sbi":"107695939","applicationRef":"IAHW-21C5-1417","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","sbi":"106275882","applicationRef":"IAHW-LTYF-KXEC","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}]}
+//DATA_CHANGE_V0822_DATA = {"datastoreUpdates":[{"claimRef":"FUBC-JTTU-SDQ7","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}],"events":[{"claimRef":"FUBC-JTTU-SDQ7","sbi":"123456789","applicationRef":"IAHW-G7B4-UTZ5","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","sbi":"107695939","applicationRef":"IAHW-21C5-1417","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","sbi":"106275882","applicationRef":"IAHW-LTYF-KXEC","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}]}
 
 const note = 'Request change from Sally Harrison via email on 28th of April 2026'
 
@@ -149,7 +149,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
 
   //Data Change 3
   const event3 = events[2]
-  const eventData4 = {
+  const eventData3 = {
     applicationReference: event3.applicationRef,
     reference: event3.claimRef,
     newValue: event3.newValue,
@@ -157,5 +157,5 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     updatedProperty: 'dateOfTesting',
     note
   }
-  await claimDataUpdateEvent(eventData4, 'claim-testResults', raisedBy, new Date(), event3.sbi)
+  await claimDataUpdateEvent(eventData3, 'claim-testResults', raisedBy, new Date(), event3.sbi)
 }
