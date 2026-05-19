@@ -2,7 +2,7 @@ import { runDistributedStartupJob } from './distributed-startup-job.js'
 import { config } from '../config/config.js'
 
 jest.mock('../config/config.js')
-jest.mock('./data-changes/v0822-data-changes.js')
+jest.mock('./data-changes/v0824-data-changes.js')
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
 const mockCollection = { insertOne: jest.fn(() => {}) }
@@ -36,28 +36,28 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0822SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0824SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.2',
-        'distributedJobs.v0822SupportingData': {}
+        serviceVersion: '0.82.4',
+        'distributedJobs.v0824SupportingData': {}
       }
       return values[key]
     })
 
     await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.82.2'
+      'Missing supporting data for service version 0.82.4'
     )
   })
 
   it('should not run job when already been run', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0822SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0824SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.2',
-        'distributedJobs.v0822SupportingData': {
+        serviceVersion: '0.82.4',
+        'distributedJobs.v0824SupportingData': {
           mandatory: 'need-at-least-one-key-to-be-valid-data'
         }
       }
@@ -77,7 +77,7 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.2'
+        serviceVersion: '0.82.4'
       }
       return values[key]
     })
@@ -109,7 +109,7 @@ describe('Test runDistributedStartupJob', () => {
 
   // This test should change from data change to data change, don't forget to mock vXXXX-data-changes.js
   it('should run job and executes data changes', async () => {
-    const serviceVersion = '0.82.2'
+    const serviceVersion = '0.82.4'
     const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
