@@ -1,5 +1,5 @@
 import { STATUS } from 'ffc-ahwr-common-library'
-import { CLAIMS_COLLECTION } from '../constants/index.js'
+import { CLAIMS_COLLECTION, SPECIES } from '../constants/index.js'
 import crypto from 'node:crypto'
 
 export const createClaimIndexes = async (db) => {
@@ -101,11 +101,19 @@ export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) 
   return !result
 }
 
-export const getClaimsCount = async ({ db, cph, herdId }) => {
-  return db.collection(CLAIMS_COLLECTION).countDocuments({
+export const getClaimsCount = async ({ db, cph, herdId, species }) => {
+  const query = {
     'herd.cph': cph,
     'herd.id': { $ne: herdId }
-  })
+  }
+
+  if (species === SPECIES.POULTRY) {
+    query['data.typesOfPoultry'] = { $exists: true }
+  } else if (species === SPECIES.LIVESTOCK) {
+    query['data.typeOfLivestock'] = { $exists: true }
+  }
+
+  return db.collection(CLAIMS_COLLECTION).countDocuments(query)
 }
 
 export const updateClaimData = async ({

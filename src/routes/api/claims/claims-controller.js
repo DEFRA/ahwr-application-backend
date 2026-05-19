@@ -67,12 +67,13 @@ export const isURNUniqueHandler = async (request, h) => {
 
 export const getClaimsCountHandler = async (request, h) => {
   try {
-    const { cph, herdId } = request.query
+    const { cph, herdId, species } = request.query
 
     const count = await getClaimsCount({
       db: request.db,
       cph,
-      herdId
+      herdId,
+      species
     })
 
     const response = {

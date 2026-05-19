@@ -237,6 +237,48 @@ describe('getClaimsCountHandler', () => {
     expect(result).toBe(mockH)
   })
 
+  it('should pass species through to getClaimsCount when species is "poultry"', async () => {
+    const requestWithSpecies = {
+      ...mockRequest,
+      query: {
+        cph: '22/333/4444',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        species: 'poultry'
+      }
+    }
+    getClaimsCount.mockResolvedValue(1)
+
+    await getClaimsCountHandler(requestWithSpecies, mockH)
+
+    expect(getClaimsCount).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      species: 'poultry',
+      db: requestWithSpecies.db
+    })
+  })
+
+  it('should pass species through to getClaimsCount when species is "livestock"', async () => {
+    const requestWithSpecies = {
+      ...mockRequest,
+      query: {
+        cph: '22/333/4444',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        species: 'livestock'
+      }
+    }
+    getClaimsCount.mockResolvedValue(3)
+
+    await getClaimsCountHandler(requestWithSpecies, mockH)
+
+    expect(getClaimsCount).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      species: 'livestock',
+      db: requestWithSpecies.db
+    })
+  })
+
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
     getClaimsCount.mockRejectedValue(boomError)

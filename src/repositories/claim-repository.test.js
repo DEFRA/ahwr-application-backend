@@ -641,6 +641,46 @@ describe('claim-repository', () => {
       expect(result).toEqual(2)
     })
 
+    describe('with species filter', () => {
+      it('scopes the count to Poultry claims when species is "poultry"', async () => {
+        mockCountDocuments.mockResolvedValue(1)
+
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, species: 'poultry' })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: herdId },
+          'data.typesOfPoultry': { $exists: true }
+        })
+        expect(result).toEqual(1)
+      })
+
+      it('scopes the count to Livestock claims when species is "livestock"', async () => {
+        mockCountDocuments.mockResolvedValue(3)
+
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, species: 'livestock' })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: herdId },
+          'data.typeOfLivestock': { $exists: true }
+        })
+        expect(result).toEqual(3)
+      })
+
+      it('applies the species filter even when herdId is not supplied', async () => {
+        mockCountDocuments.mockResolvedValue(2)
+
+        await getClaimsCount({ db: mockDb, cph, herdId: undefined, species: 'poultry' })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: undefined },
+          'data.typesOfPoultry': { $exists: true }
+        })
+      })
+    })
+
     it('propagates errors from the database', async () => {
       const error = new Error('DB failure')
       mockCountDocuments.mockRejectedValue(error)

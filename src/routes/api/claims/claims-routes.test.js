@@ -135,6 +135,77 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
     })
 
+    it('should accept species=poultry and pass it through to the handler', async () => {
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 1 }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=poultry'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.result).toEqual({ count: 1 })
+      expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
+      expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
+        cph: '123456789',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        species: 'poultry'
+      })
+    })
+
+    it('should accept species=livestock and pass it through to the handler', async () => {
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 3 }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=livestock'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
+      expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
+        cph: '123456789',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        species: 'livestock'
+      })
+    })
+
+    it('should reject an invalid species value with 400 and not call the handler', async () => {
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 0 }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=alpacas'
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(getClaimsCountHandler).not.toHaveBeenCalled()
+    })
+
+    it('should still accept requests without species (legacy behaviour)', async () => {
+      getClaimsCountHandler.mockImplementation(async (_, h) => {
+        return h.response({ count: 2 }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'GET',
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
+      expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
+        cph: '123456789',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+      })
+    })
+
     it('should handle errors from handler', async () => {
       getClaimsCountHandler.mockImplementation(async () => {
         throw new Error('Database error')
