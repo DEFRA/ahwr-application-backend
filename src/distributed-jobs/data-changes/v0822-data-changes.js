@@ -1,9 +1,6 @@
-import crypto from 'node:crypto'
-
-import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher/index.js'
+import { raiseHerdEvent } from '../../event-publisher/index.js'
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
 import {
-  deleteClaim,
   getClaimByReference,
   updateClaimData,
   updateHerd
@@ -11,7 +8,7 @@ import {
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 
 // Example supportingData, add to secrets via CDP portal:
-//DATA_CHANGE_V0820_DATA = {"datastoreUpdates":[{"claimRef":"REBC-GI8I-XYW6"},{"claimRef":"FUBC-JTTU-SDQ7","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}],"events":[{"claimRef":"REBC-GI8I-XYW6","sbi":"200219893","applicationRef":"IAHW-9ZXQ-PG89"},{"claimRef":"FUBC-JTTU-SDQ7","sbi":"123456789","applicationRef":"IAHW-G7B4-UTZ5","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","sbi":"107695939","applicationRef":"IAHW-21C5-1417","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","sbi":"106275882","applicationRef":"IAHW-LTYF-KXEC","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}]}
+//DATA_CHANGE_V0822_DATA = {"datastoreUpdates":[{"claimRef":"FUBC-JTTU-SDQ7","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}],"events":[{"claimRef":"REBC-GI8I-XYW6","sbi":"200219893","applicationRef":"IAHW-9ZXQ-PG89"},{"claimRef":"FUBC-JTTU-SDQ7","sbi":"123456789","applicationRef":"IAHW-G7B4-UTZ5","newReason":["onlyHerd"],"oldReason":["uniqueHealthNeeds"]},{"claimRef":"RESH-VASQ-XIXS","sbi":"107695939","applicationRef":"IAHW-21C5-1417","newValue":"2025-12-12T00:00:00.000Z","oldValue":"2025-12-11T00:00:00.000Z"},{"claimRef":"REBC-CBLH-B5BB","sbi":"106275882","applicationRef":"IAHW-LTYF-KXEC","newValue":"2025-06-02T00:00:00.000Z","oldValue":"2025-06-01T00:00:00.000Z"}]}
 
 const note = 'Request change from Sally Harrison via email on 28th of April 2026'
 
@@ -21,11 +18,8 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
   const raisedBy = 'Admin2'
 
   //Data Change 1
-  await deleteClaim(db, datastoreUpdates[0].claimRef)
-
-  //Data Change 2
-  const update2 = datastoreUpdates[1]
-  const claim = await getClaimByReference(db, update2.claimRef)
+  const update1 = datastoreUpdates[0]
+  const claim = await getClaimByReference(db, update1.claimRef)
   const herd = await getHerdById(db, claim.herd.id)
 
   //We update the current version of the herd to indicate it is
@@ -40,7 +34,7 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
   herd.createdBy = raisedBy
   herd.updatedAt = {}
   herd.version = herd.version + 1
-  herd.reasons = update2.newReason
+  herd.reasons = update1.newReason
   //We are creating a new version with the new reason
   await createHerd(db, herd)
 
@@ -51,13 +45,26 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
 
   await updateHerd({
     db,
-    claimRef: update2.claimRef,
+    claimRef: update1.claimRef,
     updatedProperty: 'herdReasons',
-    newValue: update2.newReason,
-    oldValue: update2.oldReason,
+    newValue: update1.newReason,
+    oldValue: update1.oldReason,
     note,
     createdBy: raisedBy,
     claimHerdData
+  })
+
+  //Data Change 2
+  const update2 = datastoreUpdates[1]
+  await updateClaimData({
+    db,
+    reference: update2.claimRef,
+    updatedProperty: 'dateOfTesting',
+    newValue: update2.newValue,
+    oldValue: update2.oldValue,
+    note,
+    user: raisedBy,
+    updatedAt: new Date()
   })
 
   //Data Change 3
@@ -72,60 +79,28 @@ export const updateDatastore = async (serviceVersion, { datastoreUpdates }, db, 
     user: raisedBy,
     updatedAt: new Date()
   })
-
-  //Data Change 4
-  const update4 = datastoreUpdates[3]
-  await updateClaimData({
-    db,
-    reference: update4.claimRef,
-    updatedProperty: 'dateOfTesting',
-    newValue: update4.newValue,
-    oldValue: update4.oldValue,
-    note,
-    user: raisedBy,
-    updatedAt: new Date()
-  })
 }
 
 export const sendEvents = async (serviceVersion, { events }, db, logger) => {
   logger.info(`Running send events for service version: ${serviceVersion}`)
   // common data across events
   const raisedBy = 'Admin2'
-  const withdrawnStatusId = 'WITHDRAWN'
-  const withdrawnMessage = 'Claim has been updated'
 
   const herdAssociatedEvent = 'claim-herdAssociated'
   const herdAssociatedMessage = 'Herd associated with claim updated'
 
   //Data Change 1
   const event1 = events[0]
-  await raiseClaimEvents(
-    {
-      claim: {
-        id: crypto.randomUUID(),
-        reference: event1.claimRef,
-        applicationReference: event1.applicationRef,
-        status: withdrawnStatusId
-      },
-      message: withdrawnMessage,
-      raisedBy,
-      raisedOn: new Date()
-    },
-    event1.sbi
-  )
-
-  //Data Change 2
-  const event2 = events[1]
 
   const raisedOn = new Date()
   const raisedOn1 = new Date(raisedOn.getTime() + 1).toISOString()
   const raisedOn2 = new Date(raisedOn.getTime() + 2).toISOString()
 
-  const claim = await getClaimByReference(db, event2.claimRef)
+  const claim = await getClaimByReference(db, event1.claimRef)
   const herd = await getHerdById(db, claim.herd.id)
 
   await raiseHerdEvent({
-    sbi: event2.sbi,
+    sbi: event1.sbi,
     message: 'New herd version created',
     type: 'herd-versionCreated',
     raisedBy,
@@ -147,7 +122,7 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
   })
 
   await raiseHerdEvent({
-    sbi: event2.sbi,
+    sbi: event1.sbi,
     message: herdAssociatedMessage,
     type: herdAssociatedEvent,
     raisedBy,
@@ -155,14 +130,26 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     data: {
       herdId: herd.id,
       herdVersion: herd.version,
-      reference: event2.claimRef,
-      applicationReference: event2.applicationRef
+      reference: event1.claimRef,
+      applicationReference: event1.applicationRef
     }
   })
 
+  //Data Change 2
+  const event2 = events[1]
+  const eventData2 = {
+    applicationReference: event2.applicationRef,
+    reference: event2.claimRef,
+    newValue: event2.newValue,
+    oldValue: event2.oldValue,
+    updatedProperty: 'dateOfTesting',
+    note
+  }
+  await claimDataUpdateEvent(eventData2, 'claim-testResults', raisedBy, new Date(), event2.sbi)
+
   //Data Change 3
   const event3 = events[2]
-  const eventData3 = {
+  const eventData4 = {
     applicationReference: event3.applicationRef,
     reference: event3.claimRef,
     newValue: event3.newValue,
@@ -170,17 +157,5 @@ export const sendEvents = async (serviceVersion, { events }, db, logger) => {
     updatedProperty: 'dateOfTesting',
     note
   }
-  await claimDataUpdateEvent(eventData3, 'claim-testResults', raisedBy, new Date(), event3.sbi)
-
-  //Data Change 4
-  const event4 = events[3]
-  const eventData4 = {
-    applicationReference: event4.applicationRef,
-    reference: event4.claimRef,
-    newValue: event4.newValue,
-    oldValue: event4.oldValue,
-    updatedProperty: 'dateOfTesting',
-    note
-  }
-  await claimDataUpdateEvent(eventData4, 'claim-testResults', raisedBy, new Date(), event4.sbi)
+  await claimDataUpdateEvent(eventData4, 'claim-testResults', raisedBy, new Date(), event3.sbi)
 }
