@@ -1,5 +1,6 @@
 import Joi from 'joi'
 
+/** @type {readonly {DELETION: 'deletion', FIELD_CHANGE: 'fieldChange'}} */
 export const TYPE_OF_CHANGE = {
   DELETION: 'deletion',
   FIELD_CHANGE: 'fieldChange'
