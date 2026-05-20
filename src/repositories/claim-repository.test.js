@@ -13,7 +13,7 @@ import {
   updateHerd
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
-import { STATUS } from 'ffc-ahwr-common-library'
+import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 describe('claim-repository', () => {
   describe('getByApplicationReference', () => {
@@ -639,6 +639,46 @@ describe('claim-repository', () => {
         'herd.id': { $ne: undefined }
       })
       expect(result).toEqual(2)
+    })
+
+    describe('with scheme filter', () => {
+      it('scopes the count to Poultry claims for the poultry scheme', async () => {
+        mockCountDocuments.mockResolvedValue(1)
+
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, scheme: POULTRY_SCHEME })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: herdId },
+          'data.typesOfPoultry': { $exists: true }
+        })
+        expect(result).toEqual(1)
+      })
+
+      it('scopes the count to Livestock claims for the ahwr scheme', async () => {
+        mockCountDocuments.mockResolvedValue(3)
+
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, scheme: AHWR_SCHEME })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: herdId },
+          'data.typeOfLivestock': { $exists: true }
+        })
+        expect(result).toEqual(3)
+      })
+
+      it('applies the scheme filter even when herdId is not supplied', async () => {
+        mockCountDocuments.mockResolvedValue(2)
+
+        await getClaimsCount({ db: mockDb, cph, herdId: undefined, scheme: POULTRY_SCHEME })
+
+        expect(mockCountDocuments).toHaveBeenCalledWith({
+          'herd.cph': cph,
+          'herd.id': { $ne: undefined },
+          'data.typesOfPoultry': { $exists: true }
+        })
+      })
     })
 
     it('propagates errors from the database', async () => {

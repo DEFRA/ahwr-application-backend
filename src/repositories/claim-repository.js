@@ -1,6 +1,11 @@
-import { STATUS } from 'ffc-ahwr-common-library'
+import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
+
+const SCHEME_FILTER = {
+  [POULTRY_SCHEME]: { 'data.typesOfPoultry': { $exists: true } },
+  [AHWR_SCHEME]: { 'data.typeOfLivestock': { $exists: true } }
+}
 
 export const createClaimIndexes = async (db) => {
   await db.collection(CLAIMS_COLLECTION).createIndex({
@@ -101,11 +106,14 @@ export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) 
   return !result
 }
 
-export const getClaimsCount = async ({ db, cph, herdId }) => {
-  return db.collection(CLAIMS_COLLECTION).countDocuments({
+export const getClaimsCount = async ({ db, cph, herdId, scheme }) => {
+  const query = {
     'herd.cph': cph,
-    'herd.id': { $ne: herdId }
-  })
+    'herd.id': { $ne: herdId },
+    ...SCHEME_FILTER[scheme]
+  }
+
+  return db.collection(CLAIMS_COLLECTION).countDocuments(query)
 }
 
 export const updateClaimData = async ({
