@@ -1,4 +1,5 @@
 import { Server } from '@hapi/hapi'
+import { POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import { claimsHandlers } from './claims-routes.js'
 import {
   createClaimHandler,
@@ -135,14 +136,14 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
     })
 
-    it('should accept species=poultry and pass it through to the handler', async () => {
+    it('should accept the poultry scheme and pass it through to the handler', async () => {
       getClaimsCountHandler.mockImplementation(async (_, h) => {
         return h.response({ count: 1 }).code(200)
       })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=poultry'
+        url: `/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&scheme=${POULTRY_SCHEME}`
       })
 
       expect(res.statusCode).toBe(200)
@@ -151,18 +152,18 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
         cph: '123456789',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        species: 'poultry'
+        scheme: POULTRY_SCHEME
       })
     })
 
-    it('should accept species=livestock and pass it through to the handler', async () => {
+    it('should accept the ahwr scheme and pass it through to the handler', async () => {
       getClaimsCountHandler.mockImplementation(async (_, h) => {
         return h.response({ count: 3 }).code(200)
       })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=livestock'
+        url: `/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&scheme=${AHWR_SCHEME}`
       })
 
       expect(res.statusCode).toBe(200)
@@ -170,25 +171,25 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
         cph: '123456789',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        species: 'livestock'
+        scheme: AHWR_SCHEME
       })
     })
 
-    it('should reject an invalid species value with 400 and not call the handler', async () => {
+    it('should reject an invalid scheme value with 400 and not call the handler', async () => {
       getClaimsCountHandler.mockImplementation(async (_, h) => {
         return h.response({ count: 0 }).code(200)
       })
 
       const res = await server.inject({
         method: 'GET',
-        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&species=alpacas'
+        url: '/api/claims/count?cph=123456789&herdId=0e4f55ea-ed42-4139-9c46-c75ba63b0742&scheme=alpacas'
       })
 
       expect(res.statusCode).toBe(400)
       expect(getClaimsCountHandler).not.toHaveBeenCalled()
     })
 
-    it('should still accept requests without species (legacy behaviour)', async () => {
+    it('should still accept requests without a scheme (legacy behaviour)', async () => {
       getClaimsCountHandler.mockImplementation(async (_, h) => {
         return h.response({ count: 2 }).code(200)
       })

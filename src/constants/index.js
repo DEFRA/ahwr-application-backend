@@ -95,8 +95,3 @@ export const APPLICATION_COLLECTION = 'applications'
 export const OW_APPLICATION_COLLECTION = 'owapplications'
 export const CLAIMS_COLLECTION = 'claims'
 export const HERDS_COLLECTION = 'herds'
-
-export const SPECIES = {
-  POULTRY: 'poultry',
-  LIVESTOCK: 'livestock'
-}

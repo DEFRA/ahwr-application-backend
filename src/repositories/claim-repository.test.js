@@ -13,7 +13,7 @@ import {
   updateHerd
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
-import { STATUS } from 'ffc-ahwr-common-library'
+import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 
 describe('claim-repository', () => {
   describe('getByApplicationReference', () => {
@@ -641,11 +641,11 @@ describe('claim-repository', () => {
       expect(result).toEqual(2)
     })
 
-    describe('with species filter', () => {
-      it('scopes the count to Poultry claims when species is "poultry"', async () => {
+    describe('with scheme filter', () => {
+      it('scopes the count to Poultry claims for the poultry scheme', async () => {
         mockCountDocuments.mockResolvedValue(1)
 
-        const result = await getClaimsCount({ db: mockDb, cph, herdId, species: 'poultry' })
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, scheme: POULTRY_SCHEME })
 
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
@@ -655,10 +655,10 @@ describe('claim-repository', () => {
         expect(result).toEqual(1)
       })
 
-      it('scopes the count to Livestock claims when species is "livestock"', async () => {
+      it('scopes the count to Livestock claims for the ahwr scheme', async () => {
         mockCountDocuments.mockResolvedValue(3)
 
-        const result = await getClaimsCount({ db: mockDb, cph, herdId, species: 'livestock' })
+        const result = await getClaimsCount({ db: mockDb, cph, herdId, scheme: AHWR_SCHEME })
 
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
@@ -668,10 +668,10 @@ describe('claim-repository', () => {
         expect(result).toEqual(3)
       })
 
-      it('applies the species filter even when herdId is not supplied', async () => {
+      it('applies the scheme filter even when herdId is not supplied', async () => {
         mockCountDocuments.mockResolvedValue(2)
 
-        await getClaimsCount({ db: mockDb, cph, herdId: undefined, species: 'poultry' })
+        await getClaimsCount({ db: mockDb, cph, herdId: undefined, scheme: POULTRY_SCHEME })
 
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,

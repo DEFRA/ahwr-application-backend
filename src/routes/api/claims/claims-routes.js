@@ -2,7 +2,7 @@ import joi from 'joi'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import { StatusCodes } from 'http-status-codes'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { SPECIES } from '../../../constants/index.js'
+import { POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import {
   createClaimHandler,
   isURNUniqueHandler,
@@ -84,7 +84,7 @@ export const claimsHandlers = [
         query: joi.object({
           cph: joi.string().optional(),
           herdId: joi.string().optional(),
-          species: joi.string().valid(SPECIES.POULTRY, SPECIES.LIVESTOCK).optional()
+          scheme: joi.string().valid(POULTRY_SCHEME, AHWR_SCHEME).optional()
         })
       },
       handler: getClaimsCountHandler

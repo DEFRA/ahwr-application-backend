@@ -18,7 +18,7 @@ import {
 import { ObjectId } from 'mongodb'
 import { findApplication, getApplication } from '../../../repositories/application-repository.js'
 import { raiseClaimEvents } from '../../../event-publisher/index.js'
-import { STATUS } from 'ffc-ahwr-common-library'
+import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import {
   publishRequestForPaymentEvent,
   publishStatusChangeEvent
@@ -237,45 +237,45 @@ describe('getClaimsCountHandler', () => {
     expect(result).toBe(mockH)
   })
 
-  it('should pass species through to getClaimsCount when species is "poultry"', async () => {
-    const requestWithSpecies = {
+  it('should pass scheme through to getClaimsCount for the poultry scheme', async () => {
+    const requestWithScheme = {
       ...mockRequest,
       query: {
         cph: '22/333/4444',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        species: 'poultry'
+        scheme: POULTRY_SCHEME
       }
     }
     getClaimsCount.mockResolvedValue(1)
 
-    await getClaimsCountHandler(requestWithSpecies, mockH)
+    await getClaimsCountHandler(requestWithScheme, mockH)
 
     expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
       herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-      species: 'poultry',
-      db: requestWithSpecies.db
+      scheme: POULTRY_SCHEME,
+      db: requestWithScheme.db
     })
   })
 
-  it('should pass species through to getClaimsCount when species is "livestock"', async () => {
-    const requestWithSpecies = {
+  it('should pass scheme through to getClaimsCount for the ahwr scheme', async () => {
+    const requestWithScheme = {
       ...mockRequest,
       query: {
         cph: '22/333/4444',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        species: 'livestock'
+        scheme: AHWR_SCHEME
       }
     }
     getClaimsCount.mockResolvedValue(3)
 
-    await getClaimsCountHandler(requestWithSpecies, mockH)
+    await getClaimsCountHandler(requestWithScheme, mockH)
 
     expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
       herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-      species: 'livestock',
-      db: requestWithSpecies.db
+      scheme: AHWR_SCHEME,
+      db: requestWithScheme.db
     })
   })
 
