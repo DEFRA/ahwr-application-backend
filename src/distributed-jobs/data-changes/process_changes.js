@@ -43,6 +43,9 @@ export const processChanges = async (db, changesToProcess) => {
           return await processDeletion(db, change)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
           return { success: true }
+        default:
+          // This shouldn't ever happen as the scheme gets validated
+          return { success: false, ...change, reason: 'Unknown action' }
       }
     })
   )
