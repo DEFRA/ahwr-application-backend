@@ -40,7 +40,7 @@ export const processChanges = async (db, changesToProcess) => {
 
       switch (change.action) {
         case TYPE_OF_CHANGE.DELETION:
-          return await processDeletion(db, change)
+          return processDeletion(db, change)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
           return { success: true }
         default:
