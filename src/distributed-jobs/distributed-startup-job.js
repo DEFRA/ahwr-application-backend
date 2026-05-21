@@ -1,8 +1,5 @@
 import { config } from '../config/config.js'
-import {
-  updateDatastore as v0824DatastoreUpdates,
-  sendEvents as v0824SendEvents
-} from './data-changes/v0824-data-changes.js'
+import { processChanges } from './data-changes/process_changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
   try {
@@ -28,7 +25,7 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  const supportingData = config.get(supportingDataConfigKey)
+  const supportingData = config.get(supportingDataConfigKey).data
   if (Object.keys(supportingData).length === 0) {
     throw new Error(`Missing supporting data for service version ${serviceVersion}`)
   }
@@ -67,9 +64,8 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.4') {
-    await v0824DatastoreUpdates(serviceVersion, supportingData, db, logger)
-    await v0824SendEvents(serviceVersion, supportingData, db, logger)
+  if (serviceVersion === '0.82.6') {
+    await processChanges(supportingData, db, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
   }

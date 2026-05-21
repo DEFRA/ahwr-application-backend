@@ -23,6 +23,7 @@ Created from the Core delivery platform Node.js Backend Template.
   - [Docker Compose](#docker-compose)
   - [Dependabot](#dependabot)
   - [SonarCloud](#sonarcloud)
+- [Data Changes](#datachanges)
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
 
@@ -272,6 +273,23 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 
 Sonarcoud is enabled for this repository. All pull requests will be analysed.
 You can view the reports at [Sonarcloud](https://sonarcloud.io/project/overview?id=DEFRA_ahwr-application-backend)
+
+## Data Changes
+
+Until the backoffice is setup for data changes it is necessary to run them on deployment. The changes only run if the version of the application is correct, and they have not been run before.
+
+The data changes will only work in local, dev and prod, and not other environments.
+
+Three files need to be changed:
+
+- src/config/config.js
+  Where we will want to change the entry for the distributedJobs
+- src/distributed-jobs/distributed-startup-job.js
+  We need to change the serviceVersion we are checking against
+- src/distributed-jobs/distributed-startup-job.test.js
+  We need to change appropiately the version numbers for the tests to pass
+
+An environment variables will need to be setup with the name that appears on src/config/config.js. The variable will containe an JSON object with a single key called `data` and the value of it will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
 
 ## Licence
 
