@@ -67,74 +67,123 @@ beforeEach(() => {
 const mockDeleteOne = jest.fn()
 const mockCollection = { deleteOne: mockDeleteOne }
 const mockDb = { collection: jest.fn(() => mockCollection) }
+const mockLogger = { info: jest.fn() }
 
-test('We can delete a record', async () => {
-  mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 1 })
-  const results = await processChanges(mockDb, [deletion])
+describe('Data deletion', () => {
+  test('We can delete a record', async () => {
+    mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 1 })
+    const results = await processChanges([deletion], mockDb, mockLogger)
 
-  expect(results[0]).toEqual({ ...deletion, success: true })
-  expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
-  expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
-})
+    expect(results[0]).toEqual({ ...deletion, success: true })
+    expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(`${deletion.claimRef} has processed successfully`)
+  })
 
-test('When we delete a record, an event is being sent', async () => {
-  mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 1 })
-  await processChanges(mockDb, [deletion])
+  test('When we delete a record, an event is being sent', async () => {
+    mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 1 })
+    await processChanges([deletion], mockDb, mockLogger)
 
-  expect(mockPublishEvent).toHaveBeenCalledWith({
-    name: 'send-session-event',
-    id: expect.any(String),
-    sbi: deletion.sbi,
-    cph: 'n/a',
-    checkpoint: expect.any(String),
-    status: 'success',
-    type: 'application:status-updated:WITHDRAWN',
-    message: 'Claim has been updated',
-    data: {
-      reference: deletion.claimRef,
-      applicationReference: deletion.applicationRef,
-      status: 'WITHDRAWN'
-    },
-    raisedBy: 'Admin2',
-    raisedOn: expect.any(String)
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: deletion.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'application:status-updated:WITHDRAWN',
+      message: 'Claim has been updated',
+      data: {
+        reference: deletion.claimRef,
+        applicationReference: deletion.applicationRef,
+        status: 'WITHDRAWN'
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('If not deleted, we return no success', async () => {
+    mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 0 })
+    const results = await processChanges([deletion], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...deletion, success: false, reason: 'Does not exists' })
+    expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${deletion.claimRef} has failed because Does not exists`
+    )
+  })
+
+  test('If an error is thrown, we return no success', async () => {
+    mockDeleteOne.mockRejectedValue(new Error('Connection failed'))
+    const results = await processChanges([deletion], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...deletion,
+      success: false,
+      reason: 'Connection failed'
+    })
+    expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${deletion.claimRef} has failed because Connection failed`
+    )
   })
 })
 
-test('If not deleted, we return no success', async () => {
-  mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 0 })
-  const results = await processChanges(mockDb, [deletion])
+describe('data structure validation', () => {
+  test('If data structure is invalid, we return no success', async () => {
+    const invalidChange = {
+      claimRef: 'RESH-806C-B87D'
+      // missing sbi, applicationRef, action
+    }
 
-  expect(results[0]).toEqual({ ...deletion, success: false, reason: 'Does not exists' })
-  expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
-  expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
-})
+    const results = await processChanges([invalidChange], mockDb, mockLogger)
 
-test('If an error is thrown, we return no success', async () => {
-  mockDeleteOne.mockRejectedValue(new Error('Connection failed'))
-  const results = await processChanges(mockDb, [deletion])
+    expect(results[0]).toEqual({
+      ...invalidChange,
+      success: false,
+      reason: 'Incorrect data structure'
+    })
 
-  expect(results[0]).toEqual({
-    ...deletion,
-    success: false,
-    reason: 'Connection failed'
-  })
-  expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
-  expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
-})
-
-test('If data structure is invalid, we return no success', async () => {
-  const invalidChange = {
-    claimRef: 'RESH-806C-B87D'
-    // missing sbi, applicationRef, action
-  }
-
-  const results = await processChanges(mockDb, [invalidChange])
-
-  expect(results[0]).toEqual({
-    ...invalidChange,
-    success: false,
-    reason: 'Incorrect data structure'
+    expect(mockDeleteOne).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${invalidChange.claimRef} has failed because Incorrect data structure`
+    )
   })
 
-  expect(mockDeleteOne).not.toHaveBeenCalled()
+  test('If data structure is invalid and has no claimRef, we return no success', async () => {
+    const invalidChange = {
+      sbi: '123456789'
+      // missing claimRef, applicationRef, action
+    }
+
+    const results = await processChanges([invalidChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...invalidChange,
+      success: false,
+      reason: 'Incorrect data structure'
+    })
+
+    expect(mockDeleteOne).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'undefined has failed because Incorrect data structure'
+    )
+  })
+
+  test('If change is null, we return no success', async () => {
+    const results = await processChanges([null], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      success: false,
+      reason: 'Incorrect data structure'
+    })
+
+    expect(mockDeleteOne).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      'undefined has failed because Incorrect data structure'
+    )
+  })
 })

@@ -1,6 +1,6 @@
-import { raiseClaimEvents } from '../../event-publisher'
-import { deleteClaim } from '../../repositories/claim-repository'
-import { changeSchema, TYPE_OF_CHANGE } from './schema'
+import { raiseClaimEvents } from '../../event-publisher/index.js'
+import { deleteClaim } from '../../repositories/claim-repository.js'
+import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
 
 /**
  * @typedef {object} Change
@@ -26,11 +26,12 @@ import { changeSchema, TYPE_OF_CHANGE } from './schema'
  * Validates each change against the schema, processes the action,
  * and raises events for successful deletions.
  *
- * @param {object} db - MongoDB database connection
  * @param {Change[]} changesToProcess - Array of changes to process
+ * @param {object} db - MongoDB database connection
+ * @param {object} logger - Hapi logger
  * @returns {Promise<(Change & ChangeResult)[]>} Array of results with original change data and success status
  */
-export const processChanges = async (db, changesToProcess) => {
+export const processChanges = async (changesToProcess, db, logger) => {
   const results = await Promise.all(
     changesToProcess.map(async (change) => {
       const { error } = changeSchema.validate(change)
@@ -40,7 +41,7 @@ export const processChanges = async (db, changesToProcess) => {
 
       switch (change.action) {
         case TYPE_OF_CHANGE.DELETION:
-          return processDeletion(db, change)
+          return processDeletion(change, db)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
           return { success: true }
         default:
@@ -50,10 +51,18 @@ export const processChanges = async (db, changesToProcess) => {
     })
   )
 
+  results.forEach((result) => {
+    if (result.success) {
+      logger.info(`${result.claimRef} has processed successfully`)
+    } else {
+      logger.info(`${result.claimRef} has failed because ${result.reason}`)
+    }
+  })
+
   return results
 }
 
-const processDeletion = async (db, change) => {
+const processDeletion = async (change, db) => {
   try {
     const deleteResult = await deleteClaim(db, change.claimRef)
     if (deleteResult.deletedCount === 0) {
