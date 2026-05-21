@@ -25,7 +25,7 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  const supportingData = config.get(supportingDataConfigKey)
+  const supportingData = config.get(supportingDataConfigKey).data
   if (Object.keys(supportingData).length === 0) {
     throw new Error(`Missing supporting data for service version ${serviceVersion}`)
   }
@@ -64,7 +64,7 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.4') {
+  if (serviceVersion === '0.82.6') {
     await processChanges(supportingData, db, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)
