@@ -113,14 +113,12 @@ describe('Test runDistributedStartupJob', () => {
     const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
-    config.getProperties.mockReturnValue({ distributedJobs: { [supportingDataVersion]: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { [supportingDataVersion]: [] } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
         serviceVersion,
-        [supportingDataConfigKey]: {
-          mandatory: 'need-at-least-one-key-to-be-valid-data'
-        }
+        [supportingDataConfigKey]: [{}]
       }
       return values[key]
     })
