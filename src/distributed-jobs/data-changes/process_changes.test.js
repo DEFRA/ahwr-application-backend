@@ -22,15 +22,16 @@ const deletion = {
 //   action: TYPE_OF_CHANGE.FIELD_CHANGE
 // }
 
-// const changeOfDataField = {
-//   claimRef: 'RESH-VASQ-XIXS',
-//   sbi: '107695939',
-//   applicationRef: 'IAHW-21C5-1417',
-//   field: 'dateOfTesting',
-//   newValue: '2025-12-12T00:00:00.000Z',
-//   oldValue: '2025-12-11T00:00:00.000Z',
-//   action: TYPE_OF_CHANGE.FIELD_CHANGE
-// }
+const changeOfDataField = {
+  claimRef: 'RESH-VASQ-XIXS',
+  sbi: '107695939',
+  applicationRef: 'IAHW-21C5-1417',
+  field: 'dateOfTesting',
+  note: 'This is some test',
+  newValue: '2025-12-12T00:00:00.000Z',
+  oldValue: '2025-12-11T00:00:00.000Z',
+  action: TYPE_OF_CHANGE.FIELD_CHANGE
+}
 
 // const skipDataChange = {
 //   claimRef: 'RESH-VASQ-XIXS',
@@ -65,7 +66,8 @@ beforeEach(() => {
 })
 
 const mockDeleteOne = jest.fn()
-const mockCollection = { deleteOne: mockDeleteOne }
+const mockFindOneAndUpdate = jest.fn()
+const mockCollection = { deleteOne: mockDeleteOne, findOneAndUpdate: mockFindOneAndUpdate }
 const mockDb = { collection: jest.fn(() => mockCollection) }
 const mockLogger = { info: jest.fn() }
 
@@ -186,4 +188,101 @@ describe('data structure validation', () => {
       'undefined has failed because Incorrect data structure'
     )
   })
+})
+
+describe('Field change', () => {
+  test('We can change a data field', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: changeOfDataField.claimRef })
+    const results = await processChanges([changeOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...changeOfDataField, success: true })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: changeOfDataField.claimRef },
+      {
+        $set: {
+          [`data.${changeOfDataField.field}`]: changeOfDataField.newValue,
+          updatedAt: expect.any(Date),
+          updatedBy: 'Admin2'
+        },
+        $push: {
+          updateHistory: {
+            id: expect.any(String),
+            updatedProperty: changeOfDataField.field,
+            newValue: changeOfDataField.newValue,
+            oldValue: changeOfDataField.oldValue,
+            note: changeOfDataField.note,
+            eventType: 'claim-dateOfTesting',
+            createdAt: expect.any(Date),
+            createdBy: 'Admin2'
+          }
+        }
+      }
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfDataField.claimRef} has processed successfully`
+    )
+  })
+
+  test('When we change a data field, an event is being sent', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: changeOfDataField.claimRef })
+    await processChanges([changeOfDataField], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: changeOfDataField.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'claim-testResults',
+      message: 'Claim data updated',
+      data: {
+        applicationReference: changeOfDataField.applicationRef,
+        reference: changeOfDataField.claimRef,
+        newValue: changeOfDataField.newValue,
+        oldValue: changeOfDataField.oldValue,
+        updatedProperty: 'dateOfTesting',
+        note: changeOfDataField.note
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('If not updated, we return no success', async () => {
+    mockFindOneAndUpdate.mockResolvedValue(null)
+    const results = await processChanges([changeOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...changeOfDataField, success: false, reason: 'Does not exists' })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: changeOfDataField.claimRef },
+      expect.any(Object)
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfDataField.claimRef} has failed because Does not exists`
+    )
+  })
+
+  test('If an error is thrown, we return no success', async () => {
+    mockFindOneAndUpdate.mockRejectedValue(new Error('Connection failed'))
+    const results = await processChanges([changeOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...changeOfDataField,
+      success: false,
+      reason: 'Connection failed'
+    })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: changeOfDataField.claimRef },
+      expect.any(Object)
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfDataField.claimRef} has failed because Connection failed`
+    )
+  })
+
+  // Herd changes will need to be implemented
 })
