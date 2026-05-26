@@ -121,10 +121,10 @@ const processDataChange = async (change, db) => {
         reference: change.claimRef,
         newValue: change.newValue,
         oldValue: change.oldValue,
-        updatedProperty: 'dateOfTesting',
+        updatedProperty: change.field,
         note: `Requested on ${change.dateRequested} by ${change.requester}`
       },
-      'claim-testResults',
+      `claim-${change.field}`,
       raisedBy,
       new Date(),
       change.sbi

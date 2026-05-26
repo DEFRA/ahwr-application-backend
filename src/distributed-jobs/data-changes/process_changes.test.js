@@ -238,7 +238,7 @@ describe('Field change', () => {
       cph: 'n/a',
       checkpoint: expect.any(String),
       status: 'success',
-      type: 'claim-testResults',
+      type: 'claim-dateOfTesting',
       message: 'Claim data updated',
       data: {
         applicationReference: changeOfDataField.applicationRef,
