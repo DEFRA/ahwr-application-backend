@@ -64,7 +64,7 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 }
 
 const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.6') {
+  if (serviceVersion === '0.82.7') {
     await processChanges(supportingData, db, logger)
   } else {
     logger.info(`No data changes found for service version ${serviceVersion}`)

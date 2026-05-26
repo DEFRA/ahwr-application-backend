@@ -36,28 +36,28 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0826SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.6',
-        'distributedJobs.v0826SupportingData': { data: [] }
+        serviceVersion: '0.82.7',
+        'distributedJobs.v0827SupportingData': { data: [] }
       }
       return values[key]
     })
 
     await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.82.6'
+      'Missing supporting data for service version 0.82.7'
     )
   })
 
   it('should not run job when already been run', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0826SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.6',
-        'distributedJobs.v0826SupportingData': {
+        serviceVersion: '0.82.7',
+        'distributedJobs.v0827SupportingData': {
           data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
         }
       }
@@ -77,7 +77,7 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.6'
+        serviceVersion: '0.82.7'
       }
       return values[key]
     })
@@ -108,7 +108,7 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should run job and executes data changes', async () => {
-    const serviceVersion = '0.82.6'
+    const serviceVersion = '0.82.7'
     const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
