@@ -368,12 +368,12 @@ const config = convict({
     }
   },
   distributedJobs: {
-    v0826SupportingData: {
-      doc: 'Data to support v0.82.6 data changes',
+    v0827SupportingData: {
+      doc: 'Data to support v0.82.7 data changes',
       format: Object,
       default: {},
       sensitive: true,
-      env: 'DATA_CHANGE_V0826_DATA'
+      env: 'DATA_CHANGE_V0827_DATA'
     }
   }
 })

@@ -12,6 +12,8 @@ export const changeSchema = Joi.object({
   applicationRef: Joi.string().required(),
   action: Joi.string().valid(TYPE_OF_CHANGE.DELETION, TYPE_OF_CHANGE.FIELD_CHANGE).required(),
   field: Joi.string().when('action', { is: TYPE_OF_CHANGE.FIELD_CHANGE, then: Joi.required() }),
+  dateRequested: Joi.date().iso().required(),
+  requester: Joi.string().required(),
   newValue: Joi.alternatives()
     .try(Joi.string(), Joi.array())
     .when('action', { is: TYPE_OF_CHANGE.FIELD_CHANGE, then: Joi.required() }),
