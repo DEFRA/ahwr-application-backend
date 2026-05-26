@@ -10,7 +10,8 @@ import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
  * @property {string} applicationRef - The application reference
  * @property {'deletion' | 'fieldChange'} action - The type of change to process
  * @property {string} [field] - Field name (required for fieldChange)
- * @property {string} [note] - A note with the reason for the change (required for fieldChange)
+ * @property {string} [dateRequested] - The day when the request was done in ISO 8601
+ * @property {string} [requester] - Who has made the request
  * @property {string | string[]} [newValue] - New value (required for fieldChange)
  * @property {string | string[]} [oldValue] - Old value (required for fieldChange)
  * @property {boolean} [skipDataChange] - Skip data change processing
@@ -105,7 +106,7 @@ const processDataChange = async (change, db) => {
       updatedProperty: change.field,
       newValue: change.newValue,
       oldValue: change.oldValue,
-      note: change.note,
+      note: `Requested on ${change.dateRequested} by ${change.requester}`,
       user: raisedBy,
       updatedAt: new Date()
     })
@@ -121,7 +122,7 @@ const processDataChange = async (change, db) => {
         newValue: change.newValue,
         oldValue: change.oldValue,
         updatedProperty: 'dateOfTesting',
-        note: change.note
+        note: `Requested on ${change.dateRequested} by ${change.requester}`
       },
       'claim-testResults',
       raisedBy,

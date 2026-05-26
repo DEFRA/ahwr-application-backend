@@ -9,7 +9,9 @@ const deletion = {
   claimRef: 'RESH-806C-B87D',
   sbi: '123456789',
   applicationRef: 'IAHW-G7B4-UTZ5',
-  action: TYPE_OF_CHANGE.DELETION
+  action: TYPE_OF_CHANGE.DELETION,
+  dateRequested: '2025-12-12T00:00:00.000Z',
+  requester: 'Some_One'
 }
 
 // const herdChange = {
@@ -27,7 +29,8 @@ const changeOfDataField = {
   sbi: '107695939',
   applicationRef: 'IAHW-21C5-1417',
   field: 'dateOfTesting',
-  note: 'This is some test',
+  dateRequested: '2025-12-12T00:00:00.000Z',
+  requester: 'Some_One',
   newValue: '2025-12-12T00:00:00.000Z',
   oldValue: '2025-12-11T00:00:00.000Z',
   action: TYPE_OF_CHANGE.FIELD_CHANGE
@@ -210,7 +213,7 @@ describe('Field change', () => {
             updatedProperty: changeOfDataField.field,
             newValue: changeOfDataField.newValue,
             oldValue: changeOfDataField.oldValue,
-            note: changeOfDataField.note,
+            note: `Requested on ${changeOfDataField.dateRequested} by ${changeOfDataField.requester}`,
             eventType: 'claim-dateOfTesting',
             createdAt: expect.any(Date),
             createdBy: 'Admin2'
@@ -243,7 +246,7 @@ describe('Field change', () => {
         newValue: changeOfDataField.newValue,
         oldValue: changeOfDataField.oldValue,
         updatedProperty: 'dateOfTesting',
-        note: changeOfDataField.note
+        note: `Requested on ${changeOfDataField.dateRequested} by ${changeOfDataField.requester}`
       },
       raisedBy: 'Admin2',
       raisedOn: expect.any(String)
