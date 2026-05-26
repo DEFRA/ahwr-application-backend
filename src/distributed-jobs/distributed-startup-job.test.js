@@ -88,6 +88,22 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).toHaveBeenCalled()
   })
 
+  it('should throw when supporting data config returns null', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        serviceVersion: '0.82.7',
+        'distributedJobs.v0827SupportingData': null
+      }
+      return values[key]
+    })
+
+    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
+      'Missing supporting data for service version 0.82.7'
+    )
+  })
+
   it('should run job if config present but no data changes for service version', async () => {
     config.getProperties.mockReturnValue({ distributedJobs: { v000SupportingData: {} } })
     config.get.mockImplementation((key) => {

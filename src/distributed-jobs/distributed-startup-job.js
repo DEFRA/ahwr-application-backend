@@ -25,7 +25,7 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  const supportingData = config.get(supportingDataConfigKey).data
+  const supportingData = config.get(supportingDataConfigKey)?.data ?? {}
   if (Object.keys(supportingData).length === 0) {
     throw new Error(`Missing supporting data for service version ${serviceVersion}`)
   }
