@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": ">=22.21.1"
+    "node": ">=22.21.1",
+    "npm": ">=11.10.0"
   },
   "scripts": {
     "dev": "NODE_ENV=development npm run server:watch",
