@@ -17,31 +17,33 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  const serviceVersion = config.get('serviceVersion')
-  const supportingDataVersion = `v${serviceVersion?.replaceAll('.', '')}SupportingData`
-  const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
+  const supportingDataConfigKey = `distributedJobs.supportingData`
 
-  if (isNotDataChangeVersion(supportingDataVersion)) {
+  /** @type {{ data: Array, version: string } | null | undefined} */
+  const dataChanges = config.get(supportingDataConfigKey)
+
+  if (dataChanges === null || dataChanges === undefined) {
     return
   }
 
-  const supportingData = config.get(supportingDataConfigKey)?.data ?? {}
-  if (Object.keys(supportingData).length === 0) {
-    throw new Error(`Missing supporting data for service version ${serviceVersion}`)
+  const supportingData = dataChanges?.data ?? []
+  const supportingVersion = dataChanges?.version
+
+  if (supportingVersion === null || supportingVersion === undefined) {
+    throw new Error(`There is no version of the data`)
   }
 
-  const hasAlreadyRun = await hasStartupJobAlreadyRun(serviceVersion, environmentsJobWillRun, db)
+  if (Object.keys(supportingData).length === 0) {
+    throw new Error(`Missing supporting data for data change version ${supportingVersion}`)
+  }
+
+  const hasAlreadyRun = await hasStartupJobAlreadyRun(supportingVersion, environmentsJobWillRun, db)
   if (hasAlreadyRun) {
     return
   }
 
-  logger.info(`Running distributed job, service version ${serviceVersion}`)
-  await performDataChanges(serviceVersion, supportingData, db, logger)
-}
-
-const isNotDataChangeVersion = (configKey) => {
-  const schema = config.getProperties().distributedJobs
-  return !(configKey in schema)
+  logger.info(`Running distributed job, service version ${supportingVersion}`)
+  await processChanges(supportingData, db, logger)
 }
 
 const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
@@ -61,12 +63,4 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
   }
 
   return hasRun
-}
-
-const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.7') {
-    await processChanges(supportingData, db, logger)
-  } else {
-    logger.info(`No data changes found for service version ${serviceVersion}`)
-  }
 }

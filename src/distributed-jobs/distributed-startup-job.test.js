@@ -18,13 +18,12 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when service version is not present', async () => {
+  it('should not run job when there is no data', async () => {
     config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: null,
-        'distributedJobs.vnullSupportingData': {}
+        'distributedJobs.supportingData': null
       }
       return values[key]
     })
@@ -36,28 +35,27 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.7',
-        'distributedJobs.v0827SupportingData': { data: [] }
+        'distributedJobs.supportingData': { version: '1', data: [] }
       }
       return values[key]
     })
 
     await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.82.7'
+      `Missing supporting data for data change version 1`
     )
   })
 
   it('should not run job when already been run', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.7',
-        'distributedJobs.v0827SupportingData': {
+        'distributedJobs.supportingData': {
+          version: '1',
           data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
         }
       }
@@ -76,8 +74,7 @@ describe('Test runDistributedStartupJob', () => {
     config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
-        cdpEnvironment: 'local',
-        serviceVersion: '0.82.7'
+        cdpEnvironment: 'local'
       }
       return values[key]
     })
@@ -89,51 +86,47 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should throw when supporting data config returns null', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v0827SupportingData: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.82.7',
-        'distributedJobs.v0827SupportingData': null
+        'distributedJobs.supportingData': { version: '123', data: null }
       }
       return values[key]
     })
 
     await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      'Missing supporting data for service version 0.82.7'
+      `Missing supporting data for data change version 123`
     )
   })
 
-  it('should run job if config present but no data changes for service version', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { v000SupportingData: {} } })
+  it('should not run job if supporting version is not present', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion: '0.0.0',
-        'distributedJobs.v000SupportingData': {
+        'distributedJobs.supportingData': {
           data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
         }
       }
       return values[key]
     })
 
-    await runDistributedStartupJob(mockDB, mockLogger)
-
-    expect(mockDB.collection).toHaveBeenCalled()
-    expect(mockCollection.insertOne).toHaveBeenCalled()
+    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
+      'There is no version of the data'
+    )
   })
 
   it('should run job and executes data changes', async () => {
-    const serviceVersion = '0.82.7'
-    const supportingDataVersion = `v${serviceVersion.replaceAll('.', '')}SupportingData`
+    const supportingDataVersion = `supportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
-    config.getProperties.mockReturnValue({ distributedJobs: { [supportingDataVersion]: {} } })
+    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        serviceVersion,
         [supportingDataConfigKey]: {
+          version: '1',
           data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
         }
       }
@@ -144,7 +137,7 @@ describe('Test runDistributedStartupJob', () => {
 
     expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
     expect(mockCollection.insertOne).toHaveBeenCalledWith({
-      _id: serviceVersion,
+      _id: '1',
       environments: ['local', 'dev', 'prod'],
       lockedAt: expect.any(Date),
       type: 'startup'
