@@ -9,8 +9,44 @@ const mockCollection = { insertOne: jest.fn(() => {}) }
 const mockLogger = { info: jest.fn() }
 
 describe('Test runDistributedStartupJob', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('should not run job when cdpEnvironment is not local|dev|prod', async () => {
     config.get.mockImplementationOnce(() => 'not-run-env')
+
+    await runDistributedStartupJob(mockDB, mockLogger)
+
+    expect(mockDB.collection).not.toHaveBeenCalled()
+    expect(mockCollection.insertOne).not.toHaveBeenCalled()
+  })
+
+  it('should not run job when data is null', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: {} })
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': null
+      }
+      return values[key]
+    })
+
+    await runDistributedStartupJob(mockDB, mockLogger)
+
+    expect(mockDB.collection).not.toHaveBeenCalled()
+    expect(mockCollection.insertOne).not.toHaveBeenCalled()
+  })
+
+  it('should not run job when data is undefined', async () => {
+    config.getProperties.mockReturnValue({ distributedJobs: {} })
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': undefined
+      }
+      return values[key]
+    })
 
     await runDistributedStartupJob(mockDB, mockLogger)
 
@@ -23,7 +59,7 @@ describe('Test runDistributedStartupJob', () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
-        'distributedJobs.supportingData': null
+        'distributedJobs.supportingData': {}
       }
       return values[key]
     })
@@ -70,7 +106,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockLogger.info).not.toHaveBeenCalled()
   })
 
-  it('should run job but exit early when config not present', async () => {
+  it('should not run job but exit early when config not present', async () => {
     config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
@@ -81,8 +117,8 @@ describe('Test runDistributedStartupJob', () => {
 
     await runDistributedStartupJob(mockDB, mockLogger)
 
-    expect(mockDB.collection).toHaveBeenCalled()
-    expect(mockCollection.insertOne).toHaveBeenCalled()
+    expect(mockDB.collection).not.toHaveBeenCalled()
+    expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
   it('should throw when supporting data config returns null', async () => {

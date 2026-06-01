@@ -22,7 +22,8 @@ export const runDistributedStartupJob = async (db, logger) => {
   /** @type {{ data: Array, version: string } | null | undefined} */
   const dataChanges = config.get(supportingDataConfigKey)
 
-  if (dataChanges === null || dataChanges === undefined) {
+  if (dataChanges === null || dataChanges === undefined || Object.keys(dataChanges).length === 0) {
+    logger.info('No data changes')
     return
   }
 
