@@ -2,7 +2,13 @@ import { config } from '../config/config.js'
 import { getAndIncrementComplianceCheckCount } from '../repositories/compliance-check-count.js'
 import { STATUS } from 'ffc-ahwr-common-library'
 
-export const generateClaimStatus = async (visitDateAsString, logger, db) => {
+const isAgreementFlagged = (flags) => Array.isArray(flags) && flags.length > 0
+
+export const generateClaimStatus = async (visitDateAsString, logger, db, flags) => {
+  if (isAgreementFlagged(flags)) {
+    return STATUS.IN_CHECK
+  }
+
   if (isFeatureAssuranceEnabledAndStartedBeforeVisitDate(visitDateAsString)) {
     // feature assurance left here as option but specific implementation has been removed
     // if we want to bring it back, then call logic here

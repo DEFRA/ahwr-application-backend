@@ -148,7 +148,7 @@ describe('saveClaimAndRelatedData', () => {
       },
       '123456789'
     )
-    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb)
+    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb, [])
   })
 
   it('should save claim without herd', async () => {
@@ -183,6 +183,35 @@ describe('saveClaimAndRelatedData', () => {
     expect(result.isMultiHerdsClaim).toBe(false)
     expect(result.claim.status).toBe('APPROVED')
     expect(mockSession.endSession).toHaveBeenCalled()
+  })
+
+  it('threads agreement flags through to generateClaimStatus', async () => {
+    const flags = [{}]
+    const claimPayload = {
+      applicationReference: 'IAHW-8ZPZ-8CLI',
+      data: {
+        typeOfLivestock: 'beef',
+        dateOfVisit: '2025-01-01T00:00:00Z'
+      },
+      createdBy: 'admin',
+      type: 'REVIEW'
+    }
+
+    getAmount.mockResolvedValue(300)
+    isMultipleHerdsUserJourney.mockReturnValue(false)
+    generateClaimStatus.mockResolvedValue('IN_CHECK')
+    createClaim.mockResolvedValue({ insertedId: '6916f837292fe87d2bac0d5c' })
+
+    await saveClaimAndRelatedData({
+      db: mockDb,
+      sbi: '123456789',
+      claimPayload,
+      claimReference: 'REBC-O9UD-0025',
+      flags,
+      logger
+    })
+
+    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb, flags)
   })
 })
 

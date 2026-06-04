@@ -83,6 +83,7 @@ describe('savePoultryClaimAndRelatedData', () => {
       sbi: '123456789',
       claimPayload,
       claimReference: 'PORE-O9UD-0025',
+      flags: [],
       logger
     })
 
@@ -158,7 +159,56 @@ describe('savePoultryClaimAndRelatedData', () => {
       },
       '123456789'
     )
-    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb)
+    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb, [])
+  })
+
+  it('threads agreement flags through to generateClaimStatus', async () => {
+    const flags = [{}]
+    const claimPayload = {
+      applicationReference: 'POUL-8ZPZ-8CLI',
+      data: {
+        typesOfPoultry: ['broilers'],
+        dateOfVisit: '2025-01-01T00:00:00Z',
+        site: {
+          cph: '81/445/6789',
+          id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
+          name: 'Broilers Unit',
+          version: 1
+        }
+      },
+      createdBy: 'admin',
+      type: 'REVIEW'
+    }
+
+    processSite.mockResolvedValue({
+      claimSiteData: {
+        id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
+        name: 'Broilers Unit',
+        version: 1,
+        cph: '81/445/6789'
+      },
+      siteData: {
+        id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
+        version: 1,
+        species: 'poultry',
+        name: 'Broilers Unit',
+        cph: '81/445/6789'
+      },
+      created: true
+    })
+    generateClaimStatus.mockResolvedValue('IN_CHECK')
+    createClaim.mockResolvedValue({ insertedId: '6916f837292fe87d2bac0d5c' })
+
+    await savePoultryClaimAndRelatedData({
+      db: mockDb,
+      sbi: '123456789',
+      claimPayload,
+      claimReference: 'PORE-O9UD-0025',
+      flags,
+      logger
+    })
+
+    expect(generateClaimStatus).toHaveBeenCalledWith('2025-01-01T00:00:00Z', logger, mockDb, flags)
   })
 
   it('uses fixed poultry price for amount', async () => {

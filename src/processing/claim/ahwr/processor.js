@@ -18,6 +18,7 @@ const addClaimAndHerdToDatabase = async ({
   claimPayload,
   logger,
   isMultiHerdsClaim,
+  flags,
   db
 }) => {
   let herdGotUpdated
@@ -46,7 +47,7 @@ const addClaimAndHerdToDatabase = async ({
         herdGotUpdated = herdResult.updated
       }
 
-      const status = await generateClaimStatus(dateOfVisit, logger, db)
+      const status = await generateClaimStatus(dateOfVisit, logger, db, flags)
 
       const createdAt = new Date()
       claim = {
@@ -110,6 +111,7 @@ export async function saveClaimAndRelatedData({
     claimPayload,
     logger,
     isMultiHerdsClaim,
+    flags,
     db
   })
 
