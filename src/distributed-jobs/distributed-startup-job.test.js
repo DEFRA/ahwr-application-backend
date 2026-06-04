@@ -1,12 +1,18 @@
-import { runDistributedStartupJob } from './distributed-startup-job.js'
+import {
+  runDistributedStartupJob,
+  runDistributedStartupJobInBackground
+} from './distributed-startup-job.js'
+import { config } from '../config/config.js'
 
+jest.mock('../config/config.js')
 jest.mock('./data-changes/process_changes.js')
 
 const mockDB = { collection: jest.fn(() => mockCollection) }
 const mockCollection = { insertOne: jest.fn(() => {}) }
-const mockLogger = { info: jest.fn() }
+const mockChildLogger = { info: jest.fn() }
+const mockLogger = { info: jest.fn(), error: jest.fn(), child: jest.fn(() => mockChildLogger) }
 
-describe('Test runDistributedStartupJob', () => {
+describe('runDistributedStartupJob', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -148,5 +154,62 @@ describe('Test runDistributedStartupJob', () => {
       lockedAt: expect.any(Date),
       type: 'startup'
     })
+  })
+})
+
+describe('runDistributedStartupJobInBackground', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('reads config and passes values to runDistributedStartupJob', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': {
+          version: '1',
+          data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
+        }
+      }
+      return values[key]
+    })
+
+    await runDistributedStartupJobInBackground(mockDB, mockLogger)
+
+    expect(config.get).toHaveBeenCalledWith('cdpEnvironment')
+    expect(config.get).toHaveBeenCalledWith('distributedJobs.supportingData')
+    expect(mockLogger.child).toHaveBeenCalled()
+    expect(mockDB.collection).toHaveBeenCalledWith('distributed-job-locks')
+  })
+
+  it('logs error when job throws', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': {
+          data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
+        }
+      }
+      return values[key]
+    })
+
+    await runDistributedStartupJobInBackground(mockDB, mockLogger)
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'There is no version of the data' }),
+      'Distributed startup job error'
+    )
+  })
+
+  it('does not throw when job fails', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': { version: '1', data: null }
+      }
+      return values[key]
+    })
+
+    await expect(runDistributedStartupJobInBackground(mockDB, mockLogger)).resolves.not.toThrow()
   })
 })
