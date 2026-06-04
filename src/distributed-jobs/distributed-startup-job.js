@@ -34,8 +34,8 @@ export const runDistributedStartupJob = async (db, logger) => {
     throw new Error(`There is no version of the data`)
   }
 
-  if (Array.isArray(data) && data.length === 0) {
-    throw new Error(`Missing supporting data for data change version ${version}`)
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(`Missing data field for data change version ${version}`)
   }
 
   const hasAlreadyRun = await hasStartupJobAlreadyRun(version, environmentsJobWillRun, db)

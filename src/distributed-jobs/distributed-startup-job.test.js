@@ -81,20 +81,6 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when supporting data is default/empty', async () => {
-    config.get.mockImplementation((key) => {
-      const values = {
-        cdpEnvironment: 'local',
-        'distributedJobs.supportingData': { version: '1', data: [] }
-      }
-      return values[key]
-    })
-
-    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      `Missing supporting data for data change version 1`
-    )
-  })
-
   it('should not run job when already been run', async () => {
     config.get.mockImplementation((key) => {
       const values = {
@@ -115,7 +101,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockLogger.info).not.toHaveBeenCalled()
   })
 
-  it('should throw when supporting data config returns null', async () => {
+  it('should throw when data field returns null', async () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -125,11 +111,39 @@ describe('Test runDistributedStartupJob', () => {
     })
 
     await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
-      `Missing supporting data for data change version 123`
+      `Missing data field for data change version 123`
     )
   })
 
-  it('should not run job if supporting version is not present', async () => {
+  it('should throw when data field is default/empty', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': { version: '123', data: [] }
+      }
+      return values[key]
+    })
+
+    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
+      `Missing data field for data change version 123`
+    )
+  })
+
+  it('should throw when data field is not an array', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': { version: '123', data: {} }
+      }
+      return values[key]
+    })
+
+    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
+      `Missing data field for data change version 123`
+    )
+  })
+
+  it('should not run job if version field is not present', async () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -145,7 +159,7 @@ describe('Test runDistributedStartupJob', () => {
     )
   })
 
-  it('should not run job if supporting version is empty string', async () => {
+  it('should not run job if version field is empty string', async () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
