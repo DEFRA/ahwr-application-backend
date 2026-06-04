@@ -43,7 +43,7 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  logger.info(`Running distributed job, service version ${supportingVersion}`)
+  logger.info(`Running distributed job, data change version ${supportingVersion}`)
   await processChanges(supportingData, db, logger)
 }
 
