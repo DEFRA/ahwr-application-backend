@@ -145,6 +145,23 @@ describe('Test runDistributedStartupJob', () => {
     )
   })
 
+  it('should not run job if supporting version is empty string', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local',
+        'distributedJobs.supportingData': {
+          version: '',
+          data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
+        }
+      }
+      return values[key]
+    })
+
+    await expect(runDistributedStartupJob(mockDB, mockLogger)).rejects.toThrow(
+      'There is no version of the data'
+    )
+  })
+
   it('should run job and executes data changes', async () => {
     const supportingDataVersion = `supportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`

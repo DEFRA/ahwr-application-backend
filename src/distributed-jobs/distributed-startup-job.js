@@ -30,7 +30,7 @@ export const runDistributedStartupJob = async (db, logger) => {
   const supportingData = dataChanges?.data ?? []
   const supportingVersion = dataChanges?.version
 
-  if (supportingVersion === null || supportingVersion === undefined) {
+  if (!supportingVersion) {
     throw new Error(`There is no version of the data`)
   }
 
