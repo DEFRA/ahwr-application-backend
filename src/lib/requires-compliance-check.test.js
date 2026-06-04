@@ -127,4 +127,36 @@ describe('generateClaimStatus', () => {
 
     expect(result).toBe('ON_HOLD')
   })
+
+  describe('when the agreement is flagged', () => {
+    const activeFlags = [{}]
+
+    test('returns inCheck regardless of the compliance-check ratio', async () => {
+      mockConfig({ complianceCheckRatio: 5 })
+
+      const result = await generateClaimStatus('2025-06-01', mockLogger, mockDb, activeFlags)
+
+      expect(result).toBe('IN_CHECK')
+    })
+
+    test('does not consume a compliance-check slot', async () => {
+      mockConfig({ complianceCheckRatio: 5 })
+
+      await generateClaimStatus('2025-06-01', mockLogger, mockDb, activeFlags)
+
+      expect(getAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('when the agreement is not flagged', () => {
+    test('applies the ratio logic for an empty flags array', async () => {
+      mockConfig({ complianceCheckRatio: 5 })
+      getAndIncrementComplianceCheckCount.mockResolvedValue(5)
+
+      const result = await generateClaimStatus('2025-06-01', mockLogger, mockDb, [])
+
+      expect(result).toBe('IN_CHECK')
+      expect(getAndIncrementComplianceCheckCount).toHaveBeenCalledTimes(1)
+    })
+  })
 })

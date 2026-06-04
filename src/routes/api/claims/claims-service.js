@@ -92,6 +92,7 @@ const processPoultryClaim = async ({
   application,
   applicationReference,
   payload,
+  flags,
   data,
   logger,
   tempClaimReference,
@@ -121,6 +122,7 @@ const processPoultryClaim = async ({
     sbi,
     claimPayload: validatedPayload,
     claimReference,
+    flags,
     logger
   })
 
@@ -157,6 +159,7 @@ export const processClaim = async ({ payload, logger, db }) => {
       application,
       applicationReference,
       payload,
+      flags,
       data,
       logger,
       tempClaimReference,

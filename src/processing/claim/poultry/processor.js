@@ -15,6 +15,7 @@ const addClaimAndSiteToDatabase = async ({
   dateOfVisit,
   claimPayload,
   logger,
+  flags,
   db
 }) => {
   let siteCreated
@@ -39,7 +40,7 @@ const addClaimAndSiteToDatabase = async ({
       siteData = siteResult.siteData
       siteCreated = siteResult.created
 
-      const status = await generateClaimStatus(dateOfVisit, logger, db)
+      const status = await generateClaimStatus(dateOfVisit, logger, db, flags)
 
       const createdAt = new Date()
       claim = {
@@ -80,6 +81,7 @@ export async function savePoultryClaimAndRelatedData({
   sbi,
   claimPayload,
   claimReference,
+  flags,
   logger
 }) {
   const { dateOfVisit } = claimPayload.data
@@ -95,6 +97,7 @@ export async function savePoultryClaimAndRelatedData({
     dateOfVisit,
     claimPayload,
     logger,
+    flags,
     db
   })
 

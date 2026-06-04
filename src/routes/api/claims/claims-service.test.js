@@ -131,6 +131,7 @@ describe('processClaim', () => {
         sbi: '123456789',
         claimPayload: payload,
         claimReference: 'PORE-O9UD-0025',
+        flags: [],
         logger: mockLogger
       })
       expect(generatePoultryEventsAndComms).toHaveBeenCalledWith(
@@ -139,6 +140,26 @@ describe('processClaim', () => {
         herdData,
         'db32152a-724a-4c5d-8073-0901c8d307f7',
         true
+      )
+    })
+
+    test('passes agreement flags to savePoultryClaimAndRelatedData', async () => {
+      const flags = [{}]
+      const application = {
+        flags,
+        organisation: { sbi: '123456789' }
+      }
+      getApplication.mockResolvedValue(application)
+      savePoultryClaimAndRelatedData.mockResolvedValue({
+        claim: { reference: 'PORE-O9UD-0025' },
+        siteCreated: true,
+        herdData: {}
+      })
+
+      await processClaim({ payload, logger: mockLogger, db: mockDb })
+
+      expect(savePoultryClaimAndRelatedData).toHaveBeenCalledWith(
+        expect.objectContaining({ flags })
       )
     })
   })
@@ -288,6 +309,25 @@ describe('processClaim', () => {
         true,
         'db32152a-724a-4c5d-8073-0901c8d307f7'
       )
+    })
+
+    test('passes agreement flags to saveClaimAndRelatedData', async () => {
+      const flags = [{}]
+      const application = {
+        flags,
+        organisation: { sbi: '123456789' }
+      }
+      getApplication.mockResolvedValue(application)
+      mockIsURNNumberUnique(true)
+      saveClaimAndRelatedData.mockResolvedValue({
+        claim: { reference: 'REBC-O9UD-0025' },
+        isMultiHerdsClaim: false,
+        herdData: {}
+      })
+
+      await processClaim({ payload, logger: mockLogger, db: mockDb })
+
+      expect(saveClaimAndRelatedData).toHaveBeenCalledWith(expect.objectContaining({ flags }))
     })
 
     test('throws NotFound error when application does not exist', async () => {
