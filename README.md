@@ -282,7 +282,7 @@ The data changes will only work in local, dev and prod, and not other environmen
 
 No modification of the code is needed.
 
-An environment variable needs to be setup on the CDP portal (or local) with the name `DATA_CHANGE_DATA`. The variable will containe an JSON object with two keys, `version` and `data`. The value of `version` will be the number of the ticket. The `data` value will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
+An environment variable needs to be setup on the CDP portal (or local) with the name `DATA_CHANGE_DATA`. The variable will contain an JSON object with two keys, `version` and `data`. The value of `version` will be the number of the ticket. The `data` value will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
 
 The `version` is used to create a lock/register, so the same version is never deployed twice (needed, between other things, because of multiple instances).
 
