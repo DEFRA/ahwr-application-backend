@@ -11,7 +11,7 @@ describe('Test runDistributedStartupJob', () => {
     jest.clearAllMocks()
   })
 
-  it('should not run job when cdpEnvironment is not local|dev|prod', async () => {
+  it('does not run job when cdpEnvironment is not local|dev|prod', async () => {
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'not-run-env',
       dataChanges: null
@@ -21,7 +21,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when supporting data is null', async () => {
+  it('does not run job when supporting data is null', async () => {
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'local',
       dataChanges: null
@@ -31,7 +31,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when supporting data is undefined', async () => {
+  it('does not run job when supporting data is undefined', async () => {
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'local',
       dataChanges: undefined
@@ -41,7 +41,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when there is no data', async () => {
+  it('does not run job when there is no data', async () => {
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'local',
       dataChanges: {}
@@ -51,7 +51,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when already been run', async () => {
+  it('does not run job when already been run', async () => {
     mockCollection.insertOne.mockRejectedValueOnce('job already been run')
 
     await runDistributedStartupJob(mockDB, mockLogger, {
@@ -67,7 +67,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockLogger.info).not.toHaveBeenCalled()
   })
 
-  it('should not run job when data field returns null', async () => {
+  it('does not run job when data field returns null', async () => {
     await expect(
       runDistributedStartupJob(mockDB, mockLogger, {
         environment: 'local',
@@ -79,7 +79,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when data field is default/empty', async () => {
+  it('does not run job when data field is default/empty', async () => {
     await expect(
       runDistributedStartupJob(mockDB, mockLogger, {
         environment: 'local',
@@ -91,7 +91,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job  when data field is not an array', async () => {
+  it('does not run job  when data field is not an array', async () => {
     await expect(
       runDistributedStartupJob(mockDB, mockLogger, {
         environment: 'local',
@@ -103,7 +103,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when version field is not present', async () => {
+  it('does not run job when version field is not present', async () => {
     await expect(
       runDistributedStartupJob(mockDB, mockLogger, {
         environment: 'local',
@@ -117,7 +117,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when version field is empty string', async () => {
+  it('does not run job when version field is empty string', async () => {
     await expect(
       runDistributedStartupJob(mockDB, mockLogger, {
         environment: 'local',
@@ -132,7 +132,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should run job and executes data changes', async () => {
+  it('runs job and executes data changes', async () => {
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'local',
       dataChanges: {
