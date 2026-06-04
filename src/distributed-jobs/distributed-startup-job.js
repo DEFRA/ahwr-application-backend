@@ -2,25 +2,27 @@ import { config } from '../config/config.js'
 import { processChanges } from './data-changes/process_changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
+  const environment = config.get('cdpEnvironment')
+  const dataChanges = config.get('distributedJobs.supportingData')
+
   try {
-    await runDistributedStartupJob(db, logger.child({}))
+    await runDistributedStartupJob(db, logger.child({}), { environment, dataChanges })
   } catch (error) {
     logger.error(error, 'Distributed startup job error')
   }
 }
 
-export const runDistributedStartupJob = async (db, logger) => {
+/**
+ * @param {object} db
+ * @param {object} logger
+ * @param {{ environment: string, dataChanges: { data: Array, version: string } | null | undefined }} configValues
+ */
+export const runDistributedStartupJob = async (db, logger, { environment, dataChanges }) => {
   const environmentsJobWillRun = ['local', 'dev', 'prod']
-  const environment = config.get('cdpEnvironment')
 
   if (!environmentsJobWillRun.includes(environment)) {
     return
   }
-
-  const supportingDataConfigKey = `distributedJobs.supportingData`
-
-  /** @type {{ data: Array, version: string } | null | undefined} */
-  const dataChanges = config.get(supportingDataConfigKey)
 
   if (dataChanges === null || dataChanges === undefined || Object.keys(dataChanges).length === 0) {
     logger.info('No data changes')
