@@ -2,46 +2,51 @@ import { config } from '../config/config.js'
 import { processChanges } from './data-changes/process_changes.js'
 
 export const runDistributedStartupJobInBackground = async (db, logger) => {
+  const environment = config.get('cdpEnvironment')
+  const dataChanges = config.get('distributedJobs.supportingData')
+
   try {
-    await runDistributedStartupJob(db, logger.child({}))
+    await runDistributedStartupJob(db, logger.child({}), { environment, dataChanges })
   } catch (error) {
     logger.error(error, 'Distributed startup job error')
   }
 }
 
-export const runDistributedStartupJob = async (db, logger) => {
+/**
+ * @param {object} db
+ * @param {object} logger
+ * @param {{ environment: string, dataChanges: { data: Array, version: string } | null | undefined }} configValues
+ */
+export const runDistributedStartupJob = async (db, logger, { environment, dataChanges }) => {
   const environmentsJobWillRun = ['local', 'dev', 'prod']
-  const environment = config.get('cdpEnvironment')
 
   if (!environmentsJobWillRun.includes(environment)) {
     return
   }
 
-  const serviceVersion = config.get('serviceVersion')
-  const supportingDataVersion = `v${serviceVersion?.replaceAll('.', '')}SupportingData`
-  const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
-
-  if (isNotDataChangeVersion(supportingDataVersion)) {
+  if (dataChanges === null || dataChanges === undefined || Object.keys(dataChanges).length === 0) {
+    logger.info('No data changes')
     return
   }
 
-  const supportingData = config.get(supportingDataConfigKey)?.data ?? {}
-  if (Object.keys(supportingData).length === 0) {
-    throw new Error(`Missing supporting data for service version ${serviceVersion}`)
+  const data = dataChanges?.data
+  const version = dataChanges?.version
+
+  if (!version) {
+    throw new Error(`There is no version of the data`)
   }
 
-  const hasAlreadyRun = await hasStartupJobAlreadyRun(serviceVersion, environmentsJobWillRun, db)
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(`Missing data field for data change version ${version}`)
+  }
+
+  const hasAlreadyRun = await hasStartupJobAlreadyRun(version, environmentsJobWillRun, db)
   if (hasAlreadyRun) {
     return
   }
 
-  logger.info(`Running distributed job, service version ${serviceVersion}`)
-  await performDataChanges(serviceVersion, supportingData, db, logger)
-}
-
-const isNotDataChangeVersion = (configKey) => {
-  const schema = config.getProperties().distributedJobs
-  return !(configKey in schema)
+  logger.info(`Running distributed job, data change version ${version}`)
+  await processChanges(data, db, logger)
 }
 
 const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
@@ -61,12 +66,4 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
   }
 
   return hasRun
-}
-
-const performDataChanges = async (serviceVersion, supportingData, db, logger) => {
-  if (serviceVersion === '0.82.7') {
-    await processChanges(supportingData, db, logger)
-  } else {
-    logger.info(`No data changes found for service version ${serviceVersion}`)
-  }
 }

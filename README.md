@@ -276,20 +276,17 @@ You can view the reports at [Sonarcloud](https://sonarcloud.io/project/overview?
 
 ## Data Changes
 
-Until the backoffice is setup for data changes it is necessary to run them on deployment. The changes only run if the version of the application is correct, and they have not been run before.
+Until the backoffice is setup for data changes it is necessary to run them on deployment. The changes only run if the environment variable is correct, and they have not been run before.
 
 The data changes will only work in local, dev and prod, and not other environments.
 
-Three files need to be changed:
+No modification of the code is needed.
 
-- src/config/config.js
-  Where we will want to change the entry for the distributedJobs
-- src/distributed-jobs/distributed-startup-job.js
-  We need to change the serviceVersion we are checking against
-- src/distributed-jobs/distributed-startup-job.test.js
-  We need to change appropiately the version numbers for the tests to pass
+An environment variable needs to be setup on the CDP portal (or local) with the name `DATA_CHANGE_DATA`. The variable will contain an JSON object with two keys, `version` and `data`. The value of `version` will be the number of the ticket. The `data` value will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
 
-An environment variables will need to be setup with the name that appears on src/config/config.js. The variable will containe an JSON object with a single key called `data` and the value of it will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
+The `version` is used to create a lock/register, so the same version is never deployed twice (needed, between other things, because of multiple instances).
+
+If for any reason there was a problem with the data you will want to add to `version` `-{n}` where `{n}` is just an incremented number.
 
 ## Licence
 
