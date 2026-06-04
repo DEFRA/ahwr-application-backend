@@ -22,7 +22,7 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when data is null', async () => {
+  it('should not run job when supporting data is null', async () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -37,11 +37,25 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
-  it('should not run job when data is undefined', async () => {
+  it('should not run job when supporting data is undefined', async () => {
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
         'distributedJobs.supportingData': undefined
+      }
+      return values[key]
+    })
+
+    await runDistributedStartupJob(mockDB, mockLogger)
+
+    expect(mockDB.collection).not.toHaveBeenCalled()
+    expect(mockCollection.insertOne).not.toHaveBeenCalled()
+  })
+
+  it('should not run job when supporting data not present', async () => {
+    config.get.mockImplementation((key) => {
+      const values = {
+        cdpEnvironment: 'local'
       }
       return values[key]
     })
@@ -99,20 +113,6 @@ describe('Test runDistributedStartupJob', () => {
     expect(mockDB.collection).toHaveBeenCalled()
     expect(mockCollection.insertOne).toHaveBeenCalled()
     expect(mockLogger.info).not.toHaveBeenCalled()
-  })
-
-  it('should not run job but exit early when config not present', async () => {
-    config.get.mockImplementation((key) => {
-      const values = {
-        cdpEnvironment: 'local'
-      }
-      return values[key]
-    })
-
-    await runDistributedStartupJob(mockDB, mockLogger)
-
-    expect(mockDB.collection).not.toHaveBeenCalled()
-    expect(mockCollection.insertOne).not.toHaveBeenCalled()
   })
 
   it('should throw when supporting data config returns null', async () => {

@@ -27,24 +27,24 @@ export const runDistributedStartupJob = async (db, logger) => {
     return
   }
 
-  const supportingData = dataChanges?.data ?? []
-  const supportingVersion = dataChanges?.version
+  const data = dataChanges?.data ?? []
+  const version = dataChanges?.version
 
-  if (!supportingVersion) {
+  if (!version) {
     throw new Error(`There is no version of the data`)
   }
 
-  if (Array.isArray(supportingData) && supportingData.length === 0) {
-    throw new Error(`Missing supporting data for data change version ${supportingVersion}`)
+  if (Array.isArray(data) && data.length === 0) {
+    throw new Error(`Missing supporting data for data change version ${version}`)
   }
 
-  const hasAlreadyRun = await hasStartupJobAlreadyRun(supportingVersion, environmentsJobWillRun, db)
+  const hasAlreadyRun = await hasStartupJobAlreadyRun(version, environmentsJobWillRun, db)
   if (hasAlreadyRun) {
     return
   }
 
-  logger.info(`Running distributed job, data change version ${supportingVersion}`)
-  await processChanges(supportingData, db, logger)
+  logger.info(`Running distributed job, data change version ${version}`)
+  await processChanges(data, db, logger)
 }
 
 const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, db) => {
