@@ -29,7 +29,7 @@ export const runDistributedStartupJob = async (db, logger, { environment, dataCh
     return
   }
 
-  const data = dataChanges?.data ?? []
+  const data = dataChanges?.data
   const version = dataChanges?.version
 
   if (!version) {
