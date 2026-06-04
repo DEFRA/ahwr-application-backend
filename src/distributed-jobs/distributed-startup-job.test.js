@@ -23,7 +23,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when data is null', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -39,7 +38,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when data is undefined', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -55,7 +53,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when there is no data', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -71,7 +68,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when supporting data is default/empty', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -86,7 +82,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job when already been run', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -107,7 +102,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job but exit early when config not present', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: {} })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local'
@@ -122,7 +116,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should throw when supporting data config returns null', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -137,7 +130,6 @@ describe('Test runDistributedStartupJob', () => {
   })
 
   it('should not run job if supporting version is not present', async () => {
-    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
@@ -157,7 +149,6 @@ describe('Test runDistributedStartupJob', () => {
     const supportingDataVersion = `supportingData`
     const supportingDataConfigKey = `distributedJobs.${supportingDataVersion}`
 
-    config.getProperties.mockReturnValue({ distributedJobs: { supportingData: {} } })
     config.get.mockImplementation((key) => {
       const values = {
         cdpEnvironment: 'local',
