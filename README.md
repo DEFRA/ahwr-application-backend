@@ -284,9 +284,21 @@ No modification of the code is needed.
 
 An environment variable needs to be setup on the CDP portal (or local) with the name `DATA_CHANGE_DATA`. The variable will contain an JSON object with two keys, `version` and `data`. The value of `version` will be the number of the ticket. The `data` value will be an array of objects as per the definition found in src/distributed-jobs/data-changes/schema.js
 
+There cannot be spaces at all due to limitations of the CDP portal.
+
 The `version` is used to create a lock/register, so the same version is never deployed twice (needed, between other things, because of multiple instances).
 
 If for any reason there was a problem with the data you will want to add to `version` `-{n}` where `{n}` is just an incremented number.
+
+### Examples
+
+Deleting records:
+{"version":"1907","data":[{"claimRef":"FUDC-7F88-40CB","sbi":"106438775","applicationRef":"IAHW-1169-3902","action":"deletion","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"}, {"claimRef":"FUDC-7F88-40AD","sbi":"106438888","applicationRef":"IAHW-1169-4000","action":"deletion","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"}]}
+
+Changing values:
+{"version":"1908","data":[{"claimRef":"FUDC-7F88-40CB","sbi":"106438775","applicationRef":"IAHW-1169-3902","field":"laboratoryURN","oldValue":"ab12345","newValue":"cd6789","action":"fieldChange","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"},{"claimRef":"FUSH-1E7B-8C83","sbi":"106908592","applicationRef":"IAHW-1467-F90C","field":"laboratoryURN","oldValue":"7300929","newValue":"ABC12345","action":"fieldChange","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"}]}
+
+Although the examples are separated, they can be mix and matched.
 
 ## Licence
 
