@@ -14,7 +14,6 @@
     "docker:dev": "npm run dev",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
-    "git:pre-push-hook": "npm run format:check && npm run lint && npm test",
     "lint": "eslint --cache --cache-strategy content \"**/*.{cjs,js}\"",
     "lint:deps": "knip --production --include dependencies,unlisted,unresolved",
     "lint:fix": "npm run lint -- --fix",
