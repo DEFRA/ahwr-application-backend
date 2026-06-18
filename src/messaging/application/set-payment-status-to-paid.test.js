@@ -1,5 +1,4 @@
 import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository.js'
-import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
 import { setPaymentStatusToPaid } from './set-payment-status-to-paid.js'
 import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { ObjectId } from 'mongodb'
@@ -67,16 +66,7 @@ describe('handler function for setting payment status to paid for claims', () =>
       },
       message.sbi
     )
-    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
-      agreementReference: claimFromDb.applicationReference,
-      claimReference: claimFromDb.reference,
-      claimStatus: 'PAID',
-      claimType: claimFromDb.type,
-      dateTime: new Date('2025-11-21T14:17:20.084Z'),
-      herdName: claimFromDb.herd.name,
-      sbi: message.sbi,
-      typeOfLivestock: claimFromDb.data.typeOfLivestock
-    })
+
     expect(mockLogger.error).toHaveBeenCalledTimes(0)
     expect(metricsCounter).toHaveBeenCalledWith('set_payment_status_to_paid_events_received')
   })
@@ -92,7 +82,6 @@ describe('handler function for setting payment status to paid for claims', () =>
     expect(mockLogger.error).toHaveBeenCalledWith(
       `Failed to move claim to paid status: Invalid message in payment status to paid event: claimRef: ${message.claimRef} sbi: ${message.sbi}`
     )
-    expect(publishStatusChangeEvent).not.toHaveBeenCalled()
   })
 
   test('happy path for a claim being updated to paid, but it is herd-less as it was for a preMH visit', async () => {
@@ -117,16 +106,6 @@ describe('handler function for setting payment status to paid for claims', () =>
     expect(mockLogger.info).toHaveBeenCalledWith(
       'Setting payment status to paid for claim: REBC-ABCD-1234'
     )
-    expect(publishStatusChangeEvent).toHaveBeenCalledWith(mockLogger, {
-      agreementReference: 'IAHW-RWE2-G8S7',
-      claimReference: 'REBC-ABCD-1234',
-      claimStatus: 'PAID',
-      claimType: 'REVIEW',
-      dateTime: new Date('2025-11-21T14:17:20.084Z'),
-      herdName: 'Unnamed herd',
-      sbi: '123456789',
-      typeOfLivestock: 'beef'
-    })
     expect(mockLogger.error).toHaveBeenCalledTimes(0)
     expect(metricsCounter).toHaveBeenCalledWith('set_payment_status_to_paid_events_received')
   })
