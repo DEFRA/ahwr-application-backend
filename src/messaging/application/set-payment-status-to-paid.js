@@ -1,7 +1,6 @@
 import { validateClaimStatusToPaidEvent } from '../schema/set-payment-status-to-paid-schema.js'
 import { getClaimByReference, updateClaimStatus } from '../../repositories/claim-repository.js'
-import { TYPE_OF_LIVESTOCK, UNNAMED_FLOCK, UNNAMED_HERD, STATUS } from 'ffc-ahwr-common-library'
-import { publishStatusChangeEvent } from '../publish-outbound-notification.js'
+import { STATUS } from 'ffc-ahwr-common-library'
 import { raiseClaimEvents } from '../../event-publisher/index.js'
 import { metricsCounter } from '../../common/helpers/metrics.js'
 
@@ -26,14 +25,6 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
         updatedAt: new Date()
       })
 
-      const {
-        applicationReference,
-        status,
-        type,
-        data: { typeOfLivestock },
-        herd
-      } = updatedClaim
-
       await raiseClaimEvents(
         {
           message: 'Claim has been updated',
@@ -44,18 +35,6 @@ export const setPaymentStatusToPaid = async (message, db, logger) => {
         },
         sbi
       )
-      const statusChangeMessage = {
-        sbi,
-        agreementReference: applicationReference,
-        claimReference: claimRef,
-        claimStatus: status,
-        claimType: type,
-        typeOfLivestock,
-        dateTime: updatedClaim.updatedAt,
-        herdName:
-          herd?.name || (typeOfLivestock === TYPE_OF_LIVESTOCK.SHEEP ? UNNAMED_FLOCK : UNNAMED_HERD)
-      }
-      await publishStatusChangeEvent(logger, statusChangeMessage)
     } else {
       throw new Error(
         `Invalid message in payment status to paid event: claimRef: ${message.claimRef} sbi: ${message.sbi}`
