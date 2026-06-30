@@ -12,7 +12,8 @@ import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
 // Fields that are versioned on the herd rather than stored on the claim data
 const HERD_PROPERTY_BY_FIELD = {
   herdReasons: 'reasons',
-  herdCph: 'cph'
+  herdCph: 'cph',
+  herdName: 'name'
 }
 
 /**

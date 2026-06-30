@@ -34,6 +34,13 @@ const herdCphChange = {
   oldValue: '12/345/6789'
 }
 
+const herdNameChange = {
+  ...herdChange,
+  field: 'herdName',
+  newValue: 'Renamed Herd',
+  oldValue: 'Commercial Herd'
+}
+
 const changeOfDataField = {
   claimRef: 'RESH-VASQ-XIXS',
   sbi: '107695939',
@@ -626,6 +633,98 @@ describe('herd changes', () => {
           herdName: 'Commercial Herd',
           herdSpecies: 'beef',
           herdCph: '13/456/7890',
+          herdReasonManagementNeeds: false,
+          herdReasonUniqueHealth: true,
+          herdReasonDifferentBreed: false,
+          herdReasonOtherPurpose: false,
+          herdReasonKeptSeparate: false,
+          herdReasonOnlyHerd: false,
+          herdReasonOther: false
+        },
+        raisedBy: 'Admin2',
+        raisedOn: expect.any(String)
+      })
+    })
+  })
+
+  describe('changing the herd name', () => {
+    test('We can change the herd name', async () => {
+      const results = await processChanges([herdNameChange], mockDb, mockLogger)
+
+      expect(results[0]).toEqual({ ...herdNameChange, success: true })
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `${herdNameChange.claimRef} has processed successfully`
+      )
+    })
+
+    test('A new herd version is created carrying the new name, cph and reasons unchanged', async () => {
+      await processChanges([herdNameChange], mockDb, mockLogger)
+
+      expect(mockInsertOne).toHaveBeenCalledWith({
+        id: 'herd-abc-123',
+        version: 2,
+        applicationReference: herdChange.applicationRef,
+        name: 'Renamed Herd',
+        species: 'beef',
+        cph: '12/345/6789',
+        reasons: ['uniqueHealthNeeds'],
+        isCurrent: true,
+        createdBy: 'Admin2',
+        updatedAt: {},
+        createdAt: expect.any(Date)
+      })
+    })
+
+    test('The claim is updated with the new herd version', async () => {
+      await processChanges([herdNameChange], mockDb, mockLogger)
+
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        { reference: herdChange.claimRef },
+        {
+          $set: {
+            'herd.id': 'herd-abc-123',
+            'herd.version': 2,
+            'herd.associatedAt': expect.any(Date),
+            'herd.name': 'Renamed Herd',
+            'herd.cph': '12/345/6789',
+            'herd.reasons': ['uniqueHealthNeeds'],
+            updatedBy: 'Admin2',
+            updatedAt: expect.any(Date)
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              note: `Requested on ${herdNameChange.dateRequested} by ${herdNameChange.requester}`,
+              updatedProperty: 'herdName',
+              newValue: 'Renamed Herd',
+              oldValue: 'Commercial Herd',
+              eventType: 'claim-herdName',
+              createdBy: 'Admin2',
+              createdAt: expect.any(Date)
+            }
+          }
+        }
+      )
+    })
+
+    test('A herd event for the new version is sent with the new name and the existing reasons', async () => {
+      await processChanges([herdNameChange], mockDb, mockLogger)
+
+      expect(mockPublishEvent).toHaveBeenCalledWith({
+        name: 'send-session-event',
+        id: expect.any(String),
+        sbi: herdChange.sbi,
+        cph: 'n/a',
+        checkpoint: expect.any(String),
+        status: 'success',
+        type: 'herd-versionCreated',
+        message: 'New herd version created',
+        data: {
+          herdId: 'herd-abc-123',
+          herdVersion: 2,
+          herdName: 'Renamed Herd',
+          herdSpecies: 'beef',
+          herdCph: '12/345/6789',
           herdReasonManagementNeeds: false,
           herdReasonUniqueHealth: true,
           herdReasonDifferentBreed: false,
