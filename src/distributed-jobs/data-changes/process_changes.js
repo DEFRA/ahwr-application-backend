@@ -9,6 +9,12 @@ import {
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
 
+// Fields that are versioned on the herd rather than stored on the claim data
+const HERD_PROPERTY_BY_FIELD = {
+  herdReasons: 'reasons',
+  herdCph: 'cph'
+}
+
 /**
  * @typedef {object} Change
  * @property {string} claimRef - The claim reference
@@ -52,7 +58,7 @@ export const processChanges = async (changesToProcess, db, logger) => {
         case TYPE_OF_CHANGE.DELETION:
           return processDeletion(change, db)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
-          if (change.field === 'herdReasons') {
+          if (HERD_PROPERTY_BY_FIELD[change.field]) {
             return processHerdChange(change, db)
           } else {
             return processDataChange(change, db)
@@ -148,6 +154,7 @@ const processDataChange = async (change, db) => {
 
 const processHerdChange = async (change, db) => {
   const raisedBy = 'Admin2'
+  const herdProperty = HERD_PROPERTY_BY_FIELD[change.field]
   try {
     const claim = await getClaimByReference(db, change.claimRef)
     const herd = await getHerdById(db, claim.herd.id)
@@ -164,13 +171,13 @@ const processHerdChange = async (change, db) => {
     herd.createdBy = raisedBy
     herd.updatedAt = {}
     herd.version = herd.version + 1
-    herd.reasons = change.newValue
+    herd[herdProperty] = change.newValue
     //We are creating a new version with the new field
     await createHerd(db, herd)
 
     const claimHerdData = claim.herd
     claimHerdData.version = herd.version
-    claimHerdData.reasons = herd.reasons
+    claimHerdData[herdProperty] = herd[herdProperty]
     claimHerdData.associatedAt = new Date()
 
     await updateHerd({
