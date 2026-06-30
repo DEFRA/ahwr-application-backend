@@ -200,13 +200,13 @@ const processHerdChange = async (change, db) => {
         herdName: herd.name,
         herdSpecies: herd.species,
         herdCph: herd.cph,
-        herdReasonManagementNeeds: false,
-        herdReasonUniqueHealth: false,
-        herdReasonDifferentBreed: false,
-        herdReasonOtherPurpose: false,
-        herdReasonKeptSeparate: false,
-        herdReasonOnlyHerd: true,
-        herdReasonOther: false
+        herdReasonManagementNeeds: herd.reasons.includes('separateManagementNeeds'),
+        herdReasonUniqueHealth: herd.reasons.includes('uniqueHealthNeeds'),
+        herdReasonDifferentBreed: herd.reasons.includes('differentBreed'),
+        herdReasonOtherPurpose: herd.reasons.includes('differentPurpose'),
+        herdReasonKeptSeparate: herd.reasons.includes('keptSeparate'),
+        herdReasonOnlyHerd: herd.reasons.includes('onlyHerd'),
+        herdReasonOther: herd.reasons.includes('other')
       }
     })
 

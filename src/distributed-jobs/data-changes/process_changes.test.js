@@ -1,3 +1,4 @@
+import { MULTIPLE_HERD_REASONS } from 'ffc-ahwr-common-library'
 import { CLAIMS_COLLECTION, HERDS_COLLECTION } from '../../constants/index.js'
 import { processChanges } from './process_changes.js'
 import { getFcpEventPublisher } from '../../messaging/fcp-messaging-service.js'
@@ -339,6 +340,34 @@ describe('herd changes', () => {
     mockFindOneAndUpdate.mockResolvedValue({ reference: herdChange.claimRef })
   })
 
+  // The reasons are passed as the keys of MULTIPLE_HERD_REASONS, plus 'onlyHerd'
+  // which we keep as an option even though it is not part of the common library.
+  const flagForReason = {
+    separateManagementNeeds: 'herdReasonManagementNeeds',
+    uniqueHealthNeeds: 'herdReasonUniqueHealth',
+    differentBreed: 'herdReasonDifferentBreed',
+    differentPurpose: 'herdReasonOtherPurpose',
+    keptSeparate: 'herdReasonKeptSeparate',
+    other: 'herdReasonOther',
+    onlyHerd: 'herdReasonOnlyHerd'
+  }
+
+  const allReasonsFalse = {
+    herdReasonManagementNeeds: false,
+    herdReasonUniqueHealth: false,
+    herdReasonDifferentBreed: false,
+    herdReasonOtherPurpose: false,
+    herdReasonKeptSeparate: false,
+    herdReasonOnlyHerd: false,
+    herdReasonOther: false
+  }
+
+  const reasonScenarios = [...Object.keys(MULTIPLE_HERD_REASONS), 'onlyHerd'].map((reason) => ({
+    reason,
+    change: { ...herdChange, newValue: [reason] },
+    expectedFlags: { ...allReasonsFalse, [flagForReason[reason]]: true }
+  }))
+
   test('We can change a herd field', async () => {
     const results = await processChanges([herdChange], mockDb, mockLogger)
 
@@ -348,96 +377,99 @@ describe('herd changes', () => {
     )
   })
 
-  test('When we change a herd field, the herd gets changed', async () => {
-    await processChanges([herdChange], mockDb, mockLogger)
+  test.each(reasonScenarios)(
+    'When we change a herd field to "$reason", the herd gets changed',
+    async ({ reason, change }) => {
+      await processChanges([change], mockDb, mockLogger)
 
-    expect(mockDb.collection).toHaveBeenCalledWith(HERDS_COLLECTION)
-    // The current herd version is read
-    expect(mockFindOne).toHaveBeenCalledWith({ id: 'herd-abc-123', isCurrent: true })
-    // The current herd version is no longer marked as current
-    expect(mockUpdateOne).toHaveBeenCalledWith(
-      { id: 'herd-abc-123', version: 1 },
-      { $set: { isCurrent: false } }
-    )
-    // A new herd version is created carrying the new reasons
-    expect(mockInsertOne).toHaveBeenCalledWith({
-      id: 'herd-abc-123',
-      version: 2,
-      applicationReference: herdChange.applicationRef,
-      name: 'Commercial Herd',
-      species: 'beef',
-      cph: '12/345/6789',
-      reasons: ['onlyHerd'],
-      isCurrent: true,
-      createdBy: 'Admin2',
-      updatedAt: {},
-      createdAt: expect.any(Date)
-    })
-  })
+      expect(mockDb.collection).toHaveBeenCalledWith(HERDS_COLLECTION)
+      // The current herd version is read
+      expect(mockFindOne).toHaveBeenCalledWith({ id: 'herd-abc-123', isCurrent: true })
+      // The current herd version is no longer marked as current
+      expect(mockUpdateOne).toHaveBeenCalledWith(
+        { id: 'herd-abc-123', version: 1 },
+        { $set: { isCurrent: false } }
+      )
+      // A new herd version is created carrying the new reasons
+      expect(mockInsertOne).toHaveBeenCalledWith({
+        id: 'herd-abc-123',
+        version: 2,
+        applicationReference: herdChange.applicationRef,
+        name: 'Commercial Herd',
+        species: 'beef',
+        cph: '12/345/6789',
+        reasons: [reason],
+        isCurrent: true,
+        createdBy: 'Admin2',
+        updatedAt: {},
+        createdAt: expect.any(Date)
+      })
+    }
+  )
 
-  test('When we change a herd field, the claim is updated with the new herd version', async () => {
-    await processChanges([herdChange], mockDb, mockLogger)
+  test.each(reasonScenarios)(
+    'When we change a herd field to "$reason", the claim is updated with the new herd version',
+    async ({ change }) => {
+      await processChanges([change], mockDb, mockLogger)
 
-    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
-    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
-      { reference: herdChange.claimRef },
-      {
-        $set: {
-          'herd.id': 'herd-abc-123',
-          'herd.version': 2,
-          'herd.associatedAt': expect.any(Date),
-          'herd.name': 'Commercial Herd',
-          'herd.cph': '12/345/6789',
-          'herd.reasons': ['onlyHerd'],
-          updatedBy: 'Admin2',
-          updatedAt: expect.any(Date)
-        },
-        $push: {
-          updateHistory: {
-            id: expect.any(String),
-            note: `Requested on ${herdChange.dateRequested} by ${herdChange.requester}`,
-            updatedProperty: herdChange.field,
-            newValue: herdChange.newValue,
-            oldValue: herdChange.oldValue,
-            eventType: 'claim-herdReasons',
-            createdBy: 'Admin2',
-            createdAt: expect.any(Date)
+      expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        { reference: herdChange.claimRef },
+        {
+          $set: {
+            'herd.id': 'herd-abc-123',
+            'herd.version': 2,
+            'herd.associatedAt': expect.any(Date),
+            'herd.name': 'Commercial Herd',
+            'herd.cph': '12/345/6789',
+            'herd.reasons': change.newValue,
+            updatedBy: 'Admin2',
+            updatedAt: expect.any(Date)
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              note: `Requested on ${herdChange.dateRequested} by ${herdChange.requester}`,
+              updatedProperty: herdChange.field,
+              newValue: change.newValue,
+              oldValue: herdChange.oldValue,
+              eventType: 'claim-herdReasons',
+              createdBy: 'Admin2',
+              createdAt: expect.any(Date)
+            }
           }
         }
-      }
-    )
-  })
+      )
+    }
+  )
 
-  test('When we change a herd field, a herd event for the new version is sent', async () => {
-    await processChanges([herdChange], mockDb, mockLogger)
+  test.each(reasonScenarios)(
+    'When we change a herd field to "$reason", a herd event for the new version is sent',
+    async ({ change, expectedFlags }) => {
+      await processChanges([change], mockDb, mockLogger)
 
-    expect(mockPublishEvent).toHaveBeenCalledWith({
-      name: 'send-session-event',
-      id: expect.any(String),
-      sbi: herdChange.sbi,
-      cph: 'n/a',
-      checkpoint: expect.any(String),
-      status: 'success',
-      type: 'herd-versionCreated',
-      message: 'New herd version created',
-      data: {
-        herdId: 'herd-abc-123',
-        herdVersion: 2,
-        herdName: 'Commercial Herd',
-        herdSpecies: 'beef',
-        herdCph: '12/345/6789',
-        herdReasonManagementNeeds: false,
-        herdReasonUniqueHealth: false,
-        herdReasonDifferentBreed: false,
-        herdReasonOtherPurpose: false,
-        herdReasonKeptSeparate: false,
-        herdReasonOnlyHerd: true,
-        herdReasonOther: false
-      },
-      raisedBy: 'Admin2',
-      raisedOn: expect.any(String)
-    })
-  })
+      expect(mockPublishEvent).toHaveBeenCalledWith({
+        name: 'send-session-event',
+        id: expect.any(String),
+        sbi: herdChange.sbi,
+        cph: 'n/a',
+        checkpoint: expect.any(String),
+        status: 'success',
+        type: 'herd-versionCreated',
+        message: 'New herd version created',
+        data: {
+          herdId: 'herd-abc-123',
+          herdVersion: 2,
+          herdName: 'Commercial Herd',
+          herdSpecies: 'beef',
+          herdCph: '12/345/6789',
+          ...expectedFlags
+        },
+        raisedBy: 'Admin2',
+        raisedOn: expect.any(String)
+      })
+    }
+  )
 
   test('When we change a herd field, a herd event for the change is sent', async () => {
     await processChanges([herdChange], mockDb, mockLogger)
