@@ -1,4 +1,4 @@
-import { CLAIMS_COLLECTION } from '../../constants/index.js'
+import { CLAIMS_COLLECTION, HERDS_COLLECTION } from '../../constants/index.js'
 import { processChanges } from './process_changes.js'
 import { getFcpEventPublisher } from '../../messaging/fcp-messaging-service.js'
 import { TYPE_OF_CHANGE } from './schema.js'
@@ -14,15 +14,17 @@ const deletion = {
   requester: 'Some_One'
 }
 
-// const herdChange = {
-//   claimRef: 'FUBC-JTTU-SDQ7',
-//   sbi: '123456789',
-//   applicationRef: 'IAHW-G7B4-UTZ5',
-//   field: 'herdReasons',
-//   newValue: ['onlyHerd'],
-//   oldValue: ['uniqueHealthNeeds'],
-//   action: TYPE_OF_CHANGE.FIELD_CHANGE
-// }
+const herdChange = {
+  claimRef: 'FUBC-JTTU-SDQ7',
+  sbi: '123456789',
+  applicationRef: 'IAHW-G7B4-UTZ5',
+  field: 'herdReasons',
+  dateRequested: '2025-12-12T00:00:00.000Z',
+  requester: 'Some_One',
+  newValue: ['onlyHerd'],
+  oldValue: ['uniqueHealthNeeds'],
+  action: TYPE_OF_CHANGE.FIELD_CHANGE
+}
 
 const changeOfDataField = {
   claimRef: 'RESH-VASQ-XIXS',
@@ -70,7 +72,16 @@ beforeEach(() => {
 
 const mockDeleteOne = jest.fn()
 const mockFindOneAndUpdate = jest.fn()
-const mockCollection = { deleteOne: mockDeleteOne, findOneAndUpdate: mockFindOneAndUpdate }
+const mockFindOne = jest.fn()
+const mockUpdateOne = jest.fn()
+const mockInsertOne = jest.fn()
+const mockCollection = {
+  deleteOne: mockDeleteOne,
+  findOneAndUpdate: mockFindOneAndUpdate,
+  findOne: mockFindOne,
+  updateOne: mockUpdateOne,
+  insertOne: mockInsertOne
+}
 const mockDb = { collection: jest.fn(() => mockCollection) }
 const mockLogger = { info: jest.fn() }
 
@@ -286,6 +297,183 @@ describe('Field change', () => {
       `${changeOfDataField.claimRef} has failed because Connection failed`
     )
   })
+})
 
-  // Herd changes will need to be implemented
+describe('herd changes', () => {
+  // The herd flow mutates the records it reads, so build fresh copies per test
+  const buildClaim = () => ({
+    reference: herdChange.claimRef,
+    applicationReference: herdChange.applicationRef,
+    herd: {
+      id: 'herd-abc-123',
+      version: 1,
+      name: 'Commercial Herd',
+      cph: '12/345/6789',
+      reasons: ['uniqueHealthNeeds'],
+      associatedAt: new Date('2025-01-01T00:00:00.000Z')
+    }
+  })
+
+  const buildHerd = () => ({
+    _id: 'mongo-object-id',
+    id: 'herd-abc-123',
+    version: 1,
+    applicationReference: herdChange.applicationRef,
+    name: 'Commercial Herd',
+    species: 'beef',
+    cph: '12/345/6789',
+    reasons: ['uniqueHealthNeeds'],
+    isCurrent: true,
+    createdAt: new Date('2025-01-01T00:00:00.000Z'),
+    createdBy: 'farmer',
+    updatedAt: new Date('2025-01-01T00:00:00.000Z'),
+    updatedBy: 'farmer',
+    migratedRecord: false
+  })
+
+  beforeEach(() => {
+    // getClaimByReference is read first, then getHerdById
+    mockFindOne.mockResolvedValueOnce(buildClaim()).mockResolvedValueOnce(buildHerd())
+    mockUpdateOne.mockResolvedValue({ acknowledged: true })
+    mockInsertOne.mockResolvedValue({ acknowledged: true })
+    mockFindOneAndUpdate.mockResolvedValue({ reference: herdChange.claimRef })
+  })
+
+  test('We can change a herd field', async () => {
+    const results = await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...herdChange, success: true })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${herdChange.claimRef} has processed successfully`
+    )
+  })
+
+  test('When we change a herd field, the herd gets changed', async () => {
+    await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(mockDb.collection).toHaveBeenCalledWith(HERDS_COLLECTION)
+    // The current herd version is read
+    expect(mockFindOne).toHaveBeenCalledWith({ id: 'herd-abc-123', isCurrent: true })
+    // The current herd version is no longer marked as current
+    expect(mockUpdateOne).toHaveBeenCalledWith(
+      { id: 'herd-abc-123', version: 1 },
+      { $set: { isCurrent: false } }
+    )
+    // A new herd version is created carrying the new reasons
+    expect(mockInsertOne).toHaveBeenCalledWith({
+      id: 'herd-abc-123',
+      version: 2,
+      applicationReference: herdChange.applicationRef,
+      name: 'Commercial Herd',
+      species: 'beef',
+      cph: '12/345/6789',
+      reasons: ['onlyHerd'],
+      isCurrent: true,
+      createdBy: 'Admin2',
+      updatedAt: {},
+      createdAt: expect.any(Date)
+    })
+  })
+
+  test('When we change a herd field, the claim is updated with the new herd version', async () => {
+    await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: herdChange.claimRef },
+      {
+        $set: {
+          'herd.id': 'herd-abc-123',
+          'herd.version': 2,
+          'herd.associatedAt': expect.any(Date),
+          'herd.name': 'Commercial Herd',
+          'herd.cph': '12/345/6789',
+          'herd.reasons': ['onlyHerd'],
+          updatedBy: 'Admin2',
+          updatedAt: expect.any(Date)
+        },
+        $push: {
+          updateHistory: {
+            id: expect.any(String),
+            note: `Requested on ${herdChange.dateRequested} by ${herdChange.requester}`,
+            updatedProperty: herdChange.field,
+            newValue: herdChange.newValue,
+            oldValue: herdChange.oldValue,
+            eventType: 'claim-herdReasons',
+            createdBy: 'Admin2',
+            createdAt: expect.any(Date)
+          }
+        }
+      }
+    )
+  })
+
+  test('When we change a herd field, a herd event for the new version is sent', async () => {
+    await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: herdChange.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'herd-versionCreated',
+      message: 'New herd version created',
+      data: {
+        herdId: 'herd-abc-123',
+        herdVersion: 2,
+        herdName: 'Commercial Herd',
+        herdSpecies: 'beef',
+        herdCph: '12/345/6789',
+        herdReasonManagementNeeds: false,
+        herdReasonUniqueHealth: false,
+        herdReasonDifferentBreed: false,
+        herdReasonOtherPurpose: false,
+        herdReasonKeptSeparate: false,
+        herdReasonOnlyHerd: true,
+        herdReasonOther: false
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('When we change a herd field, a herd event for the change is sent', async () => {
+    await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: herdChange.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'claim-herdAssociated',
+      message: 'Herd associated with claim updated',
+      data: {
+        herdId: 'herd-abc-123',
+        herdVersion: 2,
+        reference: herdChange.claimRef,
+        applicationReference: herdChange.applicationRef
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('If an error is thrown, we return no success', async () => {
+    mockFindOne.mockReset()
+    mockFindOne.mockRejectedValue(new Error('Connection failed'))
+    const results = await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...herdChange,
+      success: false,
+      reason: 'Connection failed'
+    })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${herdChange.claimRef} has failed because Connection failed`
+    )
+  })
 })
