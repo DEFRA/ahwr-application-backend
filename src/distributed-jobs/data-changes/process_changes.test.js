@@ -471,6 +471,38 @@ describe('herd changes', () => {
     }
   )
 
+  test('When we change a herd field to multiple reasons, a flag is set for each one', async () => {
+    const change = { ...herdChange, newValue: ['uniqueHealthNeeds', 'keptSeparate'] }
+    await processChanges([change], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: herdChange.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'herd-versionCreated',
+      message: 'New herd version created',
+      data: {
+        herdId: 'herd-abc-123',
+        herdVersion: 2,
+        herdName: 'Commercial Herd',
+        herdSpecies: 'beef',
+        herdCph: '12/345/6789',
+        herdReasonManagementNeeds: false,
+        herdReasonUniqueHealth: true,
+        herdReasonDifferentBreed: false,
+        herdReasonOtherPurpose: false,
+        herdReasonKeptSeparate: true,
+        herdReasonOnlyHerd: false,
+        herdReasonOther: false
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
   test('When we change a herd field, a herd event for the change is sent', async () => {
     await processChanges([herdChange], mockDb, mockLogger)
 
