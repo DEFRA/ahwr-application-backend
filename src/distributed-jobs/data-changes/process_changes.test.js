@@ -540,6 +540,28 @@ describe('herd changes', () => {
     })
   })
 
+  test('If the claim does not exist, we return no success', async () => {
+    mockFindOne.mockReset()
+    mockFindOne.mockResolvedValueOnce(null)
+    const results = await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Does not exists' })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${herdChange.claimRef} has failed because Does not exists`
+    )
+  })
+
+  test('If the herd does not exist, we return no success', async () => {
+    mockFindOne.mockReset()
+    mockFindOne.mockResolvedValueOnce(buildClaim()).mockResolvedValueOnce(null)
+    const results = await processChanges([herdChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Herd does not exists' })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${herdChange.claimRef} has failed because Herd does not exists`
+    )
+  })
+
   test('If an error is thrown, we return no success', async () => {
     mockFindOne.mockReset()
     mockFindOne.mockRejectedValue(new Error('Connection failed'))

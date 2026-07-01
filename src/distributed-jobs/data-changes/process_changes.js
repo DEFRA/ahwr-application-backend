@@ -158,7 +158,14 @@ const processHerdChange = async (change, db) => {
   const herdProperty = HERD_PROPERTY_BY_FIELD[change.field]
   try {
     const claim = await getClaimByReference(db, change.claimRef)
+    if (claim === null) {
+      return { success: false, ...change, reason: 'Does not exists' }
+    }
+
     const herd = await getHerdById(db, claim.herd.id)
+    if (herd === null) {
+      return { success: false, ...change, reason: 'Herd does not exists' }
+    }
 
     //We update the current version of the herd to indicate it is
     //no longer the current one
