@@ -171,17 +171,7 @@ const processHerdChange = async (change, db) => {
     //no longer the current one
     await updateIsCurrentHerd(db, herd.id, false, herd.version)
 
-    delete herd._id
-    delete herd.createdAt
-    delete herd.updatedAt
-    delete herd.updatedBy
-    delete herd.migratedRecord
-    herd.createdBy = raisedBy
-    herd.updatedAt = {}
-    herd.version = herd.version + 1
-    herd[herdProperty] = change.newValue
-    //We are creating a new version with the new field
-    await createHerd(db, herd)
+    await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
 
     const claimHerdData = claim.herd
     claimHerdData.version = herd.version
@@ -199,51 +189,65 @@ const processHerdChange = async (change, db) => {
       claimHerdData
     })
 
-    const raisedOn = new Date()
-    const raisedOn1 = new Date(raisedOn.getTime() + 1).toISOString()
-    const raisedOn2 = new Date(raisedOn.getTime() + 2).toISOString()
-
-    await raiseHerdEvent({
-      sbi: change.sbi,
-      message: 'New herd version created',
-      type: 'herd-versionCreated',
-      raisedBy,
-      raisedOn: raisedOn1,
-      data: {
-        herdId: herd.id,
-        herdVersion: herd.version,
-        herdName: herd.name,
-        herdSpecies: herd.species,
-        herdCph: herd.cph,
-        herdReasonManagementNeeds: herd.reasons.includes('separateManagementNeeds'),
-        herdReasonUniqueHealth: herd.reasons.includes('uniqueHealthNeeds'),
-        herdReasonDifferentBreed: herd.reasons.includes('differentBreed'),
-        herdReasonOtherPurpose: herd.reasons.includes('differentPurpose'),
-        herdReasonKeptSeparate: herd.reasons.includes('keptSeparate'),
-        herdReasonOnlyHerd: herd.reasons.includes('onlyHerd'),
-        herdReasonOther: herd.reasons.includes('other')
-      }
-    })
-
-    const herdAssociatedEvent = 'claim-herdAssociated'
-    const herdAssociatedMessage = 'Herd associated with claim updated'
-
-    await raiseHerdEvent({
-      sbi: change.sbi,
-      message: herdAssociatedMessage,
-      type: herdAssociatedEvent,
-      raisedBy,
-      raisedOn: raisedOn2,
-      data: {
-        herdId: herd.id,
-        herdVersion: herd.version,
-        reference: change.claimRef,
-        applicationReference: change.applicationRef
-      }
-    })
+    await createHerdEvents(change, raisedBy, herd)
 
     return { success: true, ...change }
   } catch (error) {
     return { success: false, ...change, reason: error.message }
   }
+}
+async function createHerdEvents(change, raisedBy, herd) {
+  const raisedOnBase = new Date()
+  const raisedOnVersionCreation = new Date(raisedOnBase.getTime() + 1).toISOString()
+  const raisedOnAssociation = new Date(raisedOnBase.getTime() + 2).toISOString()
+
+  await raiseHerdEvent({
+    sbi: change.sbi,
+    message: 'New herd version created',
+    type: 'herd-versionCreated',
+    raisedBy,
+    raisedOn: raisedOnVersionCreation,
+    data: {
+      herdId: herd.id,
+      herdVersion: herd.version,
+      herdName: herd.name,
+      herdSpecies: herd.species,
+      herdCph: herd.cph,
+      herdReasonManagementNeeds: herd.reasons.includes('separateManagementNeeds'),
+      herdReasonUniqueHealth: herd.reasons.includes('uniqueHealthNeeds'),
+      herdReasonDifferentBreed: herd.reasons.includes('differentBreed'),
+      herdReasonOtherPurpose: herd.reasons.includes('differentPurpose'),
+      herdReasonKeptSeparate: herd.reasons.includes('keptSeparate'),
+      herdReasonOnlyHerd: herd.reasons.includes('onlyHerd'),
+      herdReasonOther: herd.reasons.includes('other')
+    }
+  })
+
+  await raiseHerdEvent({
+    sbi: change.sbi,
+    message: 'Herd associated with claim updated',
+    type: 'claim-herdAssociated',
+    raisedBy,
+    raisedOn: raisedOnAssociation,
+    data: {
+      herdId: herd.id,
+      herdVersion: herd.version,
+      reference: change.claimRef,
+      applicationReference: change.applicationRef
+    }
+  })
+}
+
+async function createNewHerdVersion(herd, raisedBy, herdProperty, change, db) {
+  delete herd._id
+  delete herd.createdAt
+  delete herd.updatedAt
+  delete herd.updatedBy
+  delete herd.migratedRecord
+  herd.createdBy = raisedBy
+  herd.updatedAt = {}
+  herd.version = herd.version + 1
+  herd[herdProperty] = change.newValue
+  //We are creating a new version with the new field
+  await createHerd(db, herd)
 }
