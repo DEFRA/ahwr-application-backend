@@ -16,6 +16,8 @@ const HERD_PROPERTY_BY_FIELD = {
   herdName: 'name'
 }
 
+const DOES_NOT_EXIST_MESSAGE = 'Does not exists'
+
 /**
  * @typedef {object} Change
  * @property {string} claimRef - The claim reference
@@ -86,7 +88,7 @@ const processDeletion = async (change, db) => {
   try {
     const deleteResult = await deleteClaim(db, change.claimRef)
     if (deleteResult.deletedCount === 0) {
-      return { success: false, ...change, reason: 'Does not exists' }
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     } else {
       const withdrawnStatusId = 'WITHDRAWN'
       const withdrawnMessage = 'Claim has been updated'
@@ -129,7 +131,7 @@ const processDataChange = async (change, db) => {
     })
 
     if (result === null) {
-      return { success: false, ...change, reason: 'Does not exists' }
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     }
 
     await claimDataUpdateEvent(
@@ -159,7 +161,7 @@ const processHerdChange = async (change, db) => {
   try {
     const claim = await getClaimByReference(db, change.claimRef)
     if (claim === null) {
-      return { success: false, ...change, reason: 'Does not exists' }
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     }
 
     const herd = await getHerdById(db, claim.herd.id)
