@@ -2,7 +2,7 @@ import { MULTIPLE_HERD_REASONS } from 'ffc-ahwr-common-library'
 import { CLAIMS_COLLECTION, HERDS_COLLECTION } from '../../constants/index.js'
 import { processChanges } from './process_changes.js'
 import { getFcpEventPublisher } from '../../messaging/fcp-messaging-service.js'
-import { TYPE_OF_CHANGE } from './schema.js'
+import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
 
 jest.mock('../../messaging/fcp-messaging-service')
 
@@ -216,6 +216,31 @@ describe('data structure validation', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       'undefined has failed because Incorrect data structure'
     )
+  })
+})
+
+describe('unknown action', () => {
+  test('If the action is not recognised, we return no success', async () => {
+    // The schema normally blocks unknown actions, so bypass it to reach the switch default
+    // This tests exists because there is no exhaustive pattern matching on js
+    const unknownActionChange = {
+      claimRef: 'RESH-806C-B87D',
+      sbi: '123456789',
+      applicationRef: 'IAHW-G7B4-UTZ5',
+      action: 'someUnknownAction'
+    }
+    const validateSpy = jest
+      .spyOn(changeSchema, 'validate')
+      .mockReturnValueOnce({ error: undefined, value: unknownActionChange })
+
+    const results = await processChanges([unknownActionChange], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...unknownActionChange, success: false, reason: 'Unknown action' })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${unknownActionChange.claimRef} has failed because Unknown action`
+    )
+
+    validateSpy.mockRestore()
   })
 })
 
