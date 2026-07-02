@@ -84,6 +84,13 @@ export const processChanges = async (changesToProcess, db, logger) => {
   return results
 }
 
+/**
+ * Deletes a claim and raises a WITHDRAWN status event on success.
+ *
+ * @param {Change} change - The deletion change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
 const processDeletion = async (change, db) => {
   try {
     const deleteResult = await deleteClaim(db, change.claimRef)
@@ -115,6 +122,14 @@ const processDeletion = async (change, db) => {
   }
 }
 
+/**
+ * Updates a single data field on a claim and raises a claim data update event.
+ * Used for fields stored directly on the claim (not versioned on the herd).
+ *
+ * @param {Change} change - The field change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
 const processDataChange = async (change, db) => {
   const raisedBy = 'Admin2'
   try {
@@ -155,6 +170,15 @@ const processDataChange = async (change, db) => {
   }
 }
 
+/**
+ * Applies a change to a herd-versioned field. Marks the current herd version
+ * as no longer current, creates a new herd version with the updated value,
+ * re-associates the claim with the new version, and raises herd events.
+ *
+ * @param {Change} change - The field change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
 const processHerdChange = async (change, db) => {
   const raisedBy = 'Admin2'
   const herdProperty = HERD_PROPERTY_BY_FIELD[change.field]
@@ -198,6 +222,16 @@ const processHerdChange = async (change, db) => {
     return { success: false, ...change, reason: error.message }
   }
 }
+/**
+ * Raises the herd version creation and claim-herd association events for a
+ * processed herd change. The two events are timestamped one millisecond apart
+ * to preserve their ordering downstream.
+ *
+ * @param {Change} change - The field change being processed
+ * @param {string} raisedBy - The user the events are attributed to
+ * @param {object} herd - The herd (new version) the events describe
+ * @returns {Promise<void>}
+ */
 async function createHerdEvents(change, raisedBy, herd) {
   const raisedOnBase = new Date()
   const raisedOnVersionCreation = new Date(raisedOnBase.getTime() + 1).toISOString()
@@ -240,6 +274,18 @@ async function createHerdEvents(change, raisedBy, herd) {
   })
 }
 
+/**
+ * Persists a new herd version by stripping the persistence metadata from the
+ * supplied herd, incrementing its version, and applying the new field value.
+ * Mutates the passed herd object.
+ *
+ * @param {object} herd - The current herd document to base the new version on
+ * @param {string} raisedBy - The user recorded as the creator of the new version
+ * @param {string} herdProperty - The herd property being updated (e.g. 'name', 'cph', 'reasons')
+ * @param {Change} change - The field change providing the new value
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<void>}
+ */
 async function createNewHerdVersion(herd, raisedBy, herdProperty, change, db) {
   delete herd._id
   delete herd.createdAt
