@@ -194,11 +194,11 @@ const processHerdChange = async (change, db) => {
       return { success: false, ...change, reason: HERD_DOES_NOT_EXIST_MESSAGE }
     }
 
+    const newHerd = await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
+
     //We update the current version of the herd to indicate it is
     //no longer the current one
     await updateIsCurrentHerd(db, herd.id, false, herd.version)
-
-    const newHerd = await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
 
     const claimHerdData = claim.herd
     claimHerdData.version = newHerd.version
