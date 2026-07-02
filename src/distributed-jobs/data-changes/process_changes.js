@@ -198,11 +198,11 @@ const processHerdChange = async (change, db) => {
     //no longer the current one
     await updateIsCurrentHerd(db, herd.id, false, herd.version)
 
-    await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
+    const newHerd = await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
 
     const claimHerdData = claim.herd
-    claimHerdData.version = herd.version
-    claimHerdData[herdProperty] = herd[herdProperty]
+    claimHerdData.version = newHerd.version
+    claimHerdData[herdProperty] = newHerd[herdProperty]
     claimHerdData.associatedAt = new Date()
 
     await updateHerd({
@@ -216,7 +216,7 @@ const processHerdChange = async (change, db) => {
       claimHerdData
     })
 
-    await createHerdEvents(change, raisedBy, herd)
+    await createHerdEvents(change, raisedBy, newHerd)
 
     return { success: true, ...change }
   } catch (error) {
@@ -276,27 +276,33 @@ async function createHerdEvents(change, raisedBy, herd) {
 }
 
 /**
- * Persists a new herd version by stripping the persistence metadata from the
- * supplied herd, incrementing its version, and applying the new field value.
- * Mutates the passed herd object.
+ * Persists a new herd version built from the supplied herd, incrementing its
+ * version and applying the new field value. Does not mutate the passed herd.
  *
  * @param {object} herd - The current herd document to base the new version on
  * @param {string} raisedBy - The user recorded as the creator of the new version
  * @param {string} herdProperty - The herd property being updated (e.g. 'name', 'cph', 'reasons')
  * @param {Change} change - The field change providing the new value
  * @param {object} db - MongoDB database connection
- * @returns {Promise<void>}
+ * @returns {Promise<object>} The newly created herd version
  */
 async function createNewHerdVersion(herd, raisedBy, herdProperty, change, db) {
-  delete herd._id
-  delete herd.createdAt
-  delete herd.updatedAt
-  delete herd.updatedBy
-  delete herd.migratedRecord
-  herd.createdBy = raisedBy
-  herd.updatedAt = {}
-  herd.version = herd.version + 1
-  herd[herdProperty] = change.newValue
+  const newHerd = {
+    id: herd.id,
+    version: herd.version + 1,
+    applicationReference: herd.applicationReference,
+    species: herd.species,
+    name: herd.name,
+    cph: herd.cph,
+    reasons: herd.reasons.sort(),
+    createdBy: raisedBy,
+    updatedAt: {},
+    isCurrent: true
+  }
+  newHerd[herdProperty] = change.newValue
+
   //We are creating a new version with the new field
-  await createHerd(db, herd)
+  await createHerd(db, newHerd)
+
+  return newHerd
 }
