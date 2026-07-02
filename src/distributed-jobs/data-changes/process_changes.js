@@ -1,7 +1,23 @@
 import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-event.js'
-import { raiseClaimEvents } from '../../event-publisher/index.js'
-import { deleteClaim, updateClaimData } from '../../repositories/claim-repository.js'
+import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher/index.js'
+import {
+  deleteClaim,
+  getClaimByReference,
+  updateClaimData,
+  updateHerd
+} from '../../repositories/claim-repository.js'
+import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
 import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
+
+// Fields that are versioned on the herd rather than stored on the claim data
+const HERD_PROPERTY_BY_FIELD = {
+  herdReasons: 'reasons',
+  herdCph: 'cph',
+  herdName: 'name'
+}
+
+const DOES_NOT_EXIST_MESSAGE = 'Does not exist'
+const HERD_DOES_NOT_EXIST_MESSAGE = 'Herd does not exist'
 
 /**
  * @typedef {object} Change
@@ -46,7 +62,11 @@ export const processChanges = async (changesToProcess, db, logger) => {
         case TYPE_OF_CHANGE.DELETION:
           return processDeletion(change, db)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
-          return processDataChange(change, db)
+          if (HERD_PROPERTY_BY_FIELD[change.field]) {
+            return processHerdChange(change, db)
+          } else {
+            return processDataChange(change, db)
+          }
         default:
           // This shouldn't ever happen as the scheme gets validated
           return { success: false, ...change, reason: 'Unknown action' }
@@ -65,11 +85,18 @@ export const processChanges = async (changesToProcess, db, logger) => {
   return results
 }
 
+/**
+ * Deletes a claim and raises a WITHDRAWN status event on success.
+ *
+ * @param {Change} change - The deletion change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
 const processDeletion = async (change, db) => {
   try {
     const deleteResult = await deleteClaim(db, change.claimRef)
     if (deleteResult.deletedCount === 0) {
-      return { success: false, ...change, reason: 'Does not exists' }
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     } else {
       const withdrawnStatusId = 'WITHDRAWN'
       const withdrawnMessage = 'Claim has been updated'
@@ -96,6 +123,14 @@ const processDeletion = async (change, db) => {
   }
 }
 
+/**
+ * Updates a single data field on a claim and raises a claim data update event.
+ * Used for fields stored directly on the claim (not versioned on the herd).
+ *
+ * @param {Change} change - The field change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
 const processDataChange = async (change, db) => {
   const raisedBy = 'Admin2'
   try {
@@ -112,7 +147,7 @@ const processDataChange = async (change, db) => {
     })
 
     if (result === null) {
-      return { success: false, ...change, reason: 'Does not exists' }
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     }
 
     await claimDataUpdateEvent(
@@ -136,113 +171,138 @@ const processDataChange = async (change, db) => {
   }
 }
 
-// Examples of data changes to be implemented
-// -  //Data Change 1
-// -  const update1 = datastoreUpdates[0]
-// -  const claim = await getClaimByReference(db, update1.claimRef)
-// -  const herd = await getHerdById(db, claim.herd.id)
-// -
-// -  //We update the current version of the herd to indicate it is
-// -  //no longer the current one
-// -  await updateIsCurrentHerd(db, herd.id, false, herd.version)
-// -
-// -  delete herd._id
-// -  delete herd.createdAt
-// -  delete herd.updatedAt
-// -  delete herd.updatedBy
-// -  delete herd.migratedRecord
-// -  herd.createdBy = raisedBy
-// -  herd.updatedAt = {}
-// -  herd.version = herd.version + 1
-// -  herd.reasons = update1.newReason
-// -  //We are creating a new version with the new reason
-// -  await createHerd(db, herd)
-// -
-// -  const claimHerdData = claim.herd
-// -  claimHerdData.version = herd.version
-// -  claimHerdData.reasons = herd.reasons
-// -  claimHerdData.associatedAt = new Date()
-// -
-// -  await updateHerd({
-// -    db,
-// -    claimRef: update1.claimRef,
-// -    updatedProperty: 'herdReasons',
-// -    newValue: update1.newReason,
-// -    oldValue: update1.oldReason,
-// -    note,
-// -    createdBy: raisedBy,
-// -    claimHerdData
-// -  })
-// -
-// -  //Data Change 2
-// -  const update2 = datastoreUpdates[1]
-// -  await updateClaimData({
-// -    db,
-// -    reference: update2.claimRef,
-// -    updatedProperty: 'dateOfTesting',
-// -    newValue: update2.newValue,
-// -    oldValue: update2.oldValue,
-// -    note,
-// -    user: raisedBy,
-// -    updatedAt: new Date()
-// -  })
-// -  const herdAssociatedEvent = 'claim-herdAssociated'
-// -  const herdAssociatedMessage = 'Herd associated with claim updated'
-// -
-// -  //Data Change 1
-// -  const event1 = events[0]
-// -
-// -  const raisedOn = new Date()
-// -  const raisedOn1 = new Date(raisedOn.getTime() + 1).toISOString()
-// -  const raisedOn2 = new Date(raisedOn.getTime() + 2).toISOString()
-// -
-// -  const claim = await getClaimByReference(db, event1.claimRef)
-// -  const herd = await getHerdById(db, claim.herd.id)
-// -
-// -  await raiseHerdEvent({
-// -    sbi: event1.sbi,
-// -    message: 'New herd version created',
-// -    type: 'herd-versionCreated',
-// -    raisedBy,
-// -    raisedOn: raisedOn1,
-// -    data: {
-// -      herdId: herd.id,
-// -      herdVersion: herd.version,
-// -      herdName: herd.name,
-// -      herdSpecies: herd.species,
-// -      herdCph: herd.cph,
-// -      herdReasonManagementNeeds: false,
-// -      herdReasonUniqueHealth: false,
-// -      herdReasonDifferentBreed: false,
-// -      herdReasonOtherPurpose: false,
-// -      herdReasonKeptSeparate: false,
-// -      herdReasonOnlyHerd: true,
-// -      herdReasonOther: false
-// -    }
-// -  })
-// -
-// -  await raiseHerdEvent({
-// -    sbi: event1.sbi,
-// -    message: herdAssociatedMessage,
-// -    type: herdAssociatedEvent,
-// -    raisedBy,
-// -    raisedOn: raisedOn2,
-// -    data: {
-// -      herdId: herd.id,
-// -      herdVersion: herd.version,
-// -      reference: event1.claimRef,
-// -      applicationReference: event1.applicationRef
-// -    }
-// -  })
-// -
-// -  //Data Change 2
-// -  const event2 = events[1]
-// -  const eventData2 = {
-// -    applicationReference: event2.applicationRef,
-// -    reference: event2.claimRef,
-// -    newValue: event2.newValue,
-// -    oldValue: event2.oldValue,
-// -    updatedProperty: 'dateOfTesting',
-// -    note
-// -  }
-// -  await claimDataUpdateEvent(eventData2, 'claim-testResults', raisedBy, new Date(), event2.sbi)
+/**
+ * Applies a change to a herd-versioned field. Marks the current herd version
+ * as no longer current, creates a new herd version with the updated value,
+ * re-associates the claim with the new version, and raises herd events.
+ *
+ * @param {Change} change - The field change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
+const processHerdChange = async (change, db) => {
+  const raisedBy = 'Admin2'
+  const herdProperty = HERD_PROPERTY_BY_FIELD[change.field]
+  try {
+    const claim = await getClaimByReference(db, change.claimRef)
+    if (claim === null) {
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
+    }
+
+    const herd = await getHerdById(db, claim.herd.id)
+    if (herd === null) {
+      return { success: false, ...change, reason: HERD_DOES_NOT_EXIST_MESSAGE }
+    }
+
+    const newHerd = await createNewHerdVersion(herd, raisedBy, herdProperty, change, db)
+
+    //We update the current version of the herd to indicate it is
+    //no longer the current one
+    await updateIsCurrentHerd(db, herd.id, false, herd.version)
+
+    const claimHerdData = claim.herd
+    claimHerdData.version = newHerd.version
+    claimHerdData[herdProperty] = newHerd[herdProperty]
+    claimHerdData.associatedAt = new Date()
+
+    await updateHerd({
+      db,
+      claimRef: change.claimRef,
+      updatedProperty: change.field,
+      newValue: change.newValue,
+      oldValue: change.oldValue,
+      note: `Requested on ${change.dateRequested} by ${change.requester}`,
+      createdBy: raisedBy,
+      claimHerdData
+    })
+
+    await createHerdEvents(change, raisedBy, newHerd)
+
+    return { success: true, ...change }
+  } catch (error) {
+    return { success: false, ...change, reason: error.message }
+  }
+}
+/**
+ * Raises the herd version creation and claim-herd association events for a
+ * processed herd change. The two events are timestamped one millisecond apart
+ * to preserve their ordering downstream.
+ *
+ * @param {Change} change - The field change being processed
+ * @param {string} raisedBy - The user the events are attributed to
+ * @param {object} herd - The herd (new version) the events describe
+ * @returns {Promise<void>}
+ */
+async function createHerdEvents(change, raisedBy, herd) {
+  const raisedOnBase = new Date()
+  const raisedOnVersionCreation = new Date(raisedOnBase.getTime() + 1).toISOString()
+  const raisedOnAssociation = new Date(raisedOnBase.getTime() + 2).toISOString()
+
+  await raiseHerdEvent({
+    sbi: change.sbi,
+    message: 'New herd version created',
+    type: 'herd-versionCreated',
+    raisedBy,
+    raisedOn: raisedOnVersionCreation,
+    data: {
+      herdId: herd.id,
+      herdVersion: herd.version,
+      herdName: herd.name,
+      herdSpecies: herd.species,
+      herdCph: herd.cph,
+      herdReasonManagementNeeds: herd.reasons.includes('separateManagementNeeds'),
+      herdReasonUniqueHealth: herd.reasons.includes('uniqueHealthNeeds'),
+      herdReasonDifferentBreed: herd.reasons.includes('differentBreed'),
+      herdReasonOtherPurpose: herd.reasons.includes('differentPurpose'),
+      herdReasonKeptSeparate: herd.reasons.includes('keptSeparate'),
+      herdReasonOnlyHerd: herd.reasons.includes('onlyHerd'),
+      herdReasonOther: herd.reasons.includes('other')
+    }
+  })
+
+  await raiseHerdEvent({
+    sbi: change.sbi,
+    message: 'Herd associated with claim updated',
+    type: 'claim-herdAssociated',
+    raisedBy,
+    raisedOn: raisedOnAssociation,
+    data: {
+      herdId: herd.id,
+      herdVersion: herd.version,
+      reference: change.claimRef,
+      applicationReference: change.applicationRef
+    }
+  })
+}
+
+/**
+ * Persists a new herd version built from the supplied herd, incrementing its
+ * version and applying the new field value. Does not mutate the passed herd.
+ *
+ * @param {object} herd - The current herd document to base the new version on
+ * @param {string} raisedBy - The user recorded as the creator of the new version
+ * @param {string} herdProperty - The herd property being updated (e.g. 'name', 'cph', 'reasons')
+ * @param {Change} change - The field change providing the new value
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<object>} The newly created herd version
+ */
+async function createNewHerdVersion(herd, raisedBy, herdProperty, change, db) {
+  const newHerd = {
+    id: herd.id,
+    version: herd.version + 1,
+    applicationReference: herd.applicationReference,
+    species: herd.species,
+    name: herd.name,
+    cph: herd.cph,
+    reasons: herd.reasons.sort(),
+    createdBy: raisedBy,
+    updatedAt: {},
+    isCurrent: true
+  }
+  newHerd[herdProperty] = change.newValue
+
+  //We are creating a new version with the new field
+  await createHerd(db, newHerd)
+
+  return newHerd
+}
