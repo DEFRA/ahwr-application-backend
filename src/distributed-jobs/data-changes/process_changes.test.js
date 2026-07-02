@@ -138,11 +138,11 @@ describe('Data deletion', () => {
     mockDeleteOne.mockResolvedValue({ acknowledged: true, deletedCount: 0 })
     const results = await processChanges([deletion], mockDb, mockLogger)
 
-    expect(results[0]).toEqual({ ...deletion, success: false, reason: 'Does not exists' })
+    expect(results[0]).toEqual({ ...deletion, success: false, reason: 'Does not exist' })
     expect(mockDeleteOne).toHaveBeenCalledWith({ reference: deletion.claimRef })
     expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `${deletion.claimRef} has failed because Does not exists`
+      `${deletion.claimRef} has failed because Does not exist`
     )
   })
 
@@ -308,14 +308,14 @@ describe('Field change', () => {
     mockFindOneAndUpdate.mockResolvedValue(null)
     const results = await processChanges([changeOfDataField], mockDb, mockLogger)
 
-    expect(results[0]).toEqual({ ...changeOfDataField, success: false, reason: 'Does not exists' })
+    expect(results[0]).toEqual({ ...changeOfDataField, success: false, reason: 'Does not exist' })
     expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
       { reference: changeOfDataField.claimRef },
       expect.any(Object)
     )
     expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `${changeOfDataField.claimRef} has failed because Does not exists`
+      `${changeOfDataField.claimRef} has failed because Does not exist`
     )
   })
 
@@ -570,9 +570,9 @@ describe('herd changes', () => {
     mockFindOne.mockResolvedValueOnce(null)
     const results = await processChanges([herdChange], mockDb, mockLogger)
 
-    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Does not exists' })
+    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Does not exist' })
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `${herdChange.claimRef} has failed because Does not exists`
+      `${herdChange.claimRef} has failed because Does not exist`
     )
   })
 
@@ -581,9 +581,9 @@ describe('herd changes', () => {
     mockFindOne.mockResolvedValueOnce(buildClaim()).mockResolvedValueOnce(null)
     const results = await processChanges([herdChange], mockDb, mockLogger)
 
-    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Herd does not exists' })
+    expect(results[0]).toEqual({ ...herdChange, success: false, reason: 'Herd does not exist' })
     expect(mockLogger.info).toHaveBeenCalledWith(
-      `${herdChange.claimRef} has failed because Herd does not exists`
+      `${herdChange.claimRef} has failed because Herd does not exist`
     )
   })
 

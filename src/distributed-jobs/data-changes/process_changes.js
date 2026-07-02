@@ -16,7 +16,8 @@ const HERD_PROPERTY_BY_FIELD = {
   herdName: 'name'
 }
 
-const DOES_NOT_EXIST_MESSAGE = 'Does not exists'
+const DOES_NOT_EXIST_MESSAGE = 'Does not exist'
+const HERD_DOES_NOT_EXIST_MESSAGE = 'Herd does not exist'
 
 /**
  * @typedef {object} Change
@@ -190,7 +191,7 @@ const processHerdChange = async (change, db) => {
 
     const herd = await getHerdById(db, claim.herd.id)
     if (herd === null) {
-      return { success: false, ...change, reason: 'Herd does not exists' }
+      return { success: false, ...change, reason: HERD_DOES_NOT_EXIST_MESSAGE }
     }
 
     //We update the current version of the herd to indicate it is
