@@ -12,9 +12,7 @@ Due to time constraints, we need to rapidly develop the poultry scheme whilst av
 
 ## Decision
 
-- Poultry will reuse the existing data model established for livestock.
-- Poultry agreements will be differentiated by the prefix of the reference. Those agreements that correspond to poultry will be prefixed with `POUL-`
-- Poultry claims will have the prefix of `PORE-`
+- Poultry will reuse the existing data models used for livestock.
 - Reuse the existing endpoints for poultry agreements and claims.
 
 ## Consequences
