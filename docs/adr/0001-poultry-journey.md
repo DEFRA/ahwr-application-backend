@@ -1,0 +1,24 @@
+# Poultry Implementation Strategy
+
+Date: 2026-03-20
+
+## Status
+
+Accepted
+
+## Context
+
+Due to time constraints, we need to rapidly develop the poultry scheme whilst avoiding any regressions to the existing livestock scheme.
+
+## Decision
+
+- Poultry will reuse the existing data model established for livestock.
+- Poultry agreements will be differentiated by the prefix of the reference. Those agreements that correspond to poultry will be prefixed with `POUL-`
+- Poultry claims will have the prefix of `PORE-`
+- Reuse the existing endpoints for poultry agreements and claims.
+
+## Consequences
+
+- No regressions are introduced into the existing livestock journey
+- Duplication of code in the poultry and livestock journeys
+- The concept of a "site" in the domain model is mapped to a `herd` in the data model, which could cause some confusion
