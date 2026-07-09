@@ -14,14 +14,14 @@ describe('applicationRoutes', () => {
     )
 
     describe('failAction', () => {
-      it('should return 400 and log the error when validation fails', () => {
+      it('should return 400 and log the error when validation fails', async () => {
         const mockError = new Error('Validation failed')
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(postRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toEqual(
-          Boom.badRequest(mockError)
-        )
+        await expect(
+          postRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).rejects.toEqual(Boom.badRequest(mockError))
         expect(trackError).toHaveBeenCalledWith(
           mockLogger,
           mockError,
@@ -120,14 +120,14 @@ describe('applicationRoutes', () => {
     )
 
     describe('failAction', () => {
-      it('should return 400 and log the error when validation fails', () => {
+      it('should return 400 and log the error when validation fails', async () => {
         const mockError = new Error('Invalid query')
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(postRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toThrow(
-          Boom.badRequest(mockError.message)
-        )
+        await expect(
+          postRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).rejects.toThrow(Boom.badRequest(mockError.message))
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Application search validation error'
@@ -216,14 +216,14 @@ describe('applicationRoutes', () => {
     )
 
     describe('failAction', () => {
-      it('should return 400 and log the error when validation fails', () => {
+      it('should return 400 and log the error when validation fails', async () => {
         const mockError = new Error('Invalid query')
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(putRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toThrow(
-          Boom.badRequest(mockError.message)
-        )
+        await expect(
+          putRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).rejects.toThrow(Boom.badRequest(mockError.message))
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Update application eligiblePiiRedaction validation error'
@@ -238,14 +238,14 @@ describe('applicationRoutes', () => {
     )
 
     describe('failAction', () => {
-      it('should return 400 and log the error when validation fails', () => {
+      it('should return 400 and log the error when validation fails', async () => {
         const mockError = new Error('Invalid query')
         const mockLogger = { error: jest.fn() }
         const mockRequest = { logger: mockLogger }
 
-        expect(putRoute.options.validate.failAction(mockRequest, null, mockError)).rejects.toThrow(
-          Boom.badRequest(mockError.message)
-        )
+        await expect(
+          putRoute.options.validate.failAction(mockRequest, null, mockError)
+        ).rejects.toThrow(Boom.badRequest(mockError.message))
         expect(mockLogger.error).toHaveBeenCalledWith(
           mockError,
           'Update application data validation error'
