@@ -47,7 +47,7 @@ const applyClaimSearchConditions = (matchStage, search) => {
       break
     case 'status':
       matchStage.status = {
-        $regex: text.toUpperCase().replace(/ /g, '_'),
+        $regex: text.toUpperCase().replaceAll(' ', '_'),
         $options: 'i'
       }
       break
