@@ -1,6 +1,5 @@
 import { STATUS } from 'ffc-ahwr-common-library'
 import { startAndEndDate } from '../lib/date-utils.js'
-// import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
@@ -118,7 +117,7 @@ const buildSearchQuery = (searchText, searchType, filter) => {
 
       case 'status':
         query.status = {
-          $regex: searchText.toUpperCase().replace(/ /g, '_'),
+          $regex: searchText.toUpperCase().replaceAll(' ', '_'),
           $options: 'i'
         }
         break
