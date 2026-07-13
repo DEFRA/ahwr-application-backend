@@ -44,7 +44,7 @@
     "ffc-ahwr-common-library": "3.8.3",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
-    "hapi-pulse": "3.0.1",
+    "hapi-pulse": "4.0.0",
     "http-status-codes": "2.3.0",
     "joi": "18.2.1",
     "mongo-locks": "3.1.2",
