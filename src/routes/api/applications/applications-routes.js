@@ -125,13 +125,15 @@ export const applicationRoutes = [
       handler: async (request, h) => {
         const { applications, total } = await searchApplications(
           request.db,
-          request.payload.search?.text ?? '',
-          request.payload.search?.type,
-          request.payload.filter,
+          {
+            searchText: request.payload.search?.text ?? '',
+            searchType: request.payload.search?.type,
+            filter: request.payload.filter,
+            agreementType: request.payload.agreementType
+          },
           request.payload.offset,
           request.payload.limit,
-          request.payload.sort,
-          request.payload.agreementType
+          request.payload.sort
         )
 
         return h

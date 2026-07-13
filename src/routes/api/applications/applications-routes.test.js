@@ -171,13 +171,15 @@ describe('applicationRoutes', () => {
 
         expect(searchApplications).toHaveBeenCalledWith(
           mockDb,
-          'search text',
-          'SEARCH_TYPE',
-          ['STATUS1', 'STATUS2'],
+          {
+            searchText: 'search text',
+            searchType: 'SEARCH_TYPE',
+            filter: ['STATUS1', 'STATUS2'],
+            agreementType: undefined
+          },
           0,
           10,
-          { field: 'CREATEDAT', direction: 'ASC' },
-          undefined
+          { field: 'CREATEDAT', direction: 'ASC' }
         )
       })
 
@@ -203,13 +205,15 @@ describe('applicationRoutes', () => {
 
         expect(searchApplications).toHaveBeenCalledWith(
           mockDb,
-          '',
-          undefined,
-          [],
+          {
+            searchText: '',
+            searchType: undefined,
+            filter: [],
+            agreementType: 'PBR'
+          },
           0,
           10,
-          { field: 'CREATEDAT', direction: 'ASC' },
-          'PBR'
+          { field: 'CREATEDAT', direction: 'ASC' }
         )
       })
       it('should return 200 and pass request through with no optional payload items', async () => {
@@ -237,13 +241,15 @@ describe('applicationRoutes', () => {
 
         expect(searchApplications).toHaveBeenCalledWith(
           mockDb,
-          '',
-          undefined,
-          [],
+          {
+            searchText: '',
+            searchType: undefined,
+            filter: [],
+            agreementType: undefined
+          },
           0,
           0,
-          { field: 'CREATEDAT', direction: 'ASC' },
-          undefined
+          { field: 'CREATEDAT', direction: 'ASC' }
         )
       })
     })

@@ -281,7 +281,11 @@ describe('application-repository', () => {
           }
         ])
         collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-        const res = await searchApplications(dbMock, search.text, search.type, filter ?? [])
+        const res = await searchApplications(dbMock, {
+          searchText: search.text,
+          searchType: search.type,
+          filter: filter ?? []
+        })
 
         const expectedFilter = filter ? { status: { $in: filter } } : undefined
         const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
@@ -360,7 +364,11 @@ describe('application-repository', () => {
         }
       ])
       collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-      const res = await searchApplications(dbMock, search.text, search.type, [])
+      const res = await searchApplications(dbMock, {
+        searchText: search.text,
+        searchType: search.type,
+        filter: []
+      })
 
       expect(res).toEqual({
         applications: foundApplications,
@@ -465,7 +473,11 @@ describe('application-repository', () => {
           }
         ])
         collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-        const res = await searchApplications(dbMock, search.text, search.type, [])
+        const res = await searchApplications(dbMock, {
+          searchText: search.text,
+          searchType: search.type,
+          filter: []
+        })
 
         expect(res).toEqual({
           applications: foundApplications,
@@ -549,7 +561,11 @@ describe('application-repository', () => {
         }
       ])
       collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-      const res = await searchApplications(dbMock, search.text, search.type, [])
+      const res = await searchApplications(dbMock, {
+        searchText: search.text,
+        searchType: search.type,
+        filter: []
+      })
 
       expect(res).toEqual({
         applications: foundApplications,
@@ -624,7 +640,11 @@ describe('application-repository', () => {
         }
       ])
 
-      const res = await searchApplications(dbMock, 'aaaaa', 'ref', [])
+      const res = await searchApplications(dbMock, {
+        searchText: 'aaaaa',
+        searchType: 'ref',
+        filter: []
+      })
 
       expect(res).toEqual({
         applications: [],
@@ -649,7 +669,7 @@ describe('application-repository', () => {
         collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
         collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
 
-        await searchApplications(dbMock, '', undefined, [], 0, 10, undefined, agreementType)
+        await searchApplications(dbMock, { searchText: '', filter: [], agreementType })
 
         const expectedMatch = {
           $match: { reference: { $regex: expectedRegex, $options: 'i' } }
@@ -673,7 +693,7 @@ describe('application-repository', () => {
         collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
         collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
 
-        await searchApplications(dbMock, '', undefined, [], 0, 10, undefined, agreementType)
+        await searchApplications(dbMock, { searchText: '', filter: [], agreementType })
 
         expect(collectionMock.aggregate).toHaveBeenCalledWith([
           { $match: {} },
@@ -692,7 +712,12 @@ describe('application-repository', () => {
       collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
       collectionMock.toArray.mockResolvedValueOnce([{ reference: 'POUL-8ZPZ-8CLI' }])
 
-      await searchApplications(dbMock, 'POUL-8ZPZ-8CLI', 'ref', [], 0, 10, undefined, 'IAHW')
+      await searchApplications(dbMock, {
+        searchText: 'POUL-8ZPZ-8CLI',
+        searchType: 'ref',
+        filter: [],
+        agreementType: 'IAHW'
+      })
 
       const expectedMatch = { $match: { reference: 'POUL-8ZPZ-8CLI' } }
       expect(collectionMock.aggregate).toHaveBeenCalledWith([

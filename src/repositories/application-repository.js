@@ -113,7 +113,7 @@ const applyAgreementTypeFilter = (query, agreementType) => {
   query.reference = { $regex: `^(${prefixes.join('|')})`, $options: 'i' }
 }
 
-const buildSearchQuery = (searchText, searchType, filter, agreementType) => {
+const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => {
   const query = {}
 
   if (searchText) {
@@ -161,15 +161,12 @@ const defaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchApplications = async (
   db,
-  searchText,
-  searchType,
-  filter,
+  criteria,
   offset = 0,
   limit = 10,
-  sort = defaultSort(),
-  agreementType
+  sort = defaultSort()
 ) => {
-  const query = buildSearchQuery(searchText, searchType, filter, agreementType)
+  const query = buildSearchQuery(criteria)
 
   const totalResult = await db
     .collection(APPLICATION_COLLECTION)
