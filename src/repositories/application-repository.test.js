@@ -1,4 +1,10 @@
-import { STATUS, reminders as reminderTypes } from 'ffc-ahwr-common-library'
+import {
+  STATUS,
+  reminders as reminderTypes,
+  APPLICATION_REFERENCE_PREFIX_OLD_WORLD,
+  APPLICATION_REFERENCE_PREFIX_NEW_WORLD,
+  APPLICATION_REFERENCE_PREFIX_POULTRY
+} from 'ffc-ahwr-common-library'
 import {
   getApplicationsBySbi,
   createApplication,
@@ -626,6 +632,79 @@ describe('application-repository', () => {
       })
 
       expect(collectionMock.aggregate).toHaveBeenCalledTimes(1)
+    })
+
+    test.each([
+      {
+        agreementType: 'IAHW',
+        expectedRegex: `^(${APPLICATION_REFERENCE_PREFIX_OLD_WORLD}|${APPLICATION_REFERENCE_PREFIX_NEW_WORLD})`
+      },
+      {
+        agreementType: 'PBR',
+        expectedRegex: `^(${APPLICATION_REFERENCE_PREFIX_POULTRY})`
+      }
+    ])(
+      'restricts by reference prefix when agreementType is $agreementType',
+      async ({ agreementType, expectedRegex }) => {
+        collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+        collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+        await searchApplications(dbMock, '', undefined, [], 0, 10, undefined, agreementType)
+
+        const expectedMatch = {
+          $match: { reference: { $regex: expectedRegex, $options: 'i' } }
+        }
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          expectedMatch,
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [expectedMatch]
+            }
+          },
+          { $count: 'total' }
+        ])
+      }
+    )
+
+    test.each([{ agreementType: undefined }, { agreementType: 'ALL' }])(
+      'does not restrict by reference prefix when agreementType is $agreementType',
+      async ({ agreementType }) => {
+        collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+        collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+        await searchApplications(dbMock, '', undefined, [], 0, 10, undefined, agreementType)
+
+        expect(collectionMock.aggregate).toHaveBeenCalledWith([
+          { $match: {} },
+          {
+            $unionWith: {
+              coll: 'owapplications',
+              pipeline: [{ $match: {} }]
+            }
+          },
+          { $count: 'total' }
+        ])
+      }
+    )
+
+    test('lets an exact ref search take precedence over agreementType', async () => {
+      collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+      collectionMock.toArray.mockResolvedValueOnce([{ reference: 'POUL-8ZPZ-8CLI' }])
+
+      await searchApplications(dbMock, 'POUL-8ZPZ-8CLI', 'ref', [], 0, 10, undefined, 'IAHW')
+
+      const expectedMatch = { $match: { reference: 'POUL-8ZPZ-8CLI' } }
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        expectedMatch,
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [expectedMatch]
+          }
+        },
+        { $count: 'total' }
+      ])
     })
   })
 

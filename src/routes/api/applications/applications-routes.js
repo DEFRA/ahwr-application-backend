@@ -130,7 +130,8 @@ export const applicationRoutes = [
           request.payload.filter,
           request.payload.offset,
           request.payload.limit,
-          request.payload.sort
+          request.payload.sort,
+          request.payload.agreementType
         )
 
         return h
