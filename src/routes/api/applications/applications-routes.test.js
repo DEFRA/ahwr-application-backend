@@ -171,9 +171,46 @@ describe('applicationRoutes', () => {
 
         expect(searchApplications).toHaveBeenCalledWith(
           mockDb,
-          'search text',
-          'SEARCH_TYPE',
-          ['STATUS1', 'STATUS2'],
+          {
+            searchText: 'search text',
+            searchType: 'SEARCH_TYPE',
+            filter: ['STATUS1', 'STATUS2'],
+            agreementType: undefined
+          },
+          0,
+          10,
+          { field: 'CREATEDAT', direction: 'ASC' }
+        )
+      })
+
+      it('should pass agreementType through when provided', async () => {
+        const mockResultSet = { applications: [{ applicationReference: '123456789' }], total: 1 }
+        const mockDb = {}
+        searchApplications.mockResolvedValueOnce(mockResultSet)
+
+        const mockLogger = { error: jest.fn() }
+        const mockRequest = {
+          logger: mockLogger,
+          db: mockDb,
+          payload: {
+            agreementType: 'PBR',
+            limit: 10,
+            offset: 0,
+            filter: [],
+            sort: { field: 'CREATEDAT', direction: 'ASC' }
+          }
+        }
+
+        await postRoute.options.handler(mockRequest, mockH)
+
+        expect(searchApplications).toHaveBeenCalledWith(
+          mockDb,
+          {
+            searchText: '',
+            searchType: undefined,
+            filter: [],
+            agreementType: 'PBR'
+          },
           0,
           10,
           { field: 'CREATEDAT', direction: 'ASC' }
@@ -202,10 +239,18 @@ describe('applicationRoutes', () => {
         expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
         expect(res).toBe(mockH)
 
-        expect(searchApplications).toHaveBeenCalledWith(mockDb, '', undefined, [], 0, 0, {
-          field: 'CREATEDAT',
-          direction: 'ASC'
-        })
+        expect(searchApplications).toHaveBeenCalledWith(
+          mockDb,
+          {
+            searchText: '',
+            searchType: undefined,
+            filter: [],
+            agreementType: undefined
+          },
+          0,
+          0,
+          { field: 'CREATEDAT', direction: 'ASC' }
+        )
       })
     })
   })

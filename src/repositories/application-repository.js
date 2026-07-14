@@ -1,4 +1,9 @@
-import { STATUS } from 'ffc-ahwr-common-library'
+import {
+  STATUS,
+  APPLICATION_REFERENCE_PREFIX_OLD_WORLD,
+  APPLICATION_REFERENCE_PREFIX_NEW_WORLD,
+  APPLICATION_REFERENCE_PREFIX_POULTRY
+} from 'ffc-ahwr-common-library'
 import { startAndEndDate } from '../lib/date-utils.js'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
@@ -92,7 +97,23 @@ export const evalSortField = (sort) => {
   return { createdAt: -1 }
 }
 
-const buildSearchQuery = (searchText, searchType, filter) => {
+const AGREEMENT_TYPE_REFERENCE_PREFIXES = {
+  IAHW: [APPLICATION_REFERENCE_PREFIX_OLD_WORLD, APPLICATION_REFERENCE_PREFIX_NEW_WORLD],
+  PBR: [APPLICATION_REFERENCE_PREFIX_POULTRY]
+}
+
+const applyAgreementTypeFilter = (query, agreementType) => {
+  const prefixes = AGREEMENT_TYPE_REFERENCE_PREFIXES[agreementType]
+
+  // Skip when agreementType is 'ALL'/absent, or when an exact ref search already constrains reference
+  if (!prefixes || query.reference) {
+    return
+  }
+
+  query.reference = { $regex: `^(${prefixes.join('|')})`, $options: 'i' }
+}
+
+const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => {
   const query = {}
 
   if (searchText) {
@@ -131,6 +152,8 @@ const buildSearchQuery = (searchText, searchType, filter) => {
     query.status = { $in: filter }
   }
 
+  applyAgreementTypeFilter(query, agreementType)
+
   return query
 }
 
@@ -138,14 +161,12 @@ const defaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchApplications = async (
   db,
-  searchText,
-  searchType,
-  filter,
+  criteria,
   offset = 0,
   limit = 10,
   sort = defaultSort()
 ) => {
-  const query = buildSearchQuery(searchText, searchType, filter)
+  const query = buildSearchQuery(criteria)
 
   const totalResult = await db
     .collection(APPLICATION_COLLECTION)
