@@ -113,7 +113,18 @@ const applyAgreementTypeFilter = (query, agreementType) => {
   query.reference = { $regex: `^(${prefixes.join('|')})`, $options: 'i' }
 }
 
-const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => {
+const applyDateRangeFilter = (query, dateFrom, dateTo) => {
+  if (!dateFrom && !dateTo) {
+    return
+  }
+
+  query.createdAt = {
+    ...(dateFrom && { $gte: dateFrom }),
+    ...(dateTo && { $lte: dateTo })
+  }
+}
+
+const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateFrom, dateTo }) => {
   const query = {}
 
   if (searchText) {
@@ -153,6 +164,8 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => 
   }
 
   applyAgreementTypeFilter(query, agreementType)
+
+  applyDateRangeFilter(query, dateFrom, dateTo)
 
   return query
 }
