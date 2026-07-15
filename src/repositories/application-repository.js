@@ -4,7 +4,6 @@ import {
   APPLICATION_REFERENCE_PREFIX_NEW_WORLD,
   APPLICATION_REFERENCE_PREFIX_POULTRY
 } from 'ffc-ahwr-common-library'
-import { startAndEndDate } from '../lib/date-utils.js'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
@@ -140,12 +139,6 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateF
       case 'ref':
         query.reference = searchText
         break
-
-      case 'date': {
-        const { startDate, endDate } = startAndEndDate(searchText)
-        query.createdAt = { $gte: startDate, $lt: endDate }
-        break
-      }
 
       case 'status':
         query.status = {
