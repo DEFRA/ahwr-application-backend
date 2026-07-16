@@ -158,7 +158,6 @@ describe('applicationRoutes', () => {
             search: { text: 'search text', type: 'SEARCH_TYPE' },
             limit: 10,
             offset: 0,
-            filter: ['STATUS1', 'STATUS2'],
             sort: { field: 'CREATEDAT', direction: 'ASC' }
           }
         }
@@ -174,7 +173,7 @@ describe('applicationRoutes', () => {
           {
             searchText: 'search text',
             searchType: 'SEARCH_TYPE',
-            filter: ['STATUS1', 'STATUS2'],
+            status: undefined,
             agreementType: undefined,
             dateFrom: undefined,
             dateTo: undefined
@@ -213,10 +212,10 @@ describe('applicationRoutes', () => {
           {
             searchText: '',
             searchType: undefined,
-            filter: [],
             agreementType: undefined,
             dateFrom,
-            dateTo
+            dateTo,
+            status: undefined
           },
           0,
           10,
@@ -237,7 +236,6 @@ describe('applicationRoutes', () => {
             agreementType: 'PBR',
             limit: 10,
             offset: 0,
-            filter: [],
             sort: { field: 'CREATEDAT', direction: 'ASC' }
           }
         }
@@ -249,16 +247,49 @@ describe('applicationRoutes', () => {
           {
             searchText: '',
             searchType: undefined,
-            filter: [],
             agreementType: 'PBR',
             dateFrom: undefined,
-            dateTo: undefined
+            dateTo: undefined,
+            status: undefined
           },
           0,
           10,
           { field: 'CREATEDAT', direction: 'ASC' }
         )
       })
+
+      it('should pass status through when provided', async () => {
+        const mockResultSet = { applications: [{ applicationReference: '123456789' }], total: 1 }
+        const mockDb = {}
+        searchApplications.mockResolvedValueOnce(mockResultSet)
+
+        const mockLogger = { error: jest.fn() }
+        const mockRequest = {
+          logger: mockLogger,
+          db: mockDb,
+          payload: {
+            status: 'AGREED',
+            limit: 10,
+            offset: 0,
+            sort: { field: 'CREATEDAT', direction: 'ASC' }
+          }
+        }
+
+        await postRoute.options.handler(mockRequest, mockH)
+
+        expect(searchApplications).toHaveBeenCalledWith(
+          mockDb,
+          {
+            searchText: '',
+            searchType: undefined,
+            status: 'AGREED'
+          },
+          0,
+          10,
+          { field: 'CREATEDAT', direction: 'ASC' }
+        )
+      })
+
       it('should return 200 and pass request through with no optional payload items', async () => {
         const mockResultSet = { applications: [{ applicationReference: '123456789' }], total: 1 }
         const mockDb = {}
@@ -271,7 +302,6 @@ describe('applicationRoutes', () => {
           payload: {
             limit: 0,
             offset: 0,
-            filter: [],
             sort: { field: 'CREATEDAT', direction: 'ASC' }
           }
         }
@@ -287,10 +317,10 @@ describe('applicationRoutes', () => {
           {
             searchText: '',
             searchType: undefined,
-            filter: [],
             agreementType: undefined,
             dateFrom: undefined,
-            dateTo: undefined
+            dateTo: undefined,
+            status: undefined
           },
           0,
           0,

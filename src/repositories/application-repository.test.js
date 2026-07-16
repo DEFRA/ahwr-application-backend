@@ -265,11 +265,11 @@ describe('application-repository', () => {
       {
         search: { text: 'AHWR-555A-FD6E', type: 'ref' },
         expectedMatch: 'reference',
-        filter: ['on hold', 'in check']
+        status: 'AGREED'
       }
     ])(
       'Calls through to search database with expected query for simple criteria',
-      async ({ search, expectedMatch, filter }) => {
+      async ({ search, expectedMatch, status }) => {
         const foundApplications = [
           {
             reference: 'IAHW-8ZPZ-8CLI'
@@ -284,13 +284,12 @@ describe('application-repository', () => {
         const res = await searchApplications(dbMock, {
           searchText: search.text,
           searchType: search.type,
-          filter: filter ?? []
+          status
         })
 
-        const expectedFilter = filter ? { status: { $in: filter } } : undefined
         const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
-        if (expectedFilter) {
-          expectedMatchExpression.$match.status = { $in: filter }
+        if (status) {
+          expectedMatchExpression.$match.status = status
         }
 
         expect(res).toEqual({
@@ -341,112 +340,6 @@ describe('application-repository', () => {
         ])
       }
     )
-
-    test.each([
-      { search: { text: 'applied', type: 'status' }, expectedMatch: 'APPLIED' },
-      { search: { text: 'claimed', type: 'status' }, expectedMatch: 'CLAIMED' },
-      { search: { text: 'in check', type: 'status' }, expectedMatch: 'IN_CHECK' },
-      { search: { text: 'accepted', type: 'status' }, expectedMatch: 'ACCEPTED' },
-      { search: { text: 'rejected', type: 'status' }, expectedMatch: 'REJECTED' },
-      { search: { text: 'paid', type: 'status' }, expectedMatch: 'PAID' },
-      { search: { text: 'withdrawn', type: 'status' }, expectedMatch: 'WITHDRAWN' },
-      { search: { text: 'on hold', type: 'status' }, expectedMatch: 'ON_HOLD' },
-      { search: { text: 'ready to pay', type: 'status' }, expectedMatch: 'READY_TO_PAY' }
-    ])('returns success when searching for statuses', async ({ search, expectedMatch, filter }) => {
-      const foundApplications = [
-        {
-          reference: 'IAHW-8ZPZ-8CLI'
-        }
-      ]
-      collectionMock.toArray.mockResolvedValueOnce([
-        {
-          total: 1
-        }
-      ])
-      collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-      const res = await searchApplications(dbMock, {
-        searchText: search.text,
-        searchType: search.type,
-        filter: []
-      })
-
-      expect(res).toEqual({
-        applications: foundApplications,
-        total: 1
-      })
-      expect(dbMock.collection).toHaveBeenCalledWith('applications')
-      expect(collectionMock.aggregate).toHaveBeenCalledWith([
-        {
-          $match: {
-            status: {
-              $regex: expectedMatch,
-              $options: 'i'
-            }
-          }
-        },
-        {
-          $unionWith: {
-            coll: 'owapplications',
-            pipeline: [
-              {
-                $match: {
-                  status: {
-                    $regex: expectedMatch,
-                    $options: 'i'
-                  }
-                }
-              }
-            ]
-          }
-        },
-        { $count: 'total' }
-      ])
-      expect(collectionMock.aggregate).toHaveBeenCalledWith([
-        {
-          $match: {
-            status: {
-              $regex: expectedMatch,
-              $options: 'i'
-            }
-          }
-        },
-        {
-          $addFields: {
-            type: 'EE'
-          }
-        },
-        {
-          $unionWith: {
-            coll: 'owapplications',
-            pipeline: [
-              {
-                $match: {
-                  status: {
-                    $regex: expectedMatch,
-                    $options: 'i'
-                  }
-                }
-              },
-              {
-                $addFields: {
-                  type: 'VV'
-                }
-              }
-            ]
-          }
-        },
-        { $sort: { createdAt: -1 } },
-        { $skip: 0 },
-        { $limit: 10 },
-        {
-          $addFields: {
-            flags: {
-              $filter: flagNotDeletedFilter
-            }
-          }
-        }
-      ])
-    })
 
     test.each([
       { search: { text: 'terrys', type: 'organisation' } },

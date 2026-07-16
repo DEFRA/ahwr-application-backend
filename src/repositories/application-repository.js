@@ -123,7 +123,15 @@ const applyDateRangeFilter = (query, dateFrom, dateTo) => {
   }
 }
 
-const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateFrom, dateTo }) => {
+const applyStatusFilter = (query, status) => {
+  if (!status) {
+    return
+  }
+
+  query.status = status
+}
+
+const buildSearchQuery = ({ searchText, searchType, status, agreementType, dateFrom, dateTo }) => {
   const query = {}
 
   if (searchText) {
@@ -140,25 +148,16 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateF
         query.reference = searchText
         break
 
-      case 'status':
-        query.status = {
-          $regex: searchText.toUpperCase().replaceAll(' ', '_'),
-          $options: 'i'
-        }
-        break
-
       default:
         break
     }
   }
 
-  if (filter && filter.length > 0) {
-    query.status = { $in: filter }
-  }
-
   applyAgreementTypeFilter(query, agreementType)
 
   applyDateRangeFilter(query, dateFrom, dateTo)
+
+  applyStatusFilter(query, status)
 
   return query
 }
