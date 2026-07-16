@@ -173,7 +173,7 @@ describe('applicationRoutes', () => {
           {
             searchText: 'search text',
             searchType: 'SEARCH_TYPE',
-            filter: ['STATUS1', 'STATUS2'],
+            status: undefined,
             agreementType: undefined,
             dateFrom: undefined,
             dateTo: undefined
@@ -212,7 +212,6 @@ describe('applicationRoutes', () => {
           {
             searchText: '',
             searchType: undefined,
-            filter: [],
             agreementType: undefined,
             dateFrom,
             dateTo,
@@ -251,7 +250,7 @@ describe('applicationRoutes', () => {
             agreementType: 'PBR',
             dateFrom: undefined,
             dateTo: undefined,
-            status: undefined,
+            status: undefined
           },
           0,
           10,
