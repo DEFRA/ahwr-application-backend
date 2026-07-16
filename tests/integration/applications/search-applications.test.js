@@ -92,12 +92,12 @@ describe('Search applications', () => {
     expect(references(res.payload)).toEqual(['AHWR-BBBB-0002', 'IAHW-AAAA-0001'])
   })
   test('returns only poultry agreements when agreementType is PBR', async () => {
-      const res = await server.inject({
-        ...options,
-        payload: searchPayload({ agreementType: 'PBR' })
-      })
-
-      expect(res.statusCode).toBe(StatusCodes.OK)
-      expect(references(res.payload)).toEqual(['POUL-CCCC-0003', 'POUL-EEEE-0005'])
+    const res = await server.inject({
+      ...options,
+      payload: searchPayload({ agreementType: 'PBR' })
     })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(references(res.payload)).toEqual(['POUL-CCCC-0003', 'POUL-EEEE-0005'])
+  })
 })
