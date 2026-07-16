@@ -90,7 +90,10 @@ describe('Search applications', () => {
     ...overrides
   })
 
-  const references = (body) => JSON.parse(body).applications.map((a) => a.reference).sort()
+  const references = (body) =>
+    JSON.parse(body)
+      .applications.map((a) => a.reference)
+      .sort()
 
   test('applies agreementType and date range together as AND, across both collections', async () => {
     const res = await server.inject({
