@@ -77,7 +77,7 @@ describe('Search applications', () => {
       .applications.map((a) => a.reference)
       .sort()
 
-  test('filters applications by agreement type and date range across both new and old world collections', async () => {
+  test('applies agreementType and date range together as AND, across both collections', async () => {
     const res = await server.inject({
       ...options,
       payload: searchPayload({
@@ -91,7 +91,8 @@ describe('Search applications', () => {
     expect(JSON.parse(res.payload).total).toBe(2)
     expect(references(res.payload)).toEqual(['AHWR-BBBB-0002', 'IAHW-AAAA-0001'])
   })
-  test('returns only poultry agreements when agreementType is PBR', async () => {
+
+  test('PBR returns only poultry agreements, regardless of date', async () => {
     const res = await server.inject({
       ...options,
       payload: searchPayload({ agreementType: 'PBR' })
