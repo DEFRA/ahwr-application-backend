@@ -87,6 +87,7 @@ describe('Search applications', () => {
       })
     })
 
+    if (res.statusCode !== 200) console.error('DEBUG 400 body:', res.payload)
     expect(res.statusCode).toBe(StatusCodes.OK)
     expect(JSON.parse(res.payload).total).toBe(2)
     expect(references(res.payload)).toEqual(['AHWR-BBBB-0002', 'IAHW-AAAA-0001'])
