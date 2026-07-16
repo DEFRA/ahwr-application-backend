@@ -172,9 +172,6 @@ export const searchApplications = async (
   limit = 10,
   sort = defaultSort()
 ) => {
-  console.log({
-    criteria
-  })
   const query = buildSearchQuery(criteria)
 
   const totalResult = await db
