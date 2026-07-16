@@ -7,7 +7,12 @@ export const searchPayloadSchema = {
   limit: Joi.number().greater(0).default(SEARCH_MAX_LIMIT),
   agreementType: Joi.string().valid('ALL', 'IAHW', 'PBR').optional(),
   dateFrom: Joi.date().optional(),
-  dateTo: Joi.date().optional(),
+  dateTo: Joi.date()
+    .when('dateFrom', {
+      is: Joi.date().required(),
+      then: Joi.date().min(Joi.ref('dateFrom'))
+    })
+    .optional(),
   search: Joi.object({
     text: Joi.string().valid().optional().allow(''),
     type: Joi.string().valid().optional().allow('')
