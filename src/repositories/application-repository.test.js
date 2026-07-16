@@ -265,11 +265,11 @@ describe('application-repository', () => {
       {
         search: { text: 'AHWR-555A-FD6E', type: 'ref' },
         expectedMatch: 'reference',
-        filter: ['on hold', 'in check']
+        status: 'AGREED'
       }
     ])(
       'Calls through to search database with expected query for simple criteria',
-      async ({ search, expectedMatch, filter }) => {
+      async ({ search, expectedMatch, status }) => {
         const foundApplications = [
           {
             reference: 'IAHW-8ZPZ-8CLI'
@@ -284,13 +284,12 @@ describe('application-repository', () => {
         const res = await searchApplications(dbMock, {
           searchText: search.text,
           searchType: search.type,
-          filter: filter ?? []
+          status
         })
 
-        const expectedFilter = filter ? { status: { $in: filter } } : undefined
         const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
-        if (expectedFilter) {
-          expectedMatchExpression.$match.status = { $in: filter }
+        if (status) {
+          expectedMatchExpression.$match.status = status
         }
 
         expect(res).toEqual({

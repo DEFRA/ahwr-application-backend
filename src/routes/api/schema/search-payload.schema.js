@@ -13,6 +13,7 @@ export const searchPayloadSchema = {
       then: Joi.date().min(Joi.ref('dateFrom'))
     })
     .optional(),
+  status: Joi.string().valid('AGREED', 'NOT_AGREED').optional(),
   search: Joi.object({
     text: Joi.string().valid().optional().allow(''),
     type: Joi.string().valid().optional().allow('')

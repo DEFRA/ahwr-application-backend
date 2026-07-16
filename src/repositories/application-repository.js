@@ -123,7 +123,7 @@ const applyDateRangeFilter = (query, dateFrom, dateTo) => {
   }
 }
 
-const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateFrom, dateTo }) => {
+const buildSearchQuery = ({ searchText, searchType, status, agreementType, dateFrom, dateTo }) => {
   const query = {}
 
   if (searchText) {
@@ -152,8 +152,8 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateF
     }
   }
 
-  if (filter && filter.length > 0) {
-    query.status = { $in: filter }
+  if (status) {
+    query.status = status
   }
 
   applyAgreementTypeFilter(query, agreementType)
@@ -172,6 +172,9 @@ export const searchApplications = async (
   limit = 10,
   sort = defaultSort()
 ) => {
+  console.log({
+    criteria
+  })
   const query = buildSearchQuery(criteria)
 
   const totalResult = await db

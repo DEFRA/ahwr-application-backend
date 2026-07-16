@@ -114,8 +114,7 @@ export const applicationRoutes = [
           sort: Joi.object({
             field: Joi.string().valid().optional().default('CREATEDAT'),
             direction: Joi.string().valid().optional().allow('ASC')
-          }).optional(),
-          filter: Joi.array().optional()
+          }).optional()
         }),
         failAction: async (request, _h, err) => {
           request.logger.error(err, 'Application search validation error')
@@ -128,10 +127,10 @@ export const applicationRoutes = [
           {
             searchText: request.payload.search?.text ?? '',
             searchType: request.payload.search?.type,
-            filter: request.payload.filter,
             agreementType: request.payload.agreementType,
             dateFrom: request.payload.dateFrom,
-            dateTo: request.payload.dateTo
+            dateTo: request.payload.dateTo,
+            status: request.payload.status,
           },
           request.payload.offset,
           request.payload.limit,
