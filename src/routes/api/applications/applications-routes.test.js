@@ -175,7 +175,48 @@ describe('applicationRoutes', () => {
             searchText: 'search text',
             searchType: 'SEARCH_TYPE',
             filter: ['STATUS1', 'STATUS2'],
-            agreementType: undefined
+            agreementType: undefined,
+            dateFrom: undefined,
+            dateTo: undefined
+          },
+          0,
+          10,
+          { field: 'CREATEDAT', direction: 'ASC' }
+        )
+      })
+
+      it('should pass dateFrom and dateTo through when provided', async () => {
+        const mockResultSet = { applications: [{ applicationReference: '123456789' }], total: 1 }
+        const mockDb = {}
+        searchApplications.mockResolvedValueOnce(mockResultSet)
+
+        const dateFrom = new Date(2025, 0, 1)
+        const dateTo = new Date(2025, 11, 31)
+        const mockLogger = { error: jest.fn() }
+        const mockRequest = {
+          logger: mockLogger,
+          db: mockDb,
+          payload: {
+            dateFrom,
+            dateTo,
+            limit: 10,
+            offset: 0,
+            filter: [],
+            sort: { field: 'CREATEDAT', direction: 'ASC' }
+          }
+        }
+
+        await postRoute.options.handler(mockRequest, mockH)
+
+        expect(searchApplications).toHaveBeenCalledWith(
+          mockDb,
+          {
+            searchText: '',
+            searchType: undefined,
+            filter: [],
+            agreementType: undefined,
+            dateFrom,
+            dateTo
           },
           0,
           10,
@@ -209,7 +250,9 @@ describe('applicationRoutes', () => {
             searchText: '',
             searchType: undefined,
             filter: [],
-            agreementType: 'PBR'
+            agreementType: 'PBR',
+            dateFrom: undefined,
+            dateTo: undefined
           },
           0,
           10,
@@ -245,7 +288,9 @@ describe('applicationRoutes', () => {
             searchText: '',
             searchType: undefined,
             filter: [],
-            agreementType: undefined
+            agreementType: undefined,
+            dateFrom: undefined,
+            dateTo: undefined
           },
           0,
           0,

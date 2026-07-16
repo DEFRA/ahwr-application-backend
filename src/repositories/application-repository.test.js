@@ -449,104 +449,6 @@ describe('application-repository', () => {
     })
 
     test.each([
-      {
-        search: { text: '19/12/2025', type: 'date' },
-        expectedStart: new Date(2025, 11, 19),
-        expectedEnd: new Date(2025, 11, 20)
-      },
-      {
-        search: { text: '31/03/2025', type: 'date' },
-        expectedStart: new Date(2025, 2, 31),
-        expectedEnd: new Date(2025, 3, 1)
-      }
-    ])(
-      'returns success when searching for date',
-      async ({ search, expectedStart, expectedEnd }) => {
-        const foundApplications = [
-          {
-            reference: 'IAHW-8ZPZ-8CLI'
-          }
-        ]
-        collectionMock.toArray.mockResolvedValueOnce([
-          {
-            total: 1
-          }
-        ])
-        collectionMock.toArray.mockResolvedValueOnce(foundApplications)
-        const res = await searchApplications(dbMock, {
-          searchText: search.text,
-          searchType: search.type,
-          filter: []
-        })
-
-        expect(res).toEqual({
-          applications: foundApplications,
-          total: 1
-        })
-        expect(dbMock.collection).toHaveBeenCalledWith('applications')
-        expect(collectionMock.aggregate).toHaveBeenCalledWith([
-          {
-            $match: {
-              createdAt: { $gte: expectedStart, $lt: expectedEnd }
-            }
-          },
-          {
-            $unionWith: {
-              coll: 'owapplications',
-              pipeline: [
-                {
-                  $match: {
-                    createdAt: { $gte: expectedStart, $lt: expectedEnd }
-                  }
-                }
-              ]
-            }
-          },
-          { $count: 'total' }
-        ])
-        expect(collectionMock.aggregate).toHaveBeenCalledWith([
-          {
-            $match: {
-              createdAt: { $gte: expectedStart, $lt: expectedEnd }
-            }
-          },
-          {
-            $addFields: {
-              type: 'EE'
-            }
-          },
-          {
-            $unionWith: {
-              coll: 'owapplications',
-              pipeline: [
-                {
-                  $match: {
-                    createdAt: { $gte: expectedStart, $lt: expectedEnd }
-                  }
-                },
-                {
-                  $addFields: {
-                    type: 'VV'
-                  }
-                }
-              ]
-            }
-          },
-          { $sort: { createdAt: -1 } },
-          { $skip: 0 },
-          { $limit: 10 },
-          {
-            $addFields: {
-              flags: {
-                $filter: flagNotDeletedFilter
-              }
-            }
-          }
-        ])
-      }
-    )
-
-    test.each([
       { search: { text: 'terrys', type: 'organisation' } },
       { search: { text: 'chocolate', type: 'organisation' } }
     ])('returns success when searching for organisation', async ({ search }) => {
@@ -726,6 +628,85 @@ describe('application-repository', () => {
           $unionWith: {
             coll: 'owapplications',
             pipeline: [expectedMatch]
+          }
+        },
+        { $count: 'total' }
+      ])
+    })
+
+    test('restricts by createdAt $gte when dateFrom is provided', async () => {
+      const dateFrom = new Date(2025, 0, 1)
+      collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+      collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+      await searchApplications(dbMock, { searchText: '', filter: [], dateFrom })
+
+      const expectedMatch = { $match: { createdAt: { $gte: dateFrom } } }
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        expectedMatch,
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [expectedMatch]
+          }
+        },
+        { $count: 'total' }
+      ])
+    })
+
+    test('restricts by createdAt $lte when dateTo is provided', async () => {
+      const dateTo = new Date(2025, 11, 31)
+      collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+      collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+      await searchApplications(dbMock, { searchText: '', filter: [], dateTo })
+
+      const expectedMatch = { $match: { createdAt: { $lte: dateTo } } }
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        expectedMatch,
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [expectedMatch]
+          }
+        },
+        { $count: 'total' }
+      ])
+    })
+
+    test('restricts by createdAt $gte and $lte when both dateFrom and dateTo are provided', async () => {
+      const dateFrom = new Date(2025, 0, 1)
+      const dateTo = new Date(2025, 11, 31)
+      collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+      collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+      await searchApplications(dbMock, { searchText: '', filter: [], dateFrom, dateTo })
+
+      const expectedMatch = { $match: { createdAt: { $gte: dateFrom, $lte: dateTo } } }
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        expectedMatch,
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [expectedMatch]
+          }
+        },
+        { $count: 'total' }
+      ])
+    })
+
+    test('does not restrict by createdAt when neither dateFrom nor dateTo are provided', async () => {
+      collectionMock.toArray.mockResolvedValueOnce([{ total: 1 }])
+      collectionMock.toArray.mockResolvedValueOnce([{ reference: 'IAHW-8ZPZ-8CLI' }])
+
+      await searchApplications(dbMock, { searchText: '', filter: [] })
+
+      expect(collectionMock.aggregate).toHaveBeenCalledWith([
+        { $match: {} },
+        {
+          $unionWith: {
+            coll: 'owapplications',
+            pipeline: [{ $match: {} }]
           }
         },
         { $count: 'total' }

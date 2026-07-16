@@ -4,7 +4,6 @@ import {
   APPLICATION_REFERENCE_PREFIX_NEW_WORLD,
   APPLICATION_REFERENCE_PREFIX_POULTRY
 } from 'ffc-ahwr-common-library'
-import { startAndEndDate } from '../lib/date-utils.js'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
@@ -113,7 +112,18 @@ const applyAgreementTypeFilter = (query, agreementType) => {
   query.reference = { $regex: `^(${prefixes.join('|')})`, $options: 'i' }
 }
 
-const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => {
+const applyDateRangeFilter = (query, dateFrom, dateTo) => {
+  if (!dateFrom && !dateTo) {
+    return
+  }
+
+  query.createdAt = {
+    ...(dateFrom && { $gte: dateFrom }),
+    ...(dateTo && { $lte: dateTo })
+  }
+}
+
+const buildSearchQuery = ({ searchText, searchType, filter, agreementType, dateFrom, dateTo }) => {
   const query = {}
 
   if (searchText) {
@@ -129,12 +139,6 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => 
       case 'ref':
         query.reference = searchText
         break
-
-      case 'date': {
-        const { startDate, endDate } = startAndEndDate(searchText)
-        query.createdAt = { $gte: startDate, $lt: endDate }
-        break
-      }
 
       case 'status':
         query.status = {
@@ -153,6 +157,8 @@ const buildSearchQuery = ({ searchText, searchType, filter, agreementType }) => 
   }
 
   applyAgreementTypeFilter(query, agreementType)
+
+  applyDateRangeFilter(query, dateFrom, dateTo)
 
   return query
 }
