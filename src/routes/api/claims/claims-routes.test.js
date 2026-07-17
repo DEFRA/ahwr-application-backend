@@ -349,10 +349,8 @@ describe('claims-routes', () => {
   })
 
   describe('POST /api/claims/search', () => {
-    it('passes the search criteria including agreementType through to searchClaims', async () => {
+    describe('with a valid search payload', () => {
       const resultSet = { total: 1, claims: [{ reference: 'REBC-VA4R-TRL7' }] }
-      searchClaims.mockResolvedValueOnce(resultSet)
-
       const payload = {
         search: { text: '', type: 'reset' },
         agreementType: 'PBR',
@@ -360,22 +358,34 @@ describe('claims-routes', () => {
         limit: 20,
         sort: { field: 'createdAt', direction: 'DESC' }
       }
+      let res
 
-      const res = await server.inject({
-        method: 'POST',
-        url: '/api/claims/search',
-        payload
+      beforeEach(async () => {
+        searchClaims.mockResolvedValueOnce(resultSet)
+        res = await server.inject({
+          method: 'POST',
+          url: '/api/claims/search',
+          payload
+        })
       })
 
-      expect(res.statusCode).toBe(200)
-      expect(res.result).toEqual(resultSet)
-      expect(searchClaims).toHaveBeenCalledWith(
-        mockDb,
-        { search: { text: '', type: 'reset' }, filter: undefined, agreementType: 'PBR' },
-        0,
-        20,
-        { field: 'createdAt', direction: 'DESC' }
-      )
+      it('returns 200', () => {
+        expect(res.statusCode).toBe(200)
+      })
+
+      it('returns the search results', () => {
+        expect(res.result).toEqual(resultSet)
+      })
+
+      it('passes the search criteria including agreementType through to searchClaims', () => {
+        expect(searchClaims).toHaveBeenCalledWith(
+          mockDb,
+          { search: { text: '', type: 'reset' }, filter: undefined, agreementType: 'PBR' },
+          0,
+          20,
+          { field: 'createdAt', direction: 'DESC' }
+        )
+      })
     })
 
     it('rejects an invalid agreementType with 400 and does not call searchClaims', async () => {

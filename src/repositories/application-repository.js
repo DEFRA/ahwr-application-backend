@@ -2,7 +2,9 @@ import { STATUS } from 'ffc-ahwr-common-library'
 import { APPLICATION_COLLECTION, OW_APPLICATION_COLLECTION } from '../constants/index.js'
 import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
-import { applyAgreementTypeFilter } from './agreement-type-filter.js'
+import { applyAgreementTypeFilter } from './filters/agreement-type-filter.js'
+import { applyDateRangeFilter } from './filters/date-range-filter.js'
+import { applyStatusFilter } from './filters/status-filter.js'
 
 export const createApplicationIndexes = async (db) => {
   await db.collection(APPLICATION_COLLECTION).createIndex({
@@ -90,25 +92,6 @@ export const evalSortField = (sort) => {
   }
 
   return { createdAt: -1 }
-}
-
-const applyDateRangeFilter = (query, dateFrom, dateTo) => {
-  if (!dateFrom && !dateTo) {
-    return
-  }
-
-  query.createdAt = {
-    ...(dateFrom && { $gte: dateFrom }),
-    ...(dateTo && { $lte: dateTo })
-  }
-}
-
-const applyStatusFilter = (query, status) => {
-  if (!status) {
-    return
-  }
-
-  query.status = status
 }
 
 const buildSearchQuery = ({ searchText, searchType, status, agreementType, dateFrom, dateTo }) => {

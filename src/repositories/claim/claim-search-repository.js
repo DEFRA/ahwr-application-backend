@@ -1,6 +1,6 @@
 import { startAndEndDate } from '../../lib/date-utils.js'
 import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index.js'
-import { applyAgreementTypeFilter } from '../agreement-type-filter.js'
+import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
 
 const MONGO_OP_BY_FILTER_OP = {
   eq: '$eq',
