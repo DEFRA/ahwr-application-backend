@@ -48,13 +48,12 @@ export const claimsHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { search, filter, offset, limit, sort } = request.payload
+        const { search, filter, offset, limit, sort, agreementType } = request.payload
         const { total, claims } = await searchClaims(
-          search,
-          filter,
+          request.db,
+          { search, filter, agreementType },
           offset,
           limit,
-          request.db,
           sort
         )
         return h.response({ total, claims }).code(StatusCodes.OK)

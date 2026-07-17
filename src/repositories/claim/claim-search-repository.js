@@ -1,5 +1,6 @@
 import { startAndEndDate } from '../../lib/date-utils.js'
 import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index.js'
+import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
 
 const MONGO_OP_BY_FILTER_OP = {
   eq: '$eq',
@@ -83,30 +84,34 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
-export const searchClaims = async (search, filter, offset, limit, db, sort = getDefaultSort()) => {
+export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
+  const { search, filter, agreementType } = criteria
+
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
   }
 
-  const claimMatchStage = {}
+  const query = {}
 
   if (search?.text && search?.type) {
     if (search.type === 'sbi') {
-      await applyApplicationSearchConditions(db, claimMatchStage, search.text)
+      await applyApplicationSearchConditions(db, query, search.text)
     } else {
-      applyClaimSearchConditions(claimMatchStage, search)
+      applyClaimSearchConditions(query, search)
     }
   }
 
   if (filter) {
     const mongoOp = MONGO_OP_BY_FILTER_OP[filter.op]
     if (mongoOp) {
-      claimMatchStage[filter.field] = { [mongoOp]: filter.value }
+      query[filter.field] = { [mongoOp]: filter.value }
     }
   }
 
+  applyAgreementTypeFilter(query, agreementType, 'applicationReference')
+
   const pipeline = [
-    { $match: claimMatchStage },
+    { $match: query },
     {
       $facet: {
         data: [

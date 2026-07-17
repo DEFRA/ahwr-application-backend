@@ -9,10 +9,12 @@ import {
   updateClaimDataHandler,
   getClaimsCountHandler
 } from './claims-controller.js'
+import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 
 jest.mock('./claims-controller.js')
 jest.mock('../../../repositories/claim-repository.js')
 jest.mock('../../../repositories/application-repository.js')
+jest.mock('../../../repositories/claim/claim-search-repository.js')
 jest.mock('../../../event-publisher/index.js')
 
 const mockLogger = {
@@ -343,6 +345,58 @@ describe('claims-routes', () => {
       const res = await server.inject(options)
 
       expect(res.statusCode).toBe(400)
+    })
+  })
+
+  describe('POST /api/claims/search', () => {
+    describe('with a valid search payload', () => {
+      const resultSet = { total: 1, claims: [{ reference: 'REBC-VA4R-TRL7' }] }
+      const payload = {
+        search: { text: '', type: 'reset' },
+        agreementType: 'PBR',
+        offset: 0,
+        limit: 20,
+        sort: { field: 'createdAt', direction: 'DESC' }
+      }
+      let res
+
+      beforeEach(async () => {
+        searchClaims.mockResolvedValueOnce(resultSet)
+        res = await server.inject({
+          method: 'POST',
+          url: '/api/claims/search',
+          payload
+        })
+      })
+
+      it('returns 200', () => {
+        expect(res.statusCode).toBe(200)
+      })
+
+      it('returns the search results', () => {
+        expect(res.result).toEqual(resultSet)
+      })
+
+      it('passes the search criteria including agreementType through to searchClaims', () => {
+        expect(searchClaims).toHaveBeenCalledWith(
+          mockDb,
+          { search: { text: '', type: 'reset' }, filter: undefined, agreementType: 'PBR' },
+          0,
+          20,
+          { field: 'createdAt', direction: 'DESC' }
+        )
+      })
+    })
+
+    it('rejects an invalid agreementType with 400 and does not call searchClaims', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: { agreementType: 'alpacas' }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(searchClaims).not.toHaveBeenCalled()
     })
   })
 
