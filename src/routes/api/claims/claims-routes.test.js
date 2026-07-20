@@ -381,7 +381,7 @@ describe('claims-routes', () => {
       it('passes the search criteria including agreementType through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, agreementType: 'PBR' },
+          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
@@ -391,7 +391,7 @@ describe('claims-routes', () => {
       it('passes the search criteria including status through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, status: 'AGREED' },
+          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
