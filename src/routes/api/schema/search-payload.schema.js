@@ -6,6 +6,7 @@ export const searchPayloadSchema = {
   offset: Joi.number().default(0),
   limit: Joi.number().greater(0).default(SEARCH_MAX_LIMIT),
   agreementType: Joi.string().valid('ALL', 'IAHW', 'PBR').optional(),
+  flag: Joi.string().valid('ALL', 'FLAGGED', 'NOT_FLAGGED').optional(),
   dateFrom: Joi.date().optional(),
   dateTo: Joi.date()
     .when('dateFrom', {

@@ -44,4 +44,18 @@ describe('searchPayloadSchema', () => {
       expect(error).toBeUndefined()
     })
   })
+
+  describe('flag', () => {
+    it.each(['ALL', 'FLAGGED', 'NOT_FLAGGED'])('accepts %s', (flag) => {
+      const { error } = schema.validate({ flag })
+
+      expect(error).toBeUndefined()
+    })
+
+    it('rejects an unknown flag value', () => {
+      const { error } = schema.validate({ flag: 'MAYBE' })
+
+      expect(error).toBeDefined()
+    })
+  })
 })

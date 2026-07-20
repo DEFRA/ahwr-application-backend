@@ -58,6 +58,22 @@ describe('Search applications', () => {
       organisation: { sbi: '555555555', name: 'PBR Outside Range' },
       flags: []
     })
+
+    await server.db.collection('applications').insertOne({
+      reference: 'IAHW-FFFF-0006',
+      status: 'AGREED',
+      createdAt: new Date('2025-09-01T00:00:00.000Z'),
+      organisation: { sbi: '666666666', name: 'IAHW Flagged' },
+      flags: [{ id: 'flag-1', deleted: false }]
+    })
+
+    await server.db.collection('applications').insertOne({
+      reference: 'IAHW-GGGG-0007',
+      status: 'AGREED',
+      createdAt: new Date('2025-09-02T00:00:00.000Z'),
+      organisation: { sbi: '777777777', name: 'IAHW Only Deleted Flag' },
+      flags: [{ id: 'flag-2', deleted: true }]
+    })
   })
 
   afterAll(async () => {
@@ -99,5 +115,42 @@ describe('Search applications', () => {
 
     expect(res.statusCode).toBe(StatusCodes.OK)
     expect(references(res.payload)).toEqual(['POUL-CCCC-0003', 'POUL-EEEE-0005'])
+  })
+
+  test('FLAGGED returns only applications with a non-deleted flag', async () => {
+    const res = await server.inject({
+      ...options,
+      payload: searchPayload({ flag: 'FLAGGED' })
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(references(res.payload)).toEqual(['IAHW-FFFF-0006'])
+  })
+
+  test('NOT_FLAGGED treats empty and only-deleted flags as not flagged', async () => {
+    const res = await server.inject({
+      ...options,
+      payload: searchPayload({ flag: 'NOT_FLAGGED' })
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(references(res.payload)).toEqual([
+      'AHWR-BBBB-0002',
+      'IAHW-AAAA-0001',
+      'IAHW-DDDD-0004',
+      'IAHW-GGGG-0007',
+      'POUL-CCCC-0003',
+      'POUL-EEEE-0005'
+    ])
+  })
+
+  test('ALL returns flagged and unflagged applications', async () => {
+    const res = await server.inject({
+      ...options,
+      payload: searchPayload({ flag: 'ALL' })
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(JSON.parse(res.payload).total).toBe(7)
   })
 })
