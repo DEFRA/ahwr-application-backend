@@ -1,18 +1,7 @@
 import { startAndEndDate } from '../../lib/date-utils.js'
 import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index.js'
 import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
-
-const MONGO_OP_BY_FILTER_OP = {
-  eq: '$eq',
-  ne: '$ne',
-  gt: '$gt',
-  gte: '$gte',
-  lt: '$lt',
-  lte: '$lte',
-  in: '$in',
-  nin: '$nin',
-  regex: '$regex'
-}
+import { applyStatusFilter } from '../filters/status-filter.js'
 
 const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'])
 
@@ -45,12 +34,6 @@ const applyClaimSearchConditions = (matchStage, search) => {
       break
     case 'appRef':
       matchStage.applicationReference = { $regex: text, $options: 'i' }
-      break
-    case 'status':
-      matchStage.status = {
-        $regex: text.toUpperCase().replaceAll(' ', '_'),
-        $options: 'i'
-      }
       break
     case 'species':
       matchStage['data.typeOfLivestock'] = { $regex: text, $options: 'i' }
@@ -85,7 +68,7 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
-  const { search, filter, agreementType } = criteria
+  const { search, status, agreementType } = criteria
 
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
@@ -101,14 +84,8 @@ export const searchClaims = async (db, criteria, offset, limit, sort = getDefaul
     }
   }
 
-  if (filter) {
-    const mongoOp = MONGO_OP_BY_FILTER_OP[filter.op]
-    if (mongoOp) {
-      query[filter.field] = { [mongoOp]: filter.value }
-    }
-  }
-
   applyAgreementTypeFilter(query, agreementType, 'applicationReference')
+  applyStatusFilter(query, status)
 
   const pipeline = [
     { $match: query },

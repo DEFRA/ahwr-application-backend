@@ -2,7 +2,7 @@ import joi from 'joi'
 import { searchPayloadSchema } from '../schema/search-payload.schema.js'
 import { StatusCodes } from 'http-status-codes'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
+import { POULTRY_SCHEME, AHWR_SCHEME, STATUS } from 'ffc-ahwr-common-library'
 import {
   createClaimHandler,
   isURNUniqueHandler,
@@ -40,6 +40,10 @@ export const claimsHandlers = [
               direction: joi.string().valid().optional().allow(''),
               reference: joi.string().valid().optional().allow('')
             })
+            .optional(),
+          status: joi
+            .string()
+            .valid(...Object.values(STATUS))
             .optional()
         }),
         failAction: async (request, h, err) => {
@@ -48,10 +52,10 @@ export const claimsHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { search, filter, offset, limit, sort, agreementType } = request.payload
+        const { search, status, offset, limit, sort, agreementType } = request.payload
         const { total, claims } = await searchClaims(
           request.db,
-          { search, filter, agreementType },
+          { search, status, agreementType },
           offset,
           limit,
           sort

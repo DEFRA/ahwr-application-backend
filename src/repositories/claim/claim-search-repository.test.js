@@ -32,18 +32,17 @@ describe('claim-search-repository', () => {
   describe('searchClaims', () => {
     it('returns an empty set of results if there is a search type but it isnt valid', async () => {
       const search = { text: 'something', type: 'name' }
-      const filter = null
       const offset = 0
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
       const dbMock = {}
 
-      const result = await searchClaims(dbMock, { search, filter }, offset, limit, sort)
+      const result = await searchClaims(dbMock, { search }, offset, limit, sort)
 
       expect(result).toEqual({ claims: [], total: 0 })
     })
 
-    it('returns total and claims if there is no search or filter', async () => {
+    it('returns total and claims if there is no search', async () => {
       const dbMock = {
         collection: jest.fn(() => collectionMock)
       }
@@ -59,12 +58,11 @@ describe('claim-search-repository', () => {
         type: 'reset',
         text: ''
       }
-      const filter = null
       const offset = 0
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(dbMock, { search, filter }, offset, limit, sort)
+      const result = await searchClaims(dbMock, { search }, offset, limit, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -92,12 +90,11 @@ describe('claim-search-repository', () => {
       }
 
       const search = { type: 'sbi', text: '123456789' }
-      const filter = null
       const offset = 0
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(dbMock, { search, filter }, offset, limit, sort)
+      const result = await searchClaims(dbMock, { search }, offset, limit, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -123,12 +120,11 @@ describe('claim-search-repository', () => {
       }
 
       const search = { type: 'appRef', text: 'IAHW-ABCD-1234' }
-      const filter = null
       const offset = 0
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(dbMock, { search, filter }, offset, limit, sort)
+      const result = await searchClaims(dbMock, { search }, offset, limit, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -141,7 +137,7 @@ describe('claim-search-repository', () => {
       })
     })
 
-    it('returns total and claims if there a filter is provided', async () => {
+    it('returns total and claims if there a status is provided', async () => {
       const dbMock = {
         collection: jest.fn(() => collectionMock)
       }
@@ -154,12 +150,12 @@ describe('claim-search-repository', () => {
       }
 
       const search = null
-      const filter = { field: 'updatedAt', op: 'lte', value: '2025-01-17' }
+      const status = 'AGREED'
       const offset = 0
       const limit = 30
       const sort = { field: 'createdAt', direction: 'DESC' }
 
-      const result = await searchClaims(dbMock, { search, filter }, offset, limit, sort)
+      const result = await searchClaims(dbMock, { search, status }, offset, limit, sort)
 
       expect(result).toEqual({
         claims: [{ reference: 'IAHW-ABCD-1234' }],
@@ -167,7 +163,7 @@ describe('claim-search-repository', () => {
       })
       expect(collectionMock.aggregate.mock.calls[0][0][0]).toEqual({
         $match: {
-          [filter.field]: { [`$${filter.op}`]: filter.value }
+          status
         }
       })
     })
@@ -177,7 +173,7 @@ describe('claim-search-repository', () => {
 
       await searchClaims(
         dbMock,
-        { search: { type: 'ref', text: 'IAHW-ABCD-1234' }, filter: null },
+        { search: { type: 'ref', text: 'IAHW-ABCD-1234' } },
         0,
         30,
         defaultSort
@@ -188,32 +184,10 @@ describe('claim-search-repository', () => {
       })
     })
 
-    it('uppercases the text and replaces spaces with underscores when search type is status', async () => {
-      const { dbMock, collectionMock } = singleResultDb()
-
-      await searchClaims(
-        dbMock,
-        { search: { type: 'status', text: 'on hold' }, filter: null },
-        0,
-        30,
-        defaultSort
-      )
-
-      expect(matchStageOf(collectionMock)).toEqual({
-        status: { $regex: 'ON_HOLD', $options: 'i' }
-      })
-    })
-
     it('applies a case-insensitive regex on the livestock type when search type is species', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(
-        dbMock,
-        { search: { type: 'species', text: 'beef' }, filter: null },
-        0,
-        30,
-        defaultSort
-      )
+      await searchClaims(dbMock, { search: { type: 'species', text: 'beef' } }, 0, 30, defaultSort)
 
       expect(matchStageOf(collectionMock)).toEqual({
         'data.typeOfLivestock': { $regex: 'beef', $options: 'i' }
@@ -225,7 +199,7 @@ describe('claim-search-repository', () => {
 
       await searchClaims(
         dbMock,
-        { search: { type: 'date', text: '17/01/2025' }, filter: null },
+        { search: { type: 'date', text: '17/01/2025' } },
         0,
         30,
         defaultSort
@@ -241,21 +215,7 @@ describe('claim-search-repository', () => {
 
       await searchClaims(
         dbMock,
-        { search: { type: 'reset', text: 'anything' }, filter: null },
-        0,
-        30,
-        defaultSort
-      )
-
-      expect(matchStageOf(collectionMock)).toEqual({})
-    })
-
-    it('ignores a filter that uses an unsupported operator', async () => {
-      const { dbMock, collectionMock } = singleResultDb()
-
-      await searchClaims(
-        dbMock,
-        { search: null, filter: { field: 'updatedAt', op: 'notreal', value: 'x' } },
+        { search: { type: 'reset', text: 'anything' } },
         0,
         30,
         defaultSort
@@ -278,13 +238,7 @@ describe('claim-search-repository', () => {
       async ({ agreementType, prefixes }) => {
         const { dbMock, collectionMock } = singleResultDb()
 
-        await searchClaims(
-          dbMock,
-          { search: null, filter: null, agreementType },
-          0,
-          30,
-          defaultSort
-        )
+        await searchClaims(dbMock, { search: null, agreementType }, 0, 30, defaultSort)
 
         expect(matchStageOf(collectionMock)).toEqual({
           applicationReference: { $regex: `^(${prefixes.join('|')})`, $options: 'i' }
@@ -292,10 +246,20 @@ describe('claim-search-repository', () => {
       }
     )
 
+    it.each(['AGREED', 'NOT_AGREED'])('restricts status when status is %s', async (status) => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null, status }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        status
+      })
+    })
+
     it('does not restrict applicationReference when agreementType is absent', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(dbMock, { search: null, filter: null }, 0, 30, defaultSort)
+      await searchClaims(dbMock, { search: null }, 0, 30, defaultSort)
 
       expect(matchStageOf(collectionMock)).toEqual({})
     })
@@ -303,13 +267,7 @@ describe('claim-search-repository', () => {
     it('does not restrict applicationReference when agreementType is explicitly ALL', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(
-        dbMock,
-        { search: null, filter: null, agreementType: 'ALL' },
-        0,
-        30,
-        defaultSort
-      )
+      await searchClaims(dbMock, { search: null, agreementType: 'ALL' }, 0, 30, defaultSort)
 
       expect(matchStageOf(collectionMock)).toEqual({})
     })
@@ -321,7 +279,6 @@ describe('claim-search-repository', () => {
         dbMock,
         {
           search: { type: 'appRef', text: 'POUL-ABCD-1234' },
-          filter: null,
           agreementType: 'IAHW'
         },
         0,
@@ -347,7 +304,7 @@ describe('claim-search-repository', () => {
     ])('sorts by %s (%s)', async (field, direction, expected) => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(dbMock, { search: null, filter: null }, 0, 30, { field, direction })
+      await searchClaims(dbMock, { search: null }, 0, 30, { field, direction })
 
       expect(sortStageOf(collectionMock)).toEqual(expected)
     })
@@ -355,7 +312,7 @@ describe('claim-search-repository', () => {
     it('sorts by createdAt when no field is provided', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(dbMock, { search: null, filter: null }, 0, 30, {
+      await searchClaims(dbMock, { search: null }, 0, 30, {
         field: undefined,
         direction: 'ASC'
       })
@@ -366,7 +323,7 @@ describe('claim-search-repository', () => {
     it('defaults to a descending createdAt sort when no sort is provided', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
-      await searchClaims(dbMock, { search: null, filter: null }, 0, 30)
+      await searchClaims(dbMock, { search: null }, 0, 30)
 
       expect(sortStageOf(collectionMock)).toEqual({ createdAt: -1 })
     })
