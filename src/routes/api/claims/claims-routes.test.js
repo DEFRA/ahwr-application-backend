@@ -355,6 +355,7 @@ describe('claims-routes', () => {
         search: { text: '', type: 'reset' },
         agreementType: 'PBR',
         status: 'AGREED',
+        species: 'sheep',
         offset: 0,
         limit: 20,
         sort: { field: 'createdAt', direction: 'DESC' }
@@ -381,7 +382,12 @@ describe('claims-routes', () => {
       it('passes the search criteria including agreementType through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
+          {
+            search: { text: '', type: 'reset' },
+            agreementType: 'PBR',
+            status: 'AGREED',
+            species: 'sheep'
+          },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
@@ -391,7 +397,27 @@ describe('claims-routes', () => {
       it('passes the search criteria including status through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
+          {
+            search: { text: '', type: 'reset' },
+            agreementType: 'PBR',
+            status: 'AGREED',
+            species: 'sheep'
+          },
+          0,
+          20,
+          { field: 'createdAt', direction: 'DESC' }
+        )
+      })
+
+      it('passes the search criteria including species through to searchClaims', () => {
+        expect(searchClaims).toHaveBeenCalledWith(
+          mockDb,
+          {
+            search: { text: '', type: 'reset' },
+            agreementType: 'PBR',
+            status: 'AGREED',
+            species: 'sheep'
+          },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
@@ -415,6 +441,17 @@ describe('claims-routes', () => {
         method: 'POST',
         url: '/api/claims/search',
         payload: { status: 'alpacas' }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(searchClaims).not.toHaveBeenCalled()
+    })
+
+    it('rejects an invalid species with 400 and does not call searchClaims', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: { species: 'alpacas' }
       })
 
       expect(res.statusCode).toBe(400)
