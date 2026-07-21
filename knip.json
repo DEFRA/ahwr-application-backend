@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "ignoreDependencies": ["aws4"],
-  "project": ["src/**/*.js!"]
+  "project": ["src/**/*.js!"],
+  "ignore": ["src/routes/api/support/test-data.js"]
 }
