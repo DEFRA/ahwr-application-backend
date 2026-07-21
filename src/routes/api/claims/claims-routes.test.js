@@ -438,18 +438,27 @@ describe('claims-routes', () => {
       )
     })
 
-    it('rejects a dateTo earlier than dateFrom with 400 and does not call searchClaims', async () => {
-      const res = await server.inject({
-        method: 'POST',
-        url: '/api/claims/search',
-        payload: {
-          dateFrom: new Date(2025, 11, 31),
-          dateTo: new Date(2025, 0, 1)
-        }
+    describe('when dateTo is earlier than dateFrom', () => {
+      let res
+
+      beforeEach(async () => {
+        res = await server.inject({
+          method: 'POST',
+          url: '/api/claims/search',
+          payload: {
+            dateFrom: new Date(2025, 11, 31),
+            dateTo: new Date(2025, 0, 1)
+          }
+        })
       })
 
-      expect(res.statusCode).toBe(400)
-      expect(searchClaims).not.toHaveBeenCalled()
+      it('rejects with 400', () => {
+        expect(res.statusCode).toBe(400)
+      })
+
+      it('does not call searchClaims', () => {
+        expect(searchClaims).not.toHaveBeenCalled()
+      })
     })
 
     it('rejects an invalid agreementType with 400 and does not call searchClaims', async () => {
