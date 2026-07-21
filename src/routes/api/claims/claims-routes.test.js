@@ -381,7 +381,13 @@ describe('claims-routes', () => {
       it('passes the search criteria including agreementType through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
+          {
+            search: { text: '', type: 'reset' },
+            agreementType: 'PBR',
+            status: 'AGREED',
+            dateFrom: undefined,
+            dateTo: undefined
+          },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
@@ -391,12 +397,59 @@ describe('claims-routes', () => {
       it('passes the search criteria including status through to searchClaims', () => {
         expect(searchClaims).toHaveBeenCalledWith(
           mockDb,
-          { search: { text: '', type: 'reset' }, agreementType: 'PBR', status: 'AGREED' },
+          {
+            search: { text: '', type: 'reset' },
+            agreementType: 'PBR',
+            status: 'AGREED',
+            dateFrom: undefined,
+            dateTo: undefined
+          },
           0,
           20,
           { field: 'createdAt', direction: 'DESC' }
         )
       })
+    })
+
+    it('passes dateFrom and dateTo through to searchClaims when provided', async () => {
+      searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
+      const dateFrom = new Date(2025, 0, 1)
+      const dateTo = new Date(2025, 11, 31)
+
+      await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: {
+          search: { text: '', type: 'reset' },
+          dateFrom,
+          dateTo,
+          offset: 0,
+          limit: 20,
+          sort: { field: 'createdAt', direction: 'DESC' }
+        }
+      })
+
+      expect(searchClaims).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({ dateFrom, dateTo }),
+        0,
+        20,
+        { field: 'createdAt', direction: 'DESC' }
+      )
+    })
+
+    it('rejects a dateTo earlier than dateFrom with 400 and does not call searchClaims', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: {
+          dateFrom: new Date(2025, 11, 31),
+          dateTo: new Date(2025, 0, 1)
+        }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(searchClaims).not.toHaveBeenCalled()
     })
 
     it('rejects an invalid agreementType with 400 and does not call searchClaims', async () => {

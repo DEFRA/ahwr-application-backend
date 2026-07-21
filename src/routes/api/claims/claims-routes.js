@@ -52,10 +52,11 @@ export const claimsHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { search, status, offset, limit, sort, agreementType } = request.payload
+        const { search, status, offset, limit, sort, agreementType, dateFrom, dateTo } =
+          request.payload
         const { total, claims } = await searchClaims(
           request.db,
-          { search, status, agreementType },
+          { search, status, agreementType, dateFrom, dateTo },
           offset,
           limit,
           sort

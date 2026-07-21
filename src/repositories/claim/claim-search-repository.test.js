@@ -272,6 +272,48 @@ describe('claim-search-repository', () => {
       expect(matchStageOf(collectionMock)).toEqual({})
     })
 
+    it('restricts by createdAt in or after dateFrom when provided', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+      const dateFrom = new Date(2025, 0, 1)
+
+      await searchClaims(dbMock, { search: null, dateFrom }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        createdAt: { $gte: dateFrom }
+      })
+    })
+
+    it('restricts by createdAt in or before dateTo when provided', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+      const dateTo = new Date(2025, 11, 31)
+
+      await searchClaims(dbMock, { search: null, dateTo }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        createdAt: { $lte: dateTo }
+      })
+    })
+
+    it('restricts by createdAt within dateFrom and dateTo inclusive when provided', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+      const dateFrom = new Date(2025, 0, 1)
+      const dateTo = new Date(2025, 11, 31)
+
+      await searchClaims(dbMock, { search: null, dateFrom, dateTo }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        createdAt: { $gte: dateFrom, $lte: dateTo }
+      })
+    })
+
+    it('does not restrict by createdAt when neither dateFrom nor dateTo are provided', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({})
+    })
+
     it('lets an exact appRef search take precedence over agreementType', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
