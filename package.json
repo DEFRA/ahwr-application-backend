@@ -15,7 +15,7 @@
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
     "lint": "eslint --cache --cache-strategy content \"**/*.{cjs,js}\"",
-    "lint:deps": "knip --production --include dependencies,unlisted,unresolved",
+    "lint:knip": "knip --production --exclude exports",
     "lint:fix": "npm run lint -- --fix",
     "server:debug": "nodemon -r dotenv/config --inspect-brk=0.0.0.0 --ext js,json --legacy-watch ./src",
     "server:watch": "nodemon -r dotenv/config --inspect=0.0.0.0 --ext js,json --legacy-watch ./src",
