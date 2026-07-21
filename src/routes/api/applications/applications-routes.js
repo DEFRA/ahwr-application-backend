@@ -128,6 +128,7 @@ export const applicationRoutes = [
             searchText: request.payload.search?.text ?? '',
             searchType: request.payload.search?.type,
             agreementType: request.payload.agreementType,
+            flag: request.payload.flag,
             dateFrom: request.payload.dateFrom,
             dateTo: request.payload.dateTo,
             status: request.payload.status
