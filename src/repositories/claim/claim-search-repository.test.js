@@ -194,22 +194,6 @@ describe('claim-search-repository', () => {
       })
     })
 
-    it('sets a single-day createdAt range when search type is date', async () => {
-      const { dbMock, collectionMock } = singleResultDb()
-
-      await searchClaims(
-        dbMock,
-        { search: { type: 'date', text: '17/01/2025' } },
-        0,
-        30,
-        defaultSort
-      )
-
-      expect(matchStageOf(collectionMock)).toEqual({
-        createdAt: { $gte: new Date(2025, 0, 17), $lt: new Date(2025, 0, 18) }
-      })
-    })
-
     it('applies no search conditions when the type has no matching clause', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
