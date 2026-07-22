@@ -40,4 +40,14 @@ describe('applyFlagFilter', () => {
 
     expect(query).toEqual({})
   })
+
+  it('applies the filter against a custom field when provided', () => {
+    const query = {}
+
+    applyFlagFilter(query, 'FLAGGED', 'application.flags')
+
+    expect(query).toEqual({
+      'application.flags': { $elemMatch: { deleted: { $ne: true } } }
+    })
+  })
 })

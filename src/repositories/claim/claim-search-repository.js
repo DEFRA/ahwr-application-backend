@@ -3,6 +3,7 @@ import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
 import { applyStatusFilter } from '../filters/status-filter.js'
 import { applyDateRangeFilter } from '../filters/date-range-filter.js'
 import { applySpeciesFilter } from '../filters/species-filter.js'
+import { applyFlagFilter } from '../filters/flag-filter.js'
 
 const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'reset'])
 
@@ -60,8 +61,31 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
+const applicationLookupStages = [
+  {
+    $lookup: {
+      from: 'applications',
+      localField: 'applicationReference',
+      foreignField: 'reference',
+      as: 'application'
+    }
+  },
+  { $unwind: '$application' },
+  {
+    $set: {
+      'application.flags': {
+        $filter: {
+          input: '$application.flags',
+          as: 'flag',
+          cond: { $ne: ['$$flag.deleted', true] }
+        }
+      }
+    }
+  }
+]
+
 export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
-  const { search, status, agreementType, dateFrom, dateTo, species } = criteria
+  const { search, status, agreementType, dateFrom, dateTo, species, flag } = criteria
 
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
@@ -82,34 +106,22 @@ export const searchClaims = async (db, criteria, offset, limit, sort = getDefaul
   applySpeciesFilter(query, species)
   applyStatusFilter(query, status)
 
+  const applicationMatchQuery = {}
+  applyFlagFilter(applicationMatchQuery, flag, 'application.flags')
+  const hasApplicationFilter = Object.keys(applicationMatchQuery).length > 0
+
   const pipeline = [
     { $match: query },
+    ...(hasApplicationFilter
+      ? [...applicationLookupStages, { $match: applicationMatchQuery }]
+      : []),
     {
       $facet: {
         data: [
           { $sort: evalSortField(sort) },
           { $skip: offset },
           { $limit: limit },
-          {
-            $lookup: {
-              from: 'applications',
-              localField: 'applicationReference',
-              foreignField: 'reference',
-              as: 'application'
-            }
-          },
-          { $unwind: '$application' },
-          {
-            $set: {
-              'application.flags': {
-                $filter: {
-                  input: '$application.flags',
-                  as: 'flag',
-                  cond: { $ne: ['$$flag.deleted', true] }
-                }
-              }
-            }
-          }
+          ...(hasApplicationFilter ? [] : applicationLookupStages)
         ],
         total: [{ $count: 'total' }]
       }

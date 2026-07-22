@@ -1,10 +1,10 @@
 const hasNonDeletedFlag = { $elemMatch: { deleted: { $ne: true } } }
 
-export const applyFlagFilter = (query, flag) => {
+export const applyFlagFilter = (query, flag, field = 'flags') => {
   if (flag === 'FLAGGED') {
-    query.flags = hasNonDeletedFlag
+    query[field] = hasNonDeletedFlag
   } else if (flag === 'NOT_FLAGGED') {
-    query.flags = { $not: hasNonDeletedFlag }
+    query[field] = { $not: hasNonDeletedFlag }
   } else {
     // Skip when flag is 'ALL'/absent or an unknown value
   }
