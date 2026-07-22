@@ -429,6 +429,30 @@ describe('claims-routes', () => {
       })
     })
 
+    it('passes the search criteria including flag through to searchClaims', async () => {
+      searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
+
+      await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: {
+          search: { text: '', type: 'reset' },
+          flag: 'FLAGGED',
+          offset: 0,
+          limit: 20,
+          sort: { field: 'createdAt', direction: 'DESC' }
+        }
+      })
+
+      expect(searchClaims).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({ flag: 'FLAGGED' }),
+        0,
+        20,
+        { field: 'createdAt', direction: 'DESC' }
+      )
+    })
+
     it('passes dateFrom and dateTo through to searchClaims when provided', async () => {
       searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
       const dateFrom = new Date(2025, 0, 1)
@@ -506,6 +530,17 @@ describe('claims-routes', () => {
         method: 'POST',
         url: '/api/claims/search',
         payload: { species: 'alpacas' }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(searchClaims).not.toHaveBeenCalled()
+    })
+
+    it('rejects an invalid flag with 400 and does not call searchClaims', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: { flag: 'alpacas' }
       })
 
       expect(res.statusCode).toBe(400)

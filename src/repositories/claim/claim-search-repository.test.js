@@ -319,6 +319,82 @@ describe('claim-search-repository', () => {
       expect(matchStageOf(collectionMock)).toEqual({})
     })
 
+    it.each(['FLAGGED', 'NOT_FLAGGED'])(
+      'joins the application and matches on application.flags when flag is %s',
+      async (flag) => {
+        const dbMock = {
+          collection: jest.fn(() => collectionMock)
+        }
+        const collectionMock = {
+          aggregate: jest.fn().mockReturnValueOnce({
+            toArray: jest
+              .fn()
+              .mockReturnValue([
+                { data: [{ reference: 'IAHW-ABCD-1234' }], total: [{ total: 50 }] }
+              ])
+          })
+        }
+
+        await searchClaims(dbMock, { search: null, flag }, 0, 30, defaultSort)
+
+        const pipeline = collectionMock.aggregate.mock.calls[0][0]
+
+        expect(pipeline[0]).toEqual({ $match: {} })
+        expect(pipeline[1]).toEqual({
+          $lookup: {
+            from: 'applications',
+            localField: 'applicationReference',
+            foreignField: 'reference',
+            as: 'application'
+          }
+        })
+        expect(pipeline[2]).toEqual({ $unwind: '$application' })
+        expect(pipeline[4]).toEqual({
+          $match: {
+            'application.flags':
+              flag === 'FLAGGED'
+                ? { $elemMatch: { deleted: { $ne: true } } }
+                : { $not: { $elemMatch: { deleted: { $ne: true } } } }
+          }
+        })
+        expect(pipeline[5].$facet.data).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ $lookup: expect.anything() })])
+        )
+      }
+    )
+
+    it('does not join the application collection when flag is absent', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null }, 0, 30, defaultSort)
+
+      const pipeline = collectionMock.aggregate.mock.calls[0][0]
+
+      expect(pipeline).toHaveLength(2)
+      expect(pipeline[1].$facet.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            $lookup: {
+              from: 'applications',
+              localField: 'applicationReference',
+              foreignField: 'reference',
+              as: 'application'
+            }
+          })
+        ])
+      )
+    })
+
+    it('does not restrict application.flags when flag is explicitly ALL', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null, flag: 'ALL' }, 0, 30, defaultSort)
+
+      const pipeline = collectionMock.aggregate.mock.calls[0][0]
+
+      expect(pipeline).toHaveLength(2)
+    })
+
     it('lets an exact appRef search take precedence over agreementType', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 
