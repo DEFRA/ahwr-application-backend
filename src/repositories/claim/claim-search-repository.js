@@ -61,8 +61,7 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
-  const { search, status, agreementType, dateFrom, dateTo, species  } = criteria
-
+  const { search, status, agreementType, dateFrom, dateTo, species } = criteria
 
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }

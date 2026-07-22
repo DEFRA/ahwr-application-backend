@@ -387,7 +387,7 @@ describe('claims-routes', () => {
             agreementType: 'PBR',
             status: 'AGREED',
             dateFrom: undefined,
-            dateTo: undefined
+            dateTo: undefined,
             species: 'sheep'
           },
           0,
@@ -404,7 +404,7 @@ describe('claims-routes', () => {
             agreementType: 'PBR',
             status: 'AGREED',
             dateFrom: undefined,
-            dateTo: undefined
+            dateTo: undefined,
             species: 'sheep'
           },
           0,
