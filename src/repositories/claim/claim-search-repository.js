@@ -1,10 +1,10 @@
-import { startAndEndDate } from '../../lib/date-utils.js'
 import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index.js'
 import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
 import { applyStatusFilter } from '../filters/status-filter.js'
+import { applyDateRangeFilter } from '../filters/date-range-filter.js'
 import { applySpeciesFilter } from '../filters/species-filter.js'
 
-const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'date', 'reset'])
+const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'reset'])
 
 const evalSortField = (sort) => {
   const direction = sort?.direction?.toUpperCase() === 'DESC' ? -1 : 1
@@ -39,14 +39,6 @@ const applyClaimSearchConditions = (matchStage, search) => {
     case 'species':
       matchStage['data.typeOfLivestock'] = { $regex: text, $options: 'i' }
       break
-    case 'date': {
-      const { startDate, endDate } = startAndEndDate(text)
-      matchStage['createdAt'] = {
-        $gte: startDate,
-        $lt: endDate
-      }
-      break
-    }
     default:
       break
   }
@@ -69,7 +61,7 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
-  const { search, status, agreementType, species } = criteria
+  const { search, status, agreementType, dateFrom, dateTo, species } = criteria
 
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
@@ -86,6 +78,7 @@ export const searchClaims = async (db, criteria, offset, limit, sort = getDefaul
   }
 
   applyAgreementTypeFilter(query, agreementType, 'applicationReference')
+  applyDateRangeFilter(query, dateFrom, dateTo)
   applySpeciesFilter(query, species)
   applyStatusFilter(query, status)
 

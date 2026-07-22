@@ -386,6 +386,8 @@ describe('claims-routes', () => {
             search: { text: '', type: 'reset' },
             agreementType: 'PBR',
             status: 'AGREED',
+            dateFrom: undefined,
+            dateTo: undefined,
             species: 'sheep'
           },
           0,
@@ -401,6 +403,8 @@ describe('claims-routes', () => {
             search: { text: '', type: 'reset' },
             agreementType: 'PBR',
             status: 'AGREED',
+            dateFrom: undefined,
+            dateTo: undefined,
             species: 'sheep'
           },
           0,
@@ -422,6 +426,56 @@ describe('claims-routes', () => {
           20,
           { field: 'createdAt', direction: 'DESC' }
         )
+      })
+    })
+
+    it('passes dateFrom and dateTo through to searchClaims when provided', async () => {
+      searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
+      const dateFrom = new Date(2025, 0, 1)
+      const dateTo = new Date(2025, 11, 31)
+
+      await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: {
+          search: { text: '', type: 'reset' },
+          dateFrom,
+          dateTo,
+          offset: 0,
+          limit: 20,
+          sort: { field: 'createdAt', direction: 'DESC' }
+        }
+      })
+
+      expect(searchClaims).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({ dateFrom, dateTo }),
+        0,
+        20,
+        { field: 'createdAt', direction: 'DESC' }
+      )
+    })
+
+    describe('when dateTo is earlier than dateFrom', () => {
+      let res
+
+      beforeEach(async () => {
+        res = await server.inject({
+          method: 'POST',
+          url: '/api/claims/search',
+          payload: {
+            dateFrom: new Date(2025, 11, 31),
+            dateTo: new Date(2025, 0, 1)
+          }
+        })
+      })
+
+      it('rejects with 400', () => {
+        expect(res.statusCode).toBe(400)
+      })
+
+      it('does not call searchClaims', () => {
+        expect(searchClaims).not.toHaveBeenCalled()
       })
     })
 
