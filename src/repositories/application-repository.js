@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './common.js'
 import { applyAgreementTypeFilter } from './filters/agreement-type-filter.js'
 import { applyDateRangeFilter } from './filters/date-range-filter.js'
+import { applyFlagFilter } from './filters/flag-filter.js'
 import { applyStatusFilter } from './filters/status-filter.js'
 
 export const createApplicationIndexes = async (db) => {
@@ -94,7 +95,15 @@ export const evalSortField = (sort) => {
   return { createdAt: -1 }
 }
 
-const buildSearchQuery = ({ searchText, searchType, status, agreementType, dateFrom, dateTo }) => {
+const buildSearchQuery = ({
+  searchText,
+  searchType,
+  status,
+  agreementType,
+  flag,
+  dateFrom,
+  dateTo
+}) => {
   const query = {}
 
   if (searchText) {
@@ -121,6 +130,8 @@ const buildSearchQuery = ({ searchText, searchType, status, agreementType, dateF
   applyDateRangeFilter(query, dateFrom, dateTo)
 
   applyStatusFilter(query, status)
+
+  applyFlagFilter(query, flag)
 
   return query
 }

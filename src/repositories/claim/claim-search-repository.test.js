@@ -240,6 +240,27 @@ describe('claim-search-repository', () => {
       })
     })
 
+    it.each(['beef', 'dairy', 'sheep', 'pigs', 'poultry'])(
+      'restricts data.typeOfLivestock when species is %s',
+      async (species) => {
+        const { dbMock, collectionMock } = singleResultDb()
+
+        await searchClaims(dbMock, { search: null, species }, 0, 30, defaultSort)
+
+        expect(matchStageOf(collectionMock)).toEqual({
+          'data.typeOfLivestock': species
+        })
+      }
+    )
+
+    it('does not restrict data.typeOfLivestock when species is absent', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({})
+    })
+
     it('does not restrict applicationReference when agreementType is absent', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 

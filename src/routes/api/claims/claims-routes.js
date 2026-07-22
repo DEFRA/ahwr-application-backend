@@ -44,7 +44,8 @@ export const claimsHandlers = [
           status: joi
             .string()
             .valid(...Object.values(STATUS))
-            .optional()
+            .optional(),
+          species: joi.string().valid('beef', 'dairy', 'sheep', 'pigs', 'poultry').optional()
         }),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ error: err })
@@ -52,11 +53,12 @@ export const claimsHandlers = [
         }
       },
       handler: async (request, h) => {
-        const { search, status, offset, limit, sort, agreementType, dateFrom, dateTo } =
+        const { search, status, offset, limit, sort, agreementType, dateFrom, dateTo, species  } =
           request.payload
         const { total, claims } = await searchClaims(
           request.db,
-          { search, status, agreementType, dateFrom, dateTo },
+          { search, status, agreementType, dateFrom, dateTo, species },
+
           offset,
           limit,
           sort

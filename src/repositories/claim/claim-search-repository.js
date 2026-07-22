@@ -2,6 +2,7 @@ import { APPLICATION_COLLECTION, CLAIMS_COLLECTION } from '../../constants/index
 import { applyAgreementTypeFilter } from '../filters/agreement-type-filter.js'
 import { applyStatusFilter } from '../filters/status-filter.js'
 import { applyDateRangeFilter } from '../filters/date-range-filter.js'
+import { applySpeciesFilter } from '../filters/species-filter.js'
 
 const SEARCH_TYPES = new Set(['ref', 'appRef', 'type', 'species', 'status', 'sbi', 'reset'])
 
@@ -60,7 +61,8 @@ const applyApplicationSearchConditions = async (db, matchStage, text) => {
 const getDefaultSort = () => ({ field: 'createdAt', direction: 'DESC' })
 
 export const searchClaims = async (db, criteria, offset, limit, sort = getDefaultSort()) => {
-  const { search, status, agreementType, dateFrom, dateTo } = criteria
+  const { search, status, agreementType, dateFrom, dateTo, species  } = criteria
+
 
   if (search?.type && !SEARCH_TYPES.has(search.type)) {
     return { total: 0, claims: [] }
@@ -78,6 +80,7 @@ export const searchClaims = async (db, criteria, offset, limit, sort = getDefaul
 
   applyAgreementTypeFilter(query, agreementType, 'applicationReference')
   applyDateRangeFilter(query, dateFrom, dateTo)
+  applySpeciesFilter(query, species)
   applyStatusFilter(query, status)
 
   const pipeline = [
