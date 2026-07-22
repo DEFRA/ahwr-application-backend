@@ -429,6 +429,30 @@ describe('claims-routes', () => {
       })
     })
 
+    it('passes the search criteria including claimType through to searchClaims', async () => {
+      searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
+
+      await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: {
+          search: { text: '', type: 'reset' },
+          claimType: 'REVIEW',
+          offset: 0,
+          limit: 20,
+          sort: { field: 'createdAt', direction: 'DESC' }
+        }
+      })
+
+      expect(searchClaims).toHaveBeenCalledWith(
+        mockDb,
+        expect.objectContaining({ claimType: 'REVIEW' }),
+        0,
+        20,
+        { field: 'createdAt', direction: 'DESC' }
+      )
+    })
+
     it('passes the search criteria including flag through to searchClaims', async () => {
       searchClaims.mockResolvedValueOnce({ total: 0, claims: [] })
 
@@ -508,6 +532,17 @@ describe('claims-routes', () => {
         method: 'POST',
         url: '/api/claims/search',
         payload: { agreementType: 'alpacas' }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(searchClaims).not.toHaveBeenCalled()
+    })
+
+    it('rejects an invalid claimType with 400 and does not call searchClaims', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/search',
+        payload: { claimType: 'VET_VISIT' }
       })
 
       expect(res.statusCode).toBe(400)

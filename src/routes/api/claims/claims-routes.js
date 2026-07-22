@@ -1,8 +1,8 @@
 import joi from 'joi'
-import { searchPayloadSchema } from '../schema/search-payload.schema.js'
+import { claimSearchPayloadSchema } from '../schema/search-payload.schema.js'
 import { StatusCodes } from 'http-status-codes'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
-import { POULTRY_SCHEME, AHWR_SCHEME, STATUS } from 'ffc-ahwr-common-library'
+import { POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
 import {
   createClaimHandler,
   isURNUniqueHandler,
@@ -32,21 +32,7 @@ export const claimsHandlers = [
     options: {
       description: 'Search for claims based on search criteria',
       validate: {
-        payload: joi.object({
-          ...searchPayloadSchema,
-          sort: joi
-            .object({
-              field: joi.string().valid().optional().allow(''),
-              direction: joi.string().valid().optional().allow(''),
-              reference: joi.string().valid().optional().allow('')
-            })
-            .optional(),
-          status: joi
-            .string()
-            .valid(...Object.values(STATUS))
-            .optional(),
-          species: joi.string().valid('beef', 'dairy', 'sheep', 'pigs', 'poultry').optional()
-        }),
+        payload: joi.object(claimSearchPayloadSchema),
         failAction: async (request, h, err) => {
           request.logger.setBindings({ error: err })
           return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
@@ -60,6 +46,7 @@ export const claimsHandlers = [
           limit,
           sort,
           agreementType,
+          claimType,
           dateFrom,
           dateTo,
           species,
@@ -67,7 +54,7 @@ export const claimsHandlers = [
         } = request.payload
         const { total, claims } = await searchClaims(
           request.db,
-          { search, status, agreementType, dateFrom, dateTo, species, flag },
+          { search, status, agreementType, claimType, dateFrom, dateTo, species, flag },
 
           offset,
           limit,

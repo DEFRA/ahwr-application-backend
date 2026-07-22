@@ -15,7 +15,7 @@ import {
 } from './applications-schema.js'
 import Boom from '@hapi/boom'
 import Joi from 'joi'
-import { searchPayloadSchema } from '../schema/search-payload.schema.js'
+import { applicationSearchPayloadSchema } from '../schema/search-payload.schema.js'
 import HttpStatus from 'http-status-codes'
 import { searchApplications } from '../../../repositories/application-repository.js'
 import { trackError } from '../../../logging/logger.js'
@@ -109,13 +109,7 @@ export const applicationRoutes = [
     options: {
       description: 'Search for applications based on search criteria',
       validate: {
-        payload: Joi.object({
-          ...searchPayloadSchema,
-          sort: Joi.object({
-            field: Joi.string().valid().optional().default('CREATEDAT'),
-            direction: Joi.string().valid().optional().allow('ASC')
-          }).optional()
-        }),
+        payload: Joi.object(applicationSearchPayloadSchema),
         failAction: async (request, _h, err) => {
           request.logger.error(err, 'Application search validation error')
           throw Boom.badRequest(err.message)
