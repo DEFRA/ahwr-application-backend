@@ -261,6 +261,27 @@ describe('claim-search-repository', () => {
       expect(matchStageOf(collectionMock)).toEqual({})
     })
 
+    it.each(['REVIEW', 'FOLLOW_UP'])('restricts type when claimType is %s', async (claimType) => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null, claimType }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        type: claimType
+      })
+    })
+
+    it.each([undefined, 'ALL'])(
+      'does not restrict type when claimType is %s',
+      async (claimType) => {
+        const { dbMock, collectionMock } = singleResultDb()
+
+        await searchClaims(dbMock, { search: null, claimType }, 0, 30, defaultSort)
+
+        expect(matchStageOf(collectionMock)).toEqual({})
+      }
+    )
+
     it('does not restrict applicationReference when agreementType is absent', async () => {
       const { dbMock, collectionMock } = singleResultDb()
 

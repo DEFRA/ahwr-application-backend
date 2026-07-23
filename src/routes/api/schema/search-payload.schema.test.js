@@ -1,8 +1,14 @@
 import Joi from 'joi'
-import { searchPayloadSchema } from './search-payload.schema.js'
+import {
+  applicationSearchPayloadSchema,
+  claimSearchPayloadSchema
+} from './search-payload.schema.js'
 
-describe('searchPayloadSchema', () => {
-  const schema = Joi.object(searchPayloadSchema)
+describe.each([
+  ['applicationSearchPayloadSchema', applicationSearchPayloadSchema],
+  ['claimSearchPayloadSchema', claimSearchPayloadSchema]
+])('%s', (_name, payloadSchema) => {
+  const schema = Joi.object(payloadSchema)
 
   describe('dateFrom / dateTo range', () => {
     it('accepts dateFrom earlier than dateTo', () => {
@@ -54,6 +60,24 @@ describe('searchPayloadSchema', () => {
 
     it('rejects an unknown flag value', () => {
       const { error } = schema.validate({ flag: 'MAYBE' })
+
+      expect(error).toBeDefined()
+    })
+  })
+})
+
+describe('claimSearchPayloadSchema', () => {
+  const schema = Joi.object(claimSearchPayloadSchema)
+
+  describe('claimType', () => {
+    it.each(['ALL', 'REVIEW', 'FOLLOW_UP'])('accepts %s', (claimType) => {
+      const { error } = schema.validate({ claimType })
+
+      expect(error).toBeUndefined()
+    })
+
+    it('rejects an unknown claimType value', () => {
+      const { error } = schema.validate({ claimType: 'VET_VISIT' })
 
       expect(error).toBeDefined()
     })
