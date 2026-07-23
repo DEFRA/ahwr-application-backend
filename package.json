@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": ">=22.21.1",
+    "node": ">=22.23.1",
     "npm": ">=11.10.0"
   },
   "scripts": {
@@ -41,7 +41,7 @@
     "aws4": "1.13.2",
     "convict": "6.2.5",
     "convict-format-with-validator": "6.2.0",
-    "ffc-ahwr-common-library": "3.8.3",
+    "ffc-ahwr-common-library": "3.8.5",
     "global-agent": "3.0.0",
     "hapi-pino": "12.1.0",
     "hapi-pulse": "4.0.0",
