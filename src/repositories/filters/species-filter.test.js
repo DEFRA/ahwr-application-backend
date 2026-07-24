@@ -16,4 +16,12 @@ describe('applySpeciesFilter', () => {
 
     expect(query).toEqual({ 'data.typeOfLivestock': 'sheep' })
   })
+
+  it('matches all poultry claims when species is poultry', () => {
+    const query = {}
+
+    applySpeciesFilter(query, 'poultry')
+
+    expect(query).toEqual({ 'data.typesOfPoultry': { $exists: true } })
+  })
 })

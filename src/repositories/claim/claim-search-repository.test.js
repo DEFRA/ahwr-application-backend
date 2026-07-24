@@ -240,7 +240,7 @@ describe('claim-search-repository', () => {
       })
     })
 
-    it.each(['beef', 'dairy', 'sheep', 'pigs', 'poultry'])(
+    it.each(['beef', 'dairy', 'sheep', 'pigs'])(
       'restricts data.typeOfLivestock when species is %s',
       async (species) => {
         const { dbMock, collectionMock } = singleResultDb()
@@ -252,6 +252,16 @@ describe('claim-search-repository', () => {
         })
       }
     )
+
+    it('restricts to poultry claims when species is poultry', async () => {
+      const { dbMock, collectionMock } = singleResultDb()
+
+      await searchClaims(dbMock, { search: null, species: 'poultry' }, 0, 30, defaultSort)
+
+      expect(matchStageOf(collectionMock)).toEqual({
+        'data.typesOfPoultry': { $exists: true }
+      })
+    })
 
     it('does not restrict data.typeOfLivestock when species is absent', async () => {
       const { dbMock, collectionMock } = singleResultDb()
