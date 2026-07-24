@@ -1,0 +1,116 @@
+[
+  {
+    "_id": "690dc73317e3f38b41fe6926",
+    "reference": "POUL-1LZ5-ELVQ",
+    "createdAt": "2025-01-22T13:28:17.013Z",
+    "updatedAt": "2025-01-22T13:28:17.013Z",
+    "createdBy": "admin",
+    "updatedBy": null,
+    "data": {
+      "reference": "TEMP-1LZ5-ELVA",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100077049",
+      "frn": "1100918140",
+      "sbi": "107167406",
+      "name": "madeUpCo",
+      "email": "farmer@farm.com",
+      "address": "Somewhere",
+      "orgEmail": "org@company.com",
+      "userType": "newUser",
+      "farmerName": "John Smith"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      {
+        "status": "AGREED",
+        "createdBy": "admin",
+        "createdAt": "2025-01-22T13:28:17.013Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "6b00000000000000000000a2",
+    "reference": "POUL-2AB3-CDE4",
+    "createdAt": "2025-02-10T09:15:00.000Z",
+    "updatedAt": "2025-02-10T09:15:00.000Z",
+    "createdBy": "admin",
+    "updatedBy": null,
+    "data": {
+      "reference": "TEMP-2AB3-CDEA",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100077050",
+      "frn": "1100918141",
+      "sbi": "107167407",
+      "name": "Geese & Turkeys Ltd",
+      "email": "farmer@farm.com",
+      "address": "Somewhere",
+      "orgEmail": "org@company.com",
+      "userType": "newUser",
+      "farmerName": "Jane Doe"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      {
+        "status": "AGREED",
+        "createdBy": "admin",
+        "createdAt": "2025-02-10T09:15:00.000Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "eligiblePiiRedaction": true
+  },
+  {
+    "_id": "6b00000000000000000000a3",
+    "reference": "POUL-5FG6-HIJ7",
+    "createdAt": "2025-03-05T11:45:00.000Z",
+    "updatedAt": "2025-03-05T11:45:00.000Z",
+    "createdBy": "admin",
+    "updatedBy": null,
+    "data": {
+      "reference": "TEMP-5FG6-HIJA",
+      "declaration": true,
+      "offerStatus": "accepted",
+      "confirmCheckDetails": "yes"
+    },
+    "organisation": {
+      "crn": "1100077051",
+      "frn": "1100918142",
+      "sbi": "107167408",
+      "name": "Mixed Poultry Co",
+      "email": "farmer@farm.com",
+      "address": "Somewhere",
+      "orgEmail": "org@company.com",
+      "userType": "newUser",
+      "farmerName": "Sam Poulter"
+    },
+    "status": "AGREED",
+    "statusHistory": [
+      {
+        "status": "AGREED",
+        "createdBy": "admin",
+        "createdAt": "2025-03-05T11:45:00.000Z"
+      }
+    ],
+    "updateHistory": [],
+    "contactHistory": [],
+    "redactionHistory": {},
+    "flags": [],
+    "eligiblePiiRedaction": true
+  }
+]
