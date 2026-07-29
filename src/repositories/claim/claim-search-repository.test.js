@@ -379,9 +379,7 @@ describe('claim-search-repository', () => {
             as: 'application'
           }
         })
-        expect(pipeline[2]).toEqual({
-          $unwind: { path: '$application', preserveNullAndEmptyArrays: true }
-        })
+        expect(pipeline[2]).toEqual({ $unwind: '$application' })
         expect(pipeline[4]).toEqual({
           $match: {
             'application.flags':
