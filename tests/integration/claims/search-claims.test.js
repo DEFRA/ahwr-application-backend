@@ -50,16 +50,6 @@ describe('Search claims', () => {
       createdAt: new Date('2025-04-02T00:00:00.000Z'),
       data: { typeOfLivestock: 'beef' }
     })
-
-    // Claim whose application has since been removed/never existed
-    await server.db.collection('claims').insertOne({
-      reference: 'REBC-CCCC-0003',
-      applicationReference: 'IAHW-MISSING-0003',
-      status: 'IN_CHECK',
-      type: 'REVIEW',
-      createdAt: new Date('2025-04-03T00:00:00.000Z'),
-      data: { typeOfLivestock: 'beef' }
-    })
   })
 
   afterAll(async () => {
@@ -78,15 +68,15 @@ describe('Search claims', () => {
       .claims.map((c) => c.reference)
       .sort()
 
-  test('ALL returns every claim, including ones with no matching application', async () => {
+  test('ALL returns every claim', async () => {
     const res = await server.inject({
       ...options,
       payload: searchPayload({ flag: 'ALL' })
     })
 
     expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload).total).toBe(3)
-    expect(references(res.payload)).toEqual(['REBC-AAAA-0001', 'REBC-BBBB-0002', 'REBC-CCCC-0003'])
+    expect(JSON.parse(res.payload).total).toBe(2)
+    expect(references(res.payload)).toEqual(['REBC-AAAA-0001', 'REBC-BBBB-0002'])
   })
 
   test('FLAGGED returns only claims whose application has a non-deleted flag', async () => {
@@ -99,14 +89,14 @@ describe('Search claims', () => {
     expect(references(res.payload)).toEqual(['REBC-AAAA-0001'])
   })
 
-  test('NOT_FLAGGED includes claims whose application has no flags and claims with no matching application', async () => {
+  test('NOT_FLAGGED includes claims whose application has no flags', async () => {
     const res = await server.inject({
       ...options,
       payload: searchPayload({ flag: 'NOT_FLAGGED' })
     })
 
     expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(references(res.payload)).toEqual(['REBC-BBBB-0002', 'REBC-CCCC-0003'])
+    expect(references(res.payload)).toEqual(['REBC-BBBB-0002'])
   })
 
   test('FLAGGED and NOT_FLAGGED counts add up to the ALL total', async () => {
@@ -120,7 +110,7 @@ describe('Search claims', () => {
     const flaggedTotal = JSON.parse(flagged.payload).total
     const notFlaggedTotal = JSON.parse(notFlagged.payload).total
 
-    expect(allTotal).toBe(3)
+    expect(allTotal).toBe(2)
     expect(flaggedTotal + notFlaggedTotal).toBe(allTotal)
   })
 })

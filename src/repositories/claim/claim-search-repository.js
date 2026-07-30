@@ -71,12 +71,12 @@ const applicationLookupStages = [
       as: 'application'
     }
   },
-  { $unwind: { path: '$application', preserveNullAndEmptyArrays: true } },
+  { $unwind: '$application' },
   {
     $set: {
       'application.flags': {
         $filter: {
-          input: { $ifNull: ['$application.flags', []] },
+          input: '$application.flags',
           as: 'flag',
           cond: { $ne: ['$$flag.deleted', true] }
         }
