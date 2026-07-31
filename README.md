@@ -150,6 +150,7 @@ git config --global core.autocrlf false
 | `POST: /api/claims`                                    | Create a new claim                                                                  |
 | `PUT: /api/claims/update-by-reference`                 | Update the status of a claim                                                        |
 | `PUT: /api/claims/{reference}/data`                    | Update data for a specific claim                                                    |
+| `POST: /api/claims/withdraw`                           | Withdraw a claim, recording the reasons in the withdrawalrequests collection        |
 | `PATCH: /api/flags/{flagId}/delete`                    | Mark a flag as deleted                                                              |
 | `GET: /api/flags`                                      | Get all the lags that exist                                                         |
 | `POST: /api/applications/{ref}/flag`                   | Create a new flag against the given application reference                           |

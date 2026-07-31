@@ -7,7 +7,8 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  getClaimsCountHandler
+  getClaimsCountHandler,
+  withdrawClaimHandler
 } from './claims-controller.js'
 import { searchClaims } from '../../../repositories/claim/claim-search-repository.js'
 
@@ -119,6 +120,44 @@ describe('claims-routes', () => {
       })
 
       expect(res.statusCode).toBe(500)
+    })
+  })
+
+  describe('POST /api/claims/withdraw', () => {
+    const validPayload = {
+      reference: 'REBC-VA4R-TRL7',
+      user: 'admin',
+      reasonForWithdrawal: 'unintentionalTypingError',
+      issueDiscovery: 'customerContactedRPA',
+      withdrawalDetails: 'The date of visit was a typo'
+    }
+
+    it('should validate payload and call correct handler', async () => {
+      withdrawClaimHandler.mockImplementation(async (_, h) => {
+        return h.response({ status: 'WITHDRAWN' }).code(200)
+      })
+
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/withdraw',
+        payload: validPayload
+      })
+
+      expect(res.statusCode).toBe(200)
+      expect(res.result).toEqual({ status: 'WITHDRAWN' })
+      expect(withdrawClaimHandler).toHaveBeenCalledTimes(1)
+      expect(withdrawClaimHandler.mock.calls[0][0].payload).toEqual(validPayload)
+    })
+
+    it('should reject a payload missing the withdrawal reasons', async () => {
+      const res = await server.inject({
+        method: 'POST',
+        url: '/api/claims/withdraw',
+        payload: { reference: 'REBC-VA4R-TRL7', user: 'admin' }
+      })
+
+      expect(res.statusCode).toBe(400)
+      expect(withdrawClaimHandler).not.toHaveBeenCalled()
     })
   })
 

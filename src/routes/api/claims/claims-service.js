@@ -1,14 +1,16 @@
 import {
   isURNUnique as isNWURNUnique,
-  getClaimByReference
+  getClaimByReference,
+  updateClaimStatus
 } from '../../../repositories/claim-repository.js'
 import {
   getApplication,
   getApplicationsBySbi
 } from '../../../repositories/application-repository.js'
+import { createWithdrawalRequest } from '../../../repositories/withdrawal-request-repository.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference, createPoultryClaimReference } from '../../../lib/create-reference.js'
-import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType } from 'ffc-ahwr-common-library'
+import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType, STATUS } from 'ffc-ahwr-common-library'
 
 import {
   saveClaimAndRelatedData,
@@ -221,4 +223,43 @@ export const getClaim = async ({ db, reference }) => {
     herd: claim.herd,
     updateHistory: claim.updateHistory
   }
+}
+
+export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
+  const claim = await getClaimByReference(db, reference)
+  if (!claim) {
+    throw Boom.notFound('Claim not found')
+  }
+
+  if (claim.status !== STATUS.IN_CHECK) {
+    throw Boom.conflict('Claim must be in check to be withdrawn')
+  }
+
+  const application = await getApplication({ db, reference: claim.applicationReference })
+  if (application.flags.length > 0) {
+    throw Boom.conflict('Agreement is flagged, claim cannot be withdrawn')
+  }
+
+  const withdrawnAt = new Date()
+
+  await createWithdrawalRequest({
+    db,
+    withdrawalRequest: {
+      claimReference: reference,
+      agreementReference: claim.applicationReference,
+      sbi: application.organisation.sbi,
+      ...withdrawal,
+      createdBy: user,
+      createdAt: withdrawnAt
+    }
+  })
+
+  return updateClaimStatus({
+    db,
+    reference,
+    status: STATUS.WITHDRAWN,
+    user,
+    updatedAt: withdrawnAt,
+    note: 'Withdrawal requested'
+  })
 }

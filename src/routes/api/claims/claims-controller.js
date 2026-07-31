@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import Boom from '@hapi/boom'
-import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
+import { processClaim, isURNNumberUnique, getClaim, withdrawClaim } from './claims-service.js'
 import {
   getClaimByReference,
   getClaimsCount,
@@ -104,6 +104,32 @@ export const getClaimHandler = async (request, h) => {
     return h.response(result).code(StatusCodes.OK)
   } catch (error) {
     request.logger.error({ error }, 'Failed to get claim')
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+
+    throw Boom.internal(error)
+  }
+}
+
+export const withdrawClaimHandler = async (request, h) => {
+  try {
+    const { reference, user, reasonForWithdrawal, issueDiscovery, withdrawalDetails } =
+      request.payload
+
+    request.logger.setBindings({ reference })
+
+    const withdrawnClaim = await withdrawClaim({
+      db: request.db,
+      reference,
+      user,
+      withdrawal: { reasonForWithdrawal, issueDiscovery, withdrawalDetails }
+    })
+
+    return h.response(withdrawnClaim).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to withdraw claim')
 
     if (Boom.isBoom(error)) {
       throw error

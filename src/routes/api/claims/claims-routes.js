@@ -9,7 +9,8 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  getClaimsCountHandler
+  getClaimsCountHandler,
+  withdrawClaimHandler
 } from './claims-controller.js'
 
 export const claimsHandlers = [
@@ -99,6 +100,27 @@ export const claimsHandlers = [
     options: {
       description: 'Create a new claim',
       handler: createClaimHandler
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/claims/withdraw',
+    options: {
+      description: 'Withdraw a claim',
+      validate: {
+        payload: joi.object({
+          reference: joi.string().required(),
+          user: joi.string().required(),
+          reasonForWithdrawal: joi.string().required(),
+          issueDiscovery: joi.string().required(),
+          withdrawalDetails: joi.string().required()
+        }),
+        failAction: async (request, h, err) => {
+          request.logger.setBindings({ error: err })
+          return h.response({ err }).code(StatusCodes.BAD_REQUEST).takeover()
+        }
+      },
+      handler: withdrawClaimHandler
     }
   },
   {
