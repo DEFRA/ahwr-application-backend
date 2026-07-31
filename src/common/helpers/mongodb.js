@@ -2,6 +2,7 @@ import { MongoClient } from 'mongodb'
 import { LockManager } from 'mongo-locks'
 import { createApplicationIndexes } from '../../repositories/application-repository.js'
 import { createClaimIndexes } from '../../repositories/claim-repository.js'
+import { createWithdrawalRequestIndexes } from '../../repositories/withdrawal-request-repository.js'
 
 export const mongoDb = {
   plugin: {
@@ -45,4 +46,5 @@ async function createIndexes(db) {
 
   await createApplicationIndexes(db)
   await createClaimIndexes(db)
+  await createWithdrawalRequestIndexes(db)
 }

@@ -6,9 +6,10 @@ import {
   getClaimHandler,
   updateClaimStatusHandler,
   updateClaimDataHandler,
-  getClaimsCountHandler
+  getClaimsCountHandler,
+  withdrawClaimHandler
 } from './claims-controller.js'
-import { processClaim, isURNNumberUnique, getClaim } from './claims-service.js'
+import { processClaim, isURNNumberUnique, getClaim, withdrawClaim } from './claims-service.js'
 import {
   getClaimByReference,
   getClaimsCount,
@@ -63,7 +64,7 @@ describe('createClaimHandler', () => {
     logger: { error: jest.fn(), info: jest.fn() },
     db: {}
   }
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis()
   }
@@ -103,23 +104,23 @@ describe('createClaimHandler', () => {
 
     processClaim.mockResolvedValue(mockClaim)
 
-    const result = await createClaimHandler(mockRequest, mockH)
+    const result = await createClaimHandler(mockRequest, mockHapi)
 
     expect(processClaim).toHaveBeenCalledWith({
       payload: mockRequest.payload,
       logger: mockRequest.logger,
       db: mockRequest.db
     })
-    expect(mockH.response).toHaveBeenCalledWith(mockClaim)
-    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
-    expect(result).toBe(mockH)
+    expect(mockHapi.response).toHaveBeenCalledWith(mockClaim)
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockHapi)
   })
 
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
     processClaim.mockRejectedValue(boomError)
 
-    await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    await expect(createClaimHandler(mockRequest, mockHapi)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: boomError },
       'Failed to create claim'
@@ -130,7 +131,7 @@ describe('createClaimHandler', () => {
     const genericError = new Error('Database failure')
     processClaim.mockRejectedValue(genericError)
 
-    await expect(createClaimHandler(mockRequest, mockH)).rejects.toThrow(
+    await expect(createClaimHandler(mockRequest, mockHapi)).rejects.toThrow(
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
@@ -152,7 +153,7 @@ describe('isURNUniqueHandler', () => {
   const mockResult = {
     isURNUnique: true
   }
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis()
   }
@@ -164,23 +165,23 @@ describe('isURNUniqueHandler', () => {
   it('should return 200 and the result', async () => {
     isURNNumberUnique.mockResolvedValue(mockResult)
 
-    const result = await isURNUniqueHandler(mockRequest, mockH)
+    const result = await isURNUniqueHandler(mockRequest, mockHapi)
 
     expect(isURNNumberUnique).toHaveBeenCalledWith({
       laboratoryURN: 'URN34567ddd',
       sbi: '123456789',
       db: mockRequest.db
     })
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
-    expect(result).toBe(mockH)
+    expect(mockHapi.response).toHaveBeenCalledWith(mockResult)
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockHapi)
   })
 
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
     isURNNumberUnique.mockRejectedValue(boomError)
 
-    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    await expect(isURNUniqueHandler(mockRequest, mockHapi)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: boomError },
       'Failed to check if URN is unique'
@@ -191,7 +192,7 @@ describe('isURNUniqueHandler', () => {
     const genericError = new Error('Database failure')
     isURNNumberUnique.mockRejectedValue(genericError)
 
-    await expect(isURNUniqueHandler(mockRequest, mockH)).rejects.toThrow(
+    await expect(isURNUniqueHandler(mockRequest, mockHapi)).rejects.toThrow(
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
@@ -213,7 +214,7 @@ describe('getClaimsCountHandler', () => {
   const mockResult = {
     count: 2
   }
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis()
   }
@@ -225,16 +226,16 @@ describe('getClaimsCountHandler', () => {
   it('should return count of claims', async () => {
     getClaimsCount.mockResolvedValue(2)
 
-    const result = await getClaimsCountHandler(mockRequest, mockH)
+    const result = await getClaimsCountHandler(mockRequest, mockHapi)
 
     expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
       herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
       db: mockRequest.db
     })
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
-    expect(result).toBe(mockH)
+    expect(mockHapi.response).toHaveBeenCalledWith(mockResult)
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockHapi)
   })
 
   it('should pass scheme through to getClaimsCount for the poultry scheme', async () => {
@@ -248,7 +249,7 @@ describe('getClaimsCountHandler', () => {
     }
     getClaimsCount.mockResolvedValue(1)
 
-    await getClaimsCountHandler(requestWithScheme, mockH)
+    await getClaimsCountHandler(requestWithScheme, mockHapi)
 
     expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
@@ -269,7 +270,7 @@ describe('getClaimsCountHandler', () => {
     }
     getClaimsCount.mockResolvedValue(3)
 
-    await getClaimsCountHandler(requestWithScheme, mockH)
+    await getClaimsCountHandler(requestWithScheme, mockHapi)
 
     expect(getClaimsCount).toHaveBeenCalledWith({
       cph: '22/333/4444',
@@ -283,7 +284,7 @@ describe('getClaimsCountHandler', () => {
     const boomError = Boom.badRequest('Invalid input')
     getClaimsCount.mockRejectedValue(boomError)
 
-    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    await expect(getClaimsCountHandler(mockRequest, mockHapi)).rejects.toThrow(boomError)
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: boomError },
       'Failed to retrieve claims count'
@@ -294,7 +295,7 @@ describe('getClaimsCountHandler', () => {
     const genericError = new Error('Database failure')
     getClaimsCount.mockRejectedValue(genericError)
 
-    await expect(getClaimsCountHandler(mockRequest, mockH)).rejects.toThrow(
+    await expect(getClaimsCountHandler(mockRequest, mockHapi)).rejects.toThrow(
       Boom.internal(genericError)
     )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
@@ -347,7 +348,7 @@ describe('getClaimHandler', () => {
     ]
   }
 
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis()
   }
@@ -359,22 +360,22 @@ describe('getClaimHandler', () => {
   it('should return 200 and the result', async () => {
     getClaim.mockResolvedValue(mockResult)
 
-    const result = await getClaimHandler(mockRequest, mockH)
+    const result = await getClaimHandler(mockRequest, mockHapi)
 
     expect(getClaim).toHaveBeenCalledWith({
       db: mockRequest.db,
       reference: 'REBC-VA4R-TRL7'
     })
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)
-    expect(result).toBe(mockH)
+    expect(mockHapi.response).toHaveBeenCalledWith(mockResult)
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
+    expect(result).toBe(mockHapi)
   })
 
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
     getClaim.mockRejectedValue(boomError)
 
-    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(boomError)
+    await expect(getClaimHandler(mockRequest, mockHapi)).rejects.toThrow(boomError)
 
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: boomError },
@@ -386,7 +387,9 @@ describe('getClaimHandler', () => {
     const genericError = new Error('Database failure')
     getClaim.mockRejectedValue(genericError)
 
-    await expect(getClaimHandler(mockRequest, mockH)).rejects.toThrow(Boom.internal(genericError))
+    await expect(getClaimHandler(mockRequest, mockHapi)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
     expect(mockRequest.logger.error).toHaveBeenCalledWith(
       { error: genericError },
       'Failed to get claim'
@@ -394,8 +397,91 @@ describe('getClaimHandler', () => {
   })
 })
 
+describe('withdrawClaimHandler', () => {
+  const mockRequest = {
+    logger: { error: jest.fn(), info: jest.fn(), setBindings: jest.fn() },
+    db: {},
+    payload: {
+      reference: 'REBC-VA4R-TRL7',
+      user: 'admin',
+      reasonForWithdrawal: 'unintentionalTypingError',
+      issueDiscovery: 'customerContactedRPA',
+      withdrawalDetails: 'The date of visit was a typo'
+    }
+  }
+
+  const mockHapi = {
+    response: jest.fn().mockReturnThis(),
+    code: jest.fn().mockReturnThis()
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  describe('when the claim is withdrawn', () => {
+    const withdrawnClaim = { reference: 'REBC-VA4R-TRL7', status: 'WITHDRAWN' }
+
+    beforeEach(() => {
+      withdrawClaim.mockResolvedValue(withdrawnClaim)
+    })
+
+    it('should withdraw the claim with the reasons from the payload', async () => {
+      await withdrawClaimHandler(mockRequest, mockHapi)
+
+      expect(withdrawClaim).toHaveBeenCalledWith({
+        db: mockRequest.db,
+        reference: 'REBC-VA4R-TRL7',
+        user: 'admin',
+        withdrawal: {
+          reasonForWithdrawal: 'unintentionalTypingError',
+          issueDiscovery: 'customerContactedRPA',
+          withdrawalDetails: 'The date of visit was a typo'
+        }
+      })
+    })
+
+    it('should respond with the updated claim', async () => {
+      await withdrawClaimHandler(mockRequest, mockHapi)
+
+      expect(mockHapi.response).toHaveBeenCalledWith(withdrawnClaim)
+    })
+
+    it('should return a 200 status code', async () => {
+      const result = await withdrawClaimHandler(mockRequest, mockHapi)
+
+      expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
+      expect(result).toBe(mockHapi)
+    })
+  })
+
+  it('should rethrow Boom errors', async () => {
+    const boomError = Boom.conflict('Claim must be in check to be withdrawn')
+    withdrawClaim.mockRejectedValue(boomError)
+
+    await expect(withdrawClaimHandler(mockRequest, mockHapi)).rejects.toThrow(boomError)
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: boomError },
+      'Failed to withdraw claim'
+    )
+  })
+
+  it('should wrap non-Boom errors in Boom.internal', async () => {
+    const genericError = new Error('Database failure')
+    withdrawClaim.mockRejectedValue(genericError)
+
+    await expect(withdrawClaimHandler(mockRequest, mockHapi)).rejects.toThrow(
+      Boom.internal(genericError)
+    )
+    expect(mockRequest.logger.error).toHaveBeenCalledWith(
+      { error: genericError },
+      'Failed to withdraw claim'
+    )
+  })
+})
+
 describe('updateClaimStatusHandler', () => {
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis(),
     takeover: jest.fn().mockReturnThis()
@@ -454,9 +540,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
     expect(updateClaimStatus).toHaveBeenCalledWith({
       db: {},
       reference: 'REBC-J9AR-KILQ',
@@ -523,9 +609,9 @@ describe('updateClaimStatusHandler', () => {
 
     getClaimByReference.mockResolvedValueOnce(null)
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(404)
+    expect(mockHapi.code).toHaveBeenCalledWith(404)
     expect(updateClaimStatus).not.toHaveBeenCalled()
     expect(raiseClaimEvents).not.toHaveBeenCalled()
     expect(publishStatusChangeEvent).not.toHaveBeenCalled()
@@ -572,9 +658,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'some user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
 
     expect(updateClaimStatus).toHaveBeenCalledWith({
       db: {},
@@ -642,9 +728,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'some user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
 
     expect(updateClaimStatus).toHaveBeenCalledWith({
       db: {},
@@ -710,9 +796,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'some user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
 
     expect(updateClaimStatus).toHaveBeenCalled()
 
@@ -768,9 +854,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'some user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
 
     expect(updateClaimStatus).toHaveBeenCalled()
 
@@ -815,9 +901,9 @@ describe('updateClaimStatusHandler', () => {
       type: 'FOLLOW_UP'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(204)
+    expect(mockHapi.code).toHaveBeenCalledWith(204)
 
     expect(updateClaimStatus).not.toHaveBeenCalled()
 
@@ -857,9 +943,9 @@ describe('updateClaimStatusHandler', () => {
       updatedBy: 'user'
     })
 
-    await updateClaimStatusHandler(mockRequest, mockH)
+    await updateClaimStatusHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(200)
+    expect(mockHapi.code).toHaveBeenCalledWith(200)
     expect(updateClaimStatus).toHaveBeenCalledWith({
       db: {},
       reference: 'PORE-CH1C-K3NS',
@@ -906,7 +992,7 @@ describe('updateClaimStatusHandler', () => {
 })
 
 describe('updateClaimDataHandler', () => {
-  const mockH = {
+  const mockHapi = {
     response: jest.fn().mockReturnThis(),
     code: jest.fn().mockReturnThis(),
     takeover: jest.fn().mockReturnThis()
@@ -939,9 +1025,9 @@ describe('updateClaimDataHandler', () => {
     }
     getClaimByReference.mockResolvedValue(null)
 
-    await updateClaimDataHandler(mockRequest, mockH)
+    await updateClaimDataHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(404)
+    expect(mockHapi.code).toHaveBeenCalledWith(404)
   })
 
   test('should return 204 when no data changes', async () => {
@@ -960,9 +1046,9 @@ describe('updateClaimDataHandler', () => {
       data: { vetsName: 'New Vet' }
     })
 
-    await updateClaimDataHandler(mockRequest, mockH)
+    await updateClaimDataHandler(mockRequest, mockHapi)
 
-    expect(mockH.code).toHaveBeenCalledWith(204)
+    expect(mockHapi.code).toHaveBeenCalledWith(204)
     expect(updateClaimData).not.toHaveBeenCalled()
     expect(claimDataUpdateEvent).not.toHaveBeenCalled()
   })
@@ -991,7 +1077,7 @@ describe('updateClaimDataHandler', () => {
       organisation: { sbi: '123456789' }
     })
 
-    await updateClaimDataHandler(mockRequest, mockH)
+    await updateClaimDataHandler(mockRequest, mockHapi)
 
     expect(updateClaimData).toHaveBeenCalledWith({
       db: mockDb,
@@ -1017,6 +1103,6 @@ describe('updateClaimDataHandler', () => {
       expect.any(Date),
       '123456789'
     )
-    expect(mockH.code).toHaveBeenCalledWith(204)
+    expect(mockHapi.code).toHaveBeenCalledWith(204)
   })
 })
