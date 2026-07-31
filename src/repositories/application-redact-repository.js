@@ -20,7 +20,7 @@ export const updateApplicationRedact = async (
   _retryCount,
   _status,
   _success,
-  options = {}
+  _options = {}
 ) => {
   // TODO: 1495 impl
   return {}
