@@ -261,7 +261,7 @@ export const removeHerdFromClaimData = async ({
   )
 }
 
-export const redactClaimPII = async (applicationReference, logger) => {
+export const redactClaimPII = async (_applicationReference, _logger) => {
   // TODO: 1495 impl
   // const redactedValueByField = {
   //   vetsName: `${REDACT_PII_VALUES.REDACTED_VETS_NAME}`,
@@ -356,7 +356,7 @@ export const redactClaimPII = async (applicationReference, logger) => {
 //   )
 // }
 
-export const getAppRefsWithLatestClaimLastUpdatedBefore = async (years) => {
+export const getAppRefsWithLatestClaimLastUpdatedBefore = async (_years) => {
   // TODO: 1495 impl
   return []
 

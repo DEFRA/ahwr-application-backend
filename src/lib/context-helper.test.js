@@ -101,7 +101,7 @@ describe('context-helper', () => {
       expect(actual).toBe('Unnamed herd')
     })
 
-    it('returns unnamed herd for beef', () => {
+    it('returns unnamed herd for pigs', () => {
       const actual = getUnnamedHerdValueByTypeOfLivestock(TYPE_OF_LIVESTOCK.PIGS)
       expect(actual).toBe('Unnamed herd')
     })

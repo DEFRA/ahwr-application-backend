@@ -247,7 +247,7 @@ export const findApplication = async (db, reference) => {
   return db.collection(APPLICATION_COLLECTION).findOne({ reference })
 }
 
-export const getApplicationsToRedactOlderThan = async (years) => {
+export const getApplicationsToRedactOlderThan = async (_years) => {
   // TODO: 1495 impl
   return []
   // const now = new Date()
@@ -278,7 +278,7 @@ export const getApplicationsToRedactOlderThan = async (years) => {
   // })
 }
 
-export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
+export const getOWApplicationsToRedactLastUpdatedBefore = async (_years) => {
   // TODO: 1495 impl
   return []
   // const now = new Date()
@@ -306,7 +306,7 @@ export const getOWApplicationsToRedactLastUpdatedBefore = async (years) => {
   // })
 }
 
-export const redactApplicationPII = async (agreementReference, logger) => {
+export const redactApplicationPII = async (_agreementReference, _logger) => {
   // TODO: 1495 impl
   // const redactedValueByJSONPath = {
   //   'organisation,name': REDACT_PII_VALUES.REDACTED_NAME,
@@ -455,7 +455,7 @@ export const getRemindersToSend = async (
     .toArray()
 }
 
-export const updateReminders = async (reference, newReminder, _oldReminder, db, logger) => {
+export const updateReminders = async (reference, _newReminder, _oldReminder, db, logger) => {
   const filter = { reference }
   // TODO replace this is condition that checks application history
   const updateDocument = {} // { $set: { reminders: newReminder } }

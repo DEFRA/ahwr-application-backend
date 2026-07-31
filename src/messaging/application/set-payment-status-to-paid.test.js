@@ -60,7 +60,7 @@ describe('handler function for setting payment status to paid for claims', () =>
       {
         message: 'Claim has been updated',
         claim: { ...updatedClaim, id: '507f191e810c19729de860ea' },
-        note: undefined,
+        note: null,
         raisedBy: 'admin',
         raisedOn: new Date('2025-11-21T14:17:20.084Z')
       },

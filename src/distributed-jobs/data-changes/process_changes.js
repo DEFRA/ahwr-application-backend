@@ -167,7 +167,7 @@ const processDataChange = async (change, db) => {
 
     return { success: true, ...change }
   } catch (error) {
-    return { success: false, ...change, reason: 'Connection failed' }
+    return { success: false, ...change, reason: error.message }
   }
 }
 

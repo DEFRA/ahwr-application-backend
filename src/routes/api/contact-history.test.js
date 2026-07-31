@@ -300,7 +300,7 @@ describe('GET /api/applications/contact-history/{REF} handler', () => {
     expect(res.payload).toEqual('[]')
   })
 
-  test('should return 200 and an empty array when no application history can be found', async () => {
+  test('should return 200 and an empty array when application contact history is null', async () => {
     getAllByApplicationReference.mockResolvedValueOnce({ contactHistory: null })
 
     const res = await server.inject(options)

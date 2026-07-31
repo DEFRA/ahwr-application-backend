@@ -193,18 +193,14 @@ describe('processReminderEmailRequest', () => {
 
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    // expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
-    // expect(sendMessageToSNS).toHaveBeenCalledWith(
-    //   reminderRequestedTopicArn,
-    //   {
-    //     agreementReference: 'IAHW-BEKR-AWIU',
-    //     crn: '1100407200',
-    //     sbi: '106282723',
-    //     emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
-    //     reminderType: nineMonths
-    //   },
-    //   { messageType: messageGeneratorMsgTypeReminder }
-    // )
+    expect(mockPublishEvent).toHaveBeenCalledTimes(1)
+    expect(updateReminders).toHaveBeenCalledWith(
+      'IAHW-BEKR-AWIU',
+      nineMonths,
+      undefined,
+      mockDb,
+      mockLogger
+    )
   })
 
   // TODO replace this is condition that checks application history
@@ -227,18 +223,14 @@ describe('processReminderEmailRequest', () => {
 
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    // expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
-    // expect(sendMessageToSNS).toHaveBeenCalledWith(
-    //   reminderRequestedTopicArn,
-    //   {
-    //     agreementReference: 'IAHW-BEKR-AWIU',
-    //     crn: '1100407200',
-    //     sbi: '106282723',
-    //     emailAddresses: ['dummy1@example.com', 'dummy2@example.com'],
-    //     reminderType: sixMonths
-    //   },
-    //   { messageType: messageGeneratorMsgTypeReminder }
-    // )
+    expect(mockPublishEvent).toHaveBeenCalledTimes(1)
+    expect(updateReminders).toHaveBeenCalledWith(
+      'IAHW-BEKR-AWIU',
+      sixMonths,
+      undefined,
+      mockDb,
+      mockLogger
+    )
   })
 
   it('should only send to one address when email and orgEmail are the same', async () => {
@@ -260,18 +252,14 @@ describe('processReminderEmailRequest', () => {
 
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
-    // expect(sendMessageToSNS).toHaveBeenCalledTimes(1)
-    // expect(sendMessageToSNS).toHaveBeenCalledWith(
-    //   reminderRequestedTopicArn,
-    //   {
-    //     agreementReference: 'IAHW-BEKR-AWIU',
-    //     crn: '1100407200',
-    //     sbi: '106282723',
-    //     emailAddresses: ['dummy@example.com'],
-    //     reminderType: nineMonths
-    //   },
-    //   { messageType: messageGeneratorMsgTypeReminder }
-    // )
+    expect(mockPublishEvent).toHaveBeenCalledTimes(1)
+    expect(updateReminders).toHaveBeenCalledWith(
+      'IAHW-BEKR-AWIU',
+      nineMonths,
+      undefined,
+      mockDb,
+      mockLogger
+    )
   })
 
   it('should send to message-generator and update reminders for multiple applications when multiple reminders due', async () => {

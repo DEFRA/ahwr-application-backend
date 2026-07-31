@@ -187,7 +187,7 @@ const constructMessage = ({ reminderType, reference, crn, sbi, email, orgEmail }
   }
 }
 
-const sendToMessageGenerator = async (reminder) => {
+const sendToMessageGenerator = async (_reminder) => {
   // await sendMessageToSNS(reminderRequestedTopicArn, reminder, {
   //   messageType: messageGeneratorMsgTypeReminder
   // })
