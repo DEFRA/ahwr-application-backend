@@ -33,6 +33,17 @@ jobs:
           npm ci
           npm test
 
+      - name: Verify Pact contracts
+        run: |
+          mkdir -p pacts
+          gh release download pact-contracts \
+            --repo DEFRA/ahwr-backoffice-ui \
+            --pattern "*.json" \
+            --dir pacts
+          npx jest tests/contract --runInBand --no-coverage
+        env:
+          GH_TOKEN: ${{ secrets.UI_TESTS_PAT }}
+
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
         with:
