@@ -40,7 +40,7 @@ jobs:
             --repo DEFRA/ahwr-backoffice-ui \
             --pattern "*.json" \
             --dir pacts
-          npx jest tests/contract --runInBand --no-coverage
+          npx jest --config jest.contract.config.cjs --runInBand --no-coverage
         env:
           GH_TOKEN: ${{ secrets.UI_TESTS_PAT }}
 
