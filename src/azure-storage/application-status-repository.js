@@ -5,7 +5,7 @@
 
 // TODO - is this to delete?
 
-export const redactStatusPII = async (reference, logger) => {
+export const redactStatusPII = async (_reference, _logger) => {
   // TODO 1182 impl
   // const propertiesToMerge = {
   //   Payload: { note: REDACT_PII_VALUES.REDACTED_NOTE }

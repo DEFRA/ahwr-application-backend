@@ -62,45 +62,23 @@ describe('generateClaimStatus', () => {
     expect(getAndIncrementComplianceCheckCount).not.toHaveBeenCalled()
   })
 
-  test('should return onHold when claim count does not match ratio interval', async () => {
-    mockConfig({ complianceCheckRatio: 5 })
-    getAndIncrementComplianceCheckCount.mockResolvedValue(6)
-    const visitDate = '2025-06-01'
+  test.each([
+    { complianceCheckRatio: 5, claimCount: 6, expected: 'ON_HOLD' },
+    { complianceCheckRatio: 3, claimCount: 3, expected: 'IN_CHECK' },
+    { complianceCheckRatio: 5, claimCount: 10, expected: 'IN_CHECK' },
+    { complianceCheckRatio: 3, claimCount: 4, expected: 'ON_HOLD' }
+  ])(
+    'should return $expected when ratio is $complianceCheckRatio and claim count is $claimCount',
+    async ({ complianceCheckRatio, claimCount, expected }) => {
+      mockConfig({ complianceCheckRatio })
+      getAndIncrementComplianceCheckCount.mockResolvedValue(claimCount)
+      const visitDate = '2025-06-01'
 
-    const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
+      const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
 
-    expect(result).toBe('ON_HOLD')
-  })
-
-  test('should return inCheck when claim count matches ratio interval', async () => {
-    mockConfig({ complianceCheckRatio: 3 })
-    getAndIncrementComplianceCheckCount.mockResolvedValue(3)
-    const visitDate = '2025-06-01'
-
-    const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
-
-    expect(result).toBe('IN_CHECK')
-  })
-
-  test('should return inCheck when claim count is multiple of ratio', async () => {
-    mockConfig({ complianceCheckRatio: 5 })
-    getAndIncrementComplianceCheckCount.mockResolvedValue(10)
-    const visitDate = '2025-06-01'
-
-    const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
-
-    expect(result).toBe('IN_CHECK')
-  })
-
-  test('should return onHold when claim count is not multiple of ratio', async () => {
-    mockConfig({ complianceCheckRatio: 3 })
-    getAndIncrementComplianceCheckCount.mockResolvedValue(4)
-    const visitDate = '2025-06-01'
-
-    const result = await generateClaimStatus(visitDate, mockLogger, mockDb)
-
-    expect(result).toBe('ON_HOLD')
-  })
+      expect(result).toBe(expected)
+    }
+  )
 
   test('should return onHold when feature assurance on but visit date before assurance start', async () => {
     mockConfig({

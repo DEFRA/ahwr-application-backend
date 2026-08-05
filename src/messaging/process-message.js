@@ -9,13 +9,10 @@ export const processApplicationMessage = async (message, db, logger, attributes)
     const { eventType } = attributes
     await metricsCounter(`application_message_received-${eventType}`)
 
-    switch (eventType) {
-      case moveClaimToPaidMsgType:
-        await setPaymentStatusToPaid(message, db, logger)
-        break
-      default:
-        logger.warn(`Unknown message type: ${eventType}`)
-        break
+    if (eventType === moveClaimToPaidMsgType) {
+      await setPaymentStatusToPaid(message, db, logger)
+    } else {
+      logger.warn(`Unknown message type: ${eventType}`)
     }
   } catch (err) {
     logger.error(err, 'Unable to process Application request:')

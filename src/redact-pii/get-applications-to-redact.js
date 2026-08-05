@@ -22,7 +22,7 @@ const { GOT_APPLICATIONS_TO_REDACT } = REDACT_PII_PROGRESS_STATUS
 const THREE_YEARS = 3
 const SEVEN_YEARS = 7
 
-const CLAIM_STATUS_PAID = [STATUS.PAID, STATUS.READY_TO_PAY]
+const CLAIM_STATUS_PAID = new Set([STATUS.PAID, STATUS.READY_TO_PAY])
 
 export const getApplicationsToRedact = async (requestedDate) => {
   let applicationsToRedact = await getFailedApplicationRedact(requestedDate)
@@ -98,7 +98,7 @@ const buildApplicationRedact = async (reference, sbi, claimReferences) => {
 
 const owApplicationRedactDataIfNoPaymentClaimElseNull = (oldWorldApplication) => {
   // skip if application has paid
-  return CLAIM_STATUS_PAID.includes(oldWorldApplication.statusId)
+  return CLAIM_STATUS_PAID.has(oldWorldApplication.statusId)
     ? null
     : buildApplicationRedact(oldWorldApplication.reference, oldWorldApplication.dataValues.sbi, [
         oldWorldApplication.reference
@@ -109,7 +109,7 @@ const nwApplicationRedactDataIfNoPaymentClaimsElseNull = async (newWorldApplicat
   const appClaims = await getByApplicationReference(newWorldApplication.reference)
 
   // skip if application has paid
-  if (appClaims.some((c) => CLAIM_STATUS_PAID.includes(c.statusId))) {
+  if (appClaims.some((c) => CLAIM_STATUS_PAID.has(c.statusId))) {
     return null
   }
   const claimReferences = appClaims.map((c) => c.reference)
