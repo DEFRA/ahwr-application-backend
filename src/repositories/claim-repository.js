@@ -19,13 +19,22 @@ export const getClaimByReference = async (db, reference) => {
   return db.collection(CLAIMS_COLLECTION).findOne({ reference }, { projection: { _id: 0 } })
 }
 
-export const getByApplicationReference = async ({ db, applicationReference, typeOfLivestock }) => {
+export const getByApplicationReference = async ({
+  db,
+  applicationReference,
+  typeOfLivestock,
+  includeWithdrawns = false
+}) => {
   const filter = {
     applicationReference
   }
 
   if (typeOfLivestock) {
     filter['data.typeOfLivestock'] = typeOfLivestock
+  }
+
+  if (!includeWithdrawns) {
+    filter.status = { $ne: STATUS.WITHDRAWN }
   }
 
   return db.collection(CLAIMS_COLLECTION).find(filter).sort({ createdAt: -1 }).toArray()

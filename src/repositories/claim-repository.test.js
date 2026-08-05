@@ -34,7 +34,8 @@ describe('claim-repository', () => {
 
       expect(mockCollection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
       expect(mockFind).toHaveBeenCalledWith({
-        applicationReference: 'IAHW-8ZPZ-8CLI'
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 })
       expect(result).toEqual(mockClaims)
@@ -52,9 +53,38 @@ describe('claim-repository', () => {
 
       expect(mockFind).toHaveBeenCalledWith({
         applicationReference: 'IAHW-8ZPZ-8CLI',
-        'data.typeOfLivestock': 'sheep'
+        'data.typeOfLivestock': 'sheep',
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(result).toEqual(mockClaims)
+    })
+
+    it('should exclude withdrawn claims by default', async () => {
+      mockToArray.mockResolvedValueOnce([])
+
+      await getByApplicationReference({
+        db: mockDb,
+        applicationReference: 'IAHW-8ZPZ-8CLI'
+      })
+
+      expect(mockFind).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+    })
+
+    it('should include withdrawn claims when includeWithdrawns is true', async () => {
+      mockToArray.mockResolvedValueOnce([])
+
+      await getByApplicationReference({
+        db: mockDb,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        includeWithdrawns: true
+      })
+
+      expect(mockFind).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI'
+      })
     })
 
     it('should return an empty array when no results', async () => {

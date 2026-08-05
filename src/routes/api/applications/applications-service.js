@@ -132,13 +132,20 @@ const mapApplicationForResponse = (app, type) => {
   }
 }
 
-export const getClaims = async ({ db, logger, applicationReference, typeOfLivestock }) => {
-  logger.setBindings({ applicationReference, typeOfLivestock })
+export const getClaims = async ({
+  db,
+  logger,
+  applicationReference,
+  typeOfLivestock,
+  includeWithdrawns
+}) => {
+  logger.setBindings({ applicationReference, typeOfLivestock, includeWithdrawns })
 
   const result = await getByApplicationReference({
     db,
     applicationReference,
-    typeOfLivestock
+    typeOfLivestock,
+    includeWithdrawns
   })
 
   return result.map((claim) => ({

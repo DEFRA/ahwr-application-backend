@@ -56,14 +56,15 @@ export const getApplicationsHandler = async (request, h) => {
 
 export const getApplicationClaimsHandler = async (request, h) => {
   try {
-    const { typeOfLivestock } = request.query
+    const { typeOfLivestock, includeWithdrawns } = request.query
     const { applicationReference } = request.params
 
     const claims = await getClaims({
       db: request.db,
       logger: request.logger,
       applicationReference,
-      typeOfLivestock
+      typeOfLivestock,
+      includeWithdrawns
     })
 
     return h.response(claims).code(StatusCodes.OK)
