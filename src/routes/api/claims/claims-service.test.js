@@ -147,6 +147,35 @@ describe('processClaim', () => {
       )
     })
 
+    test('creates and returns claim when interview is omitted from the payload', async () => {
+      // The interview question is currently skipped on the front end (AHWR-2165), so no answer
+      // is submitted for it - the field must remain optional here.
+      const { interview, ...dataWithoutInterview } = payload.data
+      const payloadWithoutInterview = { ...payload, data: dataWithoutInterview }
+
+      const application = {
+        flags: [],
+        organisation: { sbi: '123456789' }
+      }
+      getApplication.mockResolvedValue(application)
+      savePoultryClaimAndRelatedData.mockResolvedValue({
+        claim: { reference: 'PORE-O9UD-0025' },
+        siteCreated: true,
+        herdData: {}
+      })
+
+      const result = await processClaim({
+        payload: payloadWithoutInterview,
+        logger: mockLogger,
+        db: mockDb
+      })
+
+      expect(result).toEqual({ reference: 'PORE-O9UD-0025' })
+      expect(savePoultryClaimAndRelatedData).toHaveBeenCalledWith(
+        expect.objectContaining({ claimPayload: payloadWithoutInterview })
+      )
+    })
+
     test('passes agreement flags to savePoultryClaimAndRelatedData', async () => {
       const flags = [{}]
       const application = {
