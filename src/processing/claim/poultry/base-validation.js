@@ -53,7 +53,7 @@ const getDataModel = () =>
     interview: joi
       .string()
       .valid(...Object.values(interview))
-      .required()
+      .optional()
   })
 
 const getClaimModel = () =>
