@@ -41,6 +41,17 @@ jobs:
           npm run lint:knip
           npm test
 
+      - name: Verify Pact contracts
+        run: |
+          mkdir -p pacts
+          gh release download pact-contracts \
+            --repo DEFRA/ahwr-backoffice-ui \
+            --pattern "*.json" \
+            --dir pacts
+          npm run test:contract
+        env:
+          GH_TOKEN: ${{ secrets.UI_TESTS_PAT }}
+
       - name: Test Docker Image Build
         run: |
           set +e
