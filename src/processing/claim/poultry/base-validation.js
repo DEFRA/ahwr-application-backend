@@ -50,10 +50,6 @@ const getDataModel = () =>
       .string()
       .valid(...Object.values(costOfChanges))
       .required(),
-    // Optional: the interview question is currently skipped on the front end (AHWR-2165, behind
-    // config.poultry.disableInterviewPage in ahwr-public-user-ui), so no answer is submitted. The
-    // field is retained, still validated when present, so it can be made required again if the
-    // page is re-enabled.
     interview: joi
       .string()
       .valid(...Object.values(interview))

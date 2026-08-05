@@ -148,8 +148,6 @@ describe('processClaim', () => {
     })
 
     test('creates and returns claim when interview is omitted from the payload', async () => {
-      // The interview question is currently skipped on the front end (AHWR-2165), so no answer
-      // is submitted for it - the field must remain optional here.
       const { interview, ...dataWithoutInterview } = payload.data
       const payloadWithoutInterview = { ...payload, data: dataWithoutInterview }
 
