@@ -10,3 +10,4 @@ coverage
 .eslintcache
 test-output
 .env
+pacts/*.json

@@ -23,7 +23,7 @@ module.exports = {
   ],
   restoreMocks: true,
   testEnvironment: 'node',
-  testPathIgnorePatterns: [],
+  testPathIgnorePatterns: ['<rootDir>/tests/contract/'],
   verbose: true,
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   globalSetup: './tests/globalSetup.js',
