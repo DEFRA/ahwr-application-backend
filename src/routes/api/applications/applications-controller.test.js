@@ -198,7 +198,8 @@ describe('applications-controller', () => {
   describe('getApplicationHerdsHandler', () => {
     const mockRequest = {
       query: {
-        species: 'beef'
+        species: 'beef',
+        includeWithdrawns: false
       },
       params: {
         applicationReference: 'IAHW-AAA-001'
@@ -234,7 +235,8 @@ describe('applications-controller', () => {
         db: mockDb,
         logger: mockLogger,
         applicationReference: 'IAHW-AAA-001',
-        species: 'beef'
+        species: 'beef',
+        includeWithdrawns: false
       })
       expect(mockH.response).toHaveBeenCalledWith(mockHerds)
       expect(mockH.code).toHaveBeenCalledWith(StatusCodes.OK)

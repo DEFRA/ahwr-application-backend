@@ -1,5 +1,6 @@
 import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { beefHerd, sheepHerd } from '../../data/herd-data.js'
+import { beefClaimWithHerd, withdrawnSheepClaimWithHerd } from '../../data/claim-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
@@ -19,6 +20,10 @@ describe('Get application herds', () => {
   beforeEach(async () => {
     await server.db.collection('herds').deleteMany({})
     await server.db.collection('herds').insertMany([beefHerd, sheepHerd])
+    await server.db.collection('claims').deleteMany({})
+    await server.db
+      .collection('claims')
+      .insertMany([beefClaimWithHerd, withdrawnSheepClaimWithHerd])
   })
 
   afterAll(async () => {
@@ -40,6 +45,37 @@ describe('Get application herds', () => {
           cph: '12/345/6789',
           reasons: ['separateManagementNeeds'],
           species: 'beef'
+        }
+      ]
+    })
+  })
+
+  test('excludes herds whose only claims are withdrawn by default', async () => {
+    const res = await server.inject({
+      ...options,
+      url: buildUrl('IAHW-G3CL-V59P', 'sheep')
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(JSON.parse(res.payload)).toEqual({ herds: [] })
+  })
+
+  test('includes herds whose only claims are withdrawn when includeWithdrawns is true', async () => {
+    const res = await server.inject({
+      ...options,
+      url: `${buildUrl('IAHW-G3CL-V59P', 'sheep')}&includeWithdrawns=true`
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(JSON.parse(res.payload)).toEqual({
+      herds: [
+        {
+          id: '40ba22b3-cfdc-4d8c-b491-13873ec97439',
+          version: 1,
+          name: 'Sheep herd 1',
+          cph: '44/323/4441',
+          reasons: ['onlyHerd'],
+          species: 'sheep'
         }
       ]
     })

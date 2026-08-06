@@ -1,3 +1,29 @@
+export const beefClaimWithHerd = {
+  reference: 'REBC-BEEF-0001',
+  applicationReference: 'IAHW-G3CL-V59P',
+  createdAt: new Date('2025-04-24T08:24:24.092Z'),
+  createdBy: 'admin',
+  type: 'REVIEW',
+  data: { typeOfLivestock: 'beef' },
+  status: 'IN_CHECK',
+  statusHistory: [],
+  herd: { id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742', version: 1 },
+  updateHistory: []
+}
+
+export const withdrawnSheepClaimWithHerd = {
+  reference: 'RESH-SHEP-0001',
+  applicationReference: 'IAHW-G3CL-V59P',
+  createdAt: new Date('2025-04-24T08:24:24.092Z'),
+  createdBy: 'admin',
+  type: 'REVIEW',
+  data: { typeOfLivestock: 'sheep' },
+  status: 'WITHDRAWN',
+  statusHistory: [],
+  herd: { id: '40ba22b3-cfdc-4d8c-b491-13873ec97439', version: 1 },
+  updateHistory: []
+}
+
 export const reviewClaim = {
   reference: 'REBC-VA4R-TRL7',
   applicationReference: 'IAHW-G3CL-V59P',

@@ -55,5 +55,6 @@ export const getApplicationClaimsQuerySchema = Joi.object({
 })
 
 export const getApplicationHerdsQuerySchema = Joi.object({
-  species: Joi.string().valid(...Object.values(TYPE_OF_LIVESTOCK), 'poultry')
+  species: Joi.string().valid(...Object.values(TYPE_OF_LIVESTOCK), 'poultry'),
+  includeWithdrawns: Joi.boolean().optional().default(false)
 })
