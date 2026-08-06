@@ -10,7 +10,8 @@ import {
   removeHerdFromClaimData,
   deleteClaim,
   getClaimsCount,
-  updateHerd
+  updateHerd,
+  isURNUnique
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
@@ -716,6 +717,48 @@ describe('claim-repository', () => {
       mockCountDocuments.mockRejectedValue(error)
 
       await expect(getClaimsCount({ db: mockDb, cph, herdId })).rejects.toThrow('DB failure')
+    })
+  })
+
+  describe('isURNUnique', () => {
+    const mockFindOne = jest.fn()
+    const mockDb = { collection: jest.fn(() => ({ findOne: mockFindOne })) }
+    const applicationReferences = ['IAHW-7NF8-3KB9']
+    const laboratoryURN = 'AK-2024-38'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('excludes withdrawn claims by default', async () => {
+      mockFindOne.mockResolvedValue(null)
+
+      const result = await isURNUnique({ db: mockDb, applicationReferences, laboratoryURN })
+
+      expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+      expect(mockFindOne).toHaveBeenCalledWith({
+        applicationReference: { $in: applicationReferences },
+        'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' },
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+      expect(result).toBe(true)
+    })
+
+    it('includes withdrawn claims when includeWithdrawns is true', async () => {
+      mockFindOne.mockResolvedValue({ reference: 'FUBC-JTTU-SDQ7' })
+
+      const result = await isURNUnique({
+        db: mockDb,
+        applicationReferences,
+        laboratoryURN,
+        includeWithdrawns: true
+      })
+
+      expect(mockFindOne).toHaveBeenCalledWith({
+        applicationReference: { $in: applicationReferences },
+        'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
+      })
+      expect(result).toBe(false)
     })
   })
 })

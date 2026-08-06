@@ -184,7 +184,7 @@ export const processClaim = async ({ payload, logger, db }) => {
   }
 }
 
-export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
+export const isURNNumberUnique = async ({ db, sbi, laboratoryURN, includeWithdrawns = false }) => {
   const applications = await getApplicationsBySbi(db, sbi)
   const applicationReferences = applications.map((a) => a.reference)
 
@@ -192,7 +192,8 @@ export const isURNNumberUnique = async ({ db, sbi, laboratoryURN }) => {
     isNWURNUnique({
       db,
       applicationReferences,
-      laboratoryURN
+      laboratoryURN,
+      includeWithdrawns
     }),
     isOWURNUnique({
       db,

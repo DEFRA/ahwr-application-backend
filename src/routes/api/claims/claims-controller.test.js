@@ -147,6 +147,9 @@ describe('isURNUniqueHandler', () => {
       sbi: '123456789',
       laboratoryURN: 'URN34567ddd'
     },
+    query: {
+      includeWithdrawns: false
+    },
     logger: { error: jest.fn(), info: jest.fn() },
     db: {}
   }
@@ -170,7 +173,8 @@ describe('isURNUniqueHandler', () => {
     expect(isURNNumberUnique).toHaveBeenCalledWith({
       laboratoryURN: 'URN34567ddd',
       sbi: '123456789',
-      db: mockRequest.db
+      db: mockRequest.db,
+      includeWithdrawns: false
     })
     expect(mockHapi.response).toHaveBeenCalledWith(mockResult)
     expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)

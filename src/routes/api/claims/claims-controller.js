@@ -46,11 +46,13 @@ export const createClaimHandler = async (request, h) => {
 export const isURNUniqueHandler = async (request, h) => {
   try {
     const { sbi, laboratoryURN } = request.payload
+    const { includeWithdrawns } = request.query
 
     const result = await isURNNumberUnique({
       db: request.db,
       sbi,
-      laboratoryURN
+      laboratoryURN,
+      includeWithdrawns
     })
 
     return h.response(result).code(StatusCodes.OK)

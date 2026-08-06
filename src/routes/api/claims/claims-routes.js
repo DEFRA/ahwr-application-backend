@@ -71,6 +71,9 @@ export const claimsHandlers = [
     options: {
       description: 'Check a claim URN is unique',
       validate: {
+        query: joi.object({
+          includeWithdrawns: joi.boolean().default(false)
+        }),
         payload: joi.object({
           sbi: joi.string().required(),
           laboratoryURN: joi.string().required()

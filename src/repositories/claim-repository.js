@@ -107,11 +107,22 @@ export const findOnHoldClaims = async ({ db, beforeDate, limit = 500 }) => {
     .toArray()
 }
 
-export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) => {
-  const result = await db.collection(CLAIMS_COLLECTION).findOne({
+export const isURNUnique = async ({
+  db,
+  applicationReferences,
+  laboratoryURN,
+  includeWithdrawns = false
+}) => {
+  const filter = {
     applicationReference: { $in: applicationReferences },
     'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
-  })
+  }
+
+  if (!includeWithdrawns) {
+    filter.status = { $ne: STATUS.WITHDRAWN }
+  }
+
+  const result = await db.collection(CLAIMS_COLLECTION).findOne(filter)
   return !result
 }
 
