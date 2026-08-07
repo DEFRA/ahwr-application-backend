@@ -56,14 +56,15 @@ export const getApplicationsHandler = async (request, h) => {
 
 export const getApplicationClaimsHandler = async (request, h) => {
   try {
-    const { typeOfLivestock } = request.query
+    const { typeOfLivestock, includeWithdrawns } = request.query
     const { applicationReference } = request.params
 
     const claims = await getClaims({
       db: request.db,
       logger: request.logger,
       applicationReference,
-      typeOfLivestock
+      typeOfLivestock,
+      includeWithdrawns
     })
 
     return h.response(claims).code(StatusCodes.OK)
@@ -80,13 +81,14 @@ export const getApplicationClaimsHandler = async (request, h) => {
 export const getApplicationHerdsHandler = async (request, h) => {
   try {
     const { applicationReference } = request.params
-    const { species } = request.query
+    const { species, includeWithdrawns } = request.query
 
     const claims = await getHerds({
       db: request.db,
       logger: request.logger,
       applicationReference,
-      species
+      species,
+      includeWithdrawns
     })
 
     return h.response(claims).code(StatusCodes.OK)

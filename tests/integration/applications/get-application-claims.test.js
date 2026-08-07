@@ -16,9 +16,15 @@ describe('Get application claims', () => {
     }
   })
 
+  const withdrawnClaim = {
+    ...reviewClaim,
+    reference: 'REBC-W1TH-DR4W',
+    status: 'WITHDRAWN'
+  }
+
   beforeEach(async () => {
     await server.db.collection('claims').deleteMany({})
-    await server.db.collection('claims').insertOne(reviewClaim)
+    await server.db.collection('claims').insertMany([reviewClaim, withdrawnClaim])
   })
 
   afterAll(async () => {
@@ -55,6 +61,35 @@ describe('Get application claims', () => {
         type: 'REVIEW'
       }
     ])
+  })
+
+  test('excludes withdrawn claims by default', async () => {
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    const references = JSON.parse(res.payload).map((claim) => claim.reference)
+    expect(references).toEqual(['REBC-VA4R-TRL7'])
+  })
+
+  test('includes withdrawn claims when includeWithdrawns is true', async () => {
+    const res = await server.inject({
+      ...options,
+      url: `${buildUrl('IAHW-G3CL-V59P', 'beef')}&includeWithdrawns=true`
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    const references = JSON.parse(res.payload).map((claim) => claim.reference)
+    expect(references).toEqual(expect.arrayContaining(['REBC-VA4R-TRL7', 'REBC-W1TH-DR4W']))
+    expect(references).toHaveLength(2)
+  })
+
+  test('rejects a non-boolean includeWithdrawns value', async () => {
+    const res = await server.inject({
+      ...options,
+      url: `${buildUrl('IAHW-G3CL-V59P', 'beef')}&includeWithdrawns=maybe`
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST)
   })
 
   test('returns no claims when an application has no claims for livestock', async () => {

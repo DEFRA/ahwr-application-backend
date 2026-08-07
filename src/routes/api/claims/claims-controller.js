@@ -46,11 +46,13 @@ export const createClaimHandler = async (request, h) => {
 export const isURNUniqueHandler = async (request, h) => {
   try {
     const { sbi, laboratoryURN } = request.payload
+    const { includeWithdrawns } = request.query
 
     const result = await isURNNumberUnique({
       db: request.db,
       sbi,
-      laboratoryURN
+      laboratoryURN,
+      includeWithdrawns
     })
 
     return h.response(result).code(StatusCodes.OK)
@@ -67,13 +69,14 @@ export const isURNUniqueHandler = async (request, h) => {
 
 export const getClaimsCountHandler = async (request, h) => {
   try {
-    const { cph, herdId, scheme } = request.query
+    const { cph, herdId, scheme, includeWithdrawns } = request.query
 
     const count = await getClaimsCount({
       db: request.db,
       cph,
       herdId,
-      scheme
+      scheme,
+      includeWithdrawns
     })
 
     const response = {

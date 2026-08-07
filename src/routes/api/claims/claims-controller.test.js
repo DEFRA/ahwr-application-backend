@@ -147,6 +147,9 @@ describe('isURNUniqueHandler', () => {
       sbi: '123456789',
       laboratoryURN: 'URN34567ddd'
     },
+    query: {
+      includeWithdrawns: false
+    },
     logger: { error: jest.fn(), info: jest.fn() },
     db: {}
   }
@@ -170,7 +173,8 @@ describe('isURNUniqueHandler', () => {
     expect(isURNNumberUnique).toHaveBeenCalledWith({
       laboratoryURN: 'URN34567ddd',
       sbi: '123456789',
-      db: mockRequest.db
+      db: mockRequest.db,
+      includeWithdrawns: false
     })
     expect(mockHapi.response).toHaveBeenCalledWith(mockResult)
     expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.OK)
@@ -277,6 +281,27 @@ describe('getClaimsCountHandler', () => {
       herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
       scheme: AHWR_SCHEME,
       db: requestWithScheme.db
+    })
+  })
+
+  it('should pass includeWithdrawns through to getClaimsCount', async () => {
+    const requestWithIncludeWithdrawns = {
+      ...mockRequest,
+      query: {
+        cph: '22/333/4444',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        includeWithdrawns: true
+      }
+    }
+    getClaimsCount.mockResolvedValue(2)
+
+    await getClaimsCountHandler(requestWithIncludeWithdrawns, mockHapi)
+
+    expect(getClaimsCount).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      includeWithdrawns: true,
+      db: requestWithIncludeWithdrawns.db
     })
   })
 

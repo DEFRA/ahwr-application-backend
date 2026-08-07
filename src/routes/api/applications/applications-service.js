@@ -132,13 +132,20 @@ const mapApplicationForResponse = (app, type) => {
   }
 }
 
-export const getClaims = async ({ db, logger, applicationReference, typeOfLivestock }) => {
-  logger.setBindings({ applicationReference, typeOfLivestock })
+export const getClaims = async ({
+  db,
+  logger,
+  applicationReference,
+  typeOfLivestock,
+  includeWithdrawns
+}) => {
+  logger.setBindings({ applicationReference, typeOfLivestock, includeWithdrawns })
 
   const result = await getByApplicationReference({
     db,
     applicationReference,
-    typeOfLivestock
+    typeOfLivestock,
+    includeWithdrawns
   })
 
   return result.map((claim) => ({
@@ -158,8 +165,25 @@ export const getClaims = async ({ db, logger, applicationReference, typeOfLivest
   }))
 }
 
-export const getHerds = async ({ db, logger, applicationReference, species }) => {
-  logger.setBindings({ applicationReference, species })
+const keepHerdsWithNonWithdrawnClaims = async ({ db, applicationReference, herds }) => {
+  const claims = await getByApplicationReference({
+    db,
+    applicationReference,
+    includeWithdrawns: false
+  })
+  const herdIdsWithClaims = new Set(claims.map((claim) => claim.herd.id))
+
+  return herds.filter((herd) => herdIdsWithClaims.has(herd.id))
+}
+
+export const getHerds = async ({
+  db,
+  logger,
+  applicationReference,
+  species,
+  includeWithdrawns = false
+}) => {
+  logger.setBindings({ applicationReference, species, includeWithdrawns })
 
   const result = await getHerdsByAppRefAndSpecies({
     db,
@@ -167,7 +191,11 @@ export const getHerds = async ({ db, logger, applicationReference, species }) =>
     species
   })
 
-  const herds = result.map((herd) => ({
+  const filteredResult = includeWithdrawns
+    ? result
+    : await keepHerdsWithNonWithdrawnClaims({ db, applicationReference, herds: result })
+
+  const herds = filteredResult.map((herd) => ({
     id: herd.id,
     version: herd.version,
     name: herd.name,

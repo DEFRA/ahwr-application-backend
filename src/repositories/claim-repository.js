@@ -19,13 +19,22 @@ export const getClaimByReference = async (db, reference) => {
   return db.collection(CLAIMS_COLLECTION).findOne({ reference }, { projection: { _id: 0 } })
 }
 
-export const getByApplicationReference = async ({ db, applicationReference, typeOfLivestock }) => {
+export const getByApplicationReference = async ({
+  db,
+  applicationReference,
+  typeOfLivestock,
+  includeWithdrawns = false
+}) => {
   const filter = {
     applicationReference
   }
 
   if (typeOfLivestock) {
     filter['data.typeOfLivestock'] = typeOfLivestock
+  }
+
+  if (!includeWithdrawns) {
+    filter.status = { $ne: STATUS.WITHDRAWN }
   }
 
   return db.collection(CLAIMS_COLLECTION).find(filter).sort({ createdAt: -1 }).toArray()
@@ -98,19 +107,34 @@ export const findOnHoldClaims = async ({ db, beforeDate, limit = 500 }) => {
     .toArray()
 }
 
-export const isURNUnique = async ({ db, applicationReferences, laboratoryURN }) => {
-  const result = await db.collection(CLAIMS_COLLECTION).findOne({
+export const isURNUnique = async ({
+  db,
+  applicationReferences,
+  laboratoryURN,
+  includeWithdrawns = false
+}) => {
+  const filter = {
     applicationReference: { $in: applicationReferences },
     'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
-  })
+  }
+
+  if (!includeWithdrawns) {
+    filter.status = { $ne: STATUS.WITHDRAWN }
+  }
+
+  const result = await db.collection(CLAIMS_COLLECTION).findOne(filter)
   return !result
 }
 
-export const getClaimsCount = async ({ db, cph, herdId, scheme }) => {
+export const getClaimsCount = async ({ db, cph, herdId, scheme, includeWithdrawns = false }) => {
   const query = {
     'herd.cph': cph,
     'herd.id': { $ne: herdId },
     ...SCHEME_FILTER[scheme]
+  }
+
+  if (!includeWithdrawns) {
+    query.status = { $ne: STATUS.WITHDRAWN }
   }
 
   return db.collection(CLAIMS_COLLECTION).countDocuments(query)

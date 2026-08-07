@@ -854,7 +854,7 @@ describe('applications-service', () => {
   })
 
   describe('getHerds', () => {
-    it('should return herds when herds exist for applicationReference and species in repo', async () => {
+    it('should return herds that have at least one non-withdrawn claim when herds exist for applicationReference and species in repo', async () => {
       const mockResult = [
         {
           id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
@@ -870,6 +870,9 @@ describe('applications-service', () => {
         }
       ]
       getHerdsByAppRefAndSpecies.mockResolvedValue(mockResult)
+      getByApplicationReference.mockResolvedValue([
+        { herd: { id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742' } }
+      ])
 
       const result = await getHerds({
         db: {},
@@ -880,13 +883,101 @@ describe('applications-service', () => {
 
       expect(mockLogger.setBindings).toHaveBeenCalledWith({
         applicationReference: 'IAHW-8ZPZ-8CLI',
-        species: 'beef'
+        species: 'beef',
+        includeWithdrawns: false
       })
       expect(getHerdsByAppRefAndSpecies).toHaveBeenCalledWith({
         db: {},
         applicationReference: 'IAHW-8ZPZ-8CLI',
         species: 'beef'
       })
+      expect(getByApplicationReference).toHaveBeenCalledWith({
+        db: {},
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        includeWithdrawns: false
+      })
+      expect(result).toEqual({
+        herds: [
+          {
+            id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+            version: 2,
+            name: 'EventTester',
+            cph: '12/345/6789',
+            reasons: ['uniqueHealthNeeds'],
+            species: 'beef'
+          }
+        ]
+      })
+    })
+
+    it('should exclude herds whose only claims are withdrawn when includeWithdrawns is false', async () => {
+      const withdrawnOnlyHerd = {
+        id: 'withdrawn-only-herd',
+        cph: '12/345/6789',
+        name: 'Withdrawn herd',
+        reasons: ['onlyHerd'],
+        species: 'beef',
+        version: 1
+      }
+      const activeHerd = {
+        id: 'active-herd',
+        cph: '98/765/4321',
+        name: 'Active herd',
+        reasons: ['onlyHerd'],
+        species: 'beef',
+        version: 1
+      }
+      getHerdsByAppRefAndSpecies.mockResolvedValue([withdrawnOnlyHerd, activeHerd])
+      getByApplicationReference.mockResolvedValue([{ herd: { id: 'active-herd' } }])
+
+      const result = await getHerds({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef'
+      })
+
+      expect(result).toEqual({
+        herds: [
+          {
+            id: 'active-herd',
+            version: 1,
+            name: 'Active herd',
+            cph: '98/765/4321',
+            reasons: ['onlyHerd'],
+            species: 'beef'
+          }
+        ]
+      })
+    })
+
+    it('should return all herds without checking claims when includeWithdrawns is true', async () => {
+      const mockResult = [
+        {
+          id: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+          cph: '12/345/6789',
+          name: 'EventTester',
+          reasons: ['uniqueHealthNeeds'],
+          species: 'beef',
+          version: 2
+        }
+      ]
+      getHerdsByAppRefAndSpecies.mockResolvedValue(mockResult)
+
+      const result = await getHerds({
+        db: {},
+        logger: mockLogger,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef',
+        includeWithdrawns: true
+      })
+
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        species: 'beef',
+        includeWithdrawns: true
+      })
+      expect(getByApplicationReference).not.toHaveBeenCalled()
       expect(result).toEqual({
         herds: [
           {
@@ -903,6 +994,7 @@ describe('applications-service', () => {
 
     it('should return empty array when no herds exist for applicationReference and species in repo', async () => {
       getHerdsByAppRefAndSpecies.mockResolvedValue([])
+      getByApplicationReference.mockResolvedValue([])
 
       const result = await getHerds({
         db: {},
@@ -913,7 +1005,8 @@ describe('applications-service', () => {
 
       expect(mockLogger.setBindings).toHaveBeenCalledWith({
         applicationReference: 'IAHW-8ZPZ-8CLI',
-        species: 'beef'
+        species: 'beef',
+        includeWithdrawns: false
       })
       expect(getHerdsByAppRefAndSpecies).toHaveBeenCalledWith({
         db: {},

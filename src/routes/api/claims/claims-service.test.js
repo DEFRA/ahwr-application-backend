@@ -411,7 +411,8 @@ describe('processClaim', () => {
       expect(isNWURNUnique).toHaveBeenCalledWith({
         db: mockDb,
         laboratoryURN: 'AK-2024-38',
-        applicationReferences: ['IAHW-7NF8-3KB9']
+        applicationReferences: ['IAHW-7NF8-3KB9'],
+        includeWithdrawns: false
       })
       expect(isOWURNUnique).toHaveBeenCalledWith({
         db: mockDb,
@@ -458,7 +459,8 @@ describe('isURNNumberUnique', () => {
     expect(isNWURNUnique).toHaveBeenCalledWith({
       db,
       applicationReferences: ['IAHW-7NF8-3KB9', 'IAHW-G7B4-UTZ5'],
-      laboratoryURN
+      laboratoryURN,
+      includeWithdrawns: false
     })
     expect(isOWURNUnique).toHaveBeenCalledWith({
       db,
@@ -479,6 +481,21 @@ describe('isURNNumberUnique', () => {
     const result = await isURNNumberUnique({ db, sbi, laboratoryURN })
 
     expect(result).toEqual({ isURNUnique: false })
+  })
+
+  it('passes includeWithdrawns through to the NW uniqueness check', async () => {
+    getApplicationsBySbi.mockResolvedValue([{ reference: 'IAHW-7NF8-3KB9' }])
+    isNWURNUnique.mockResolvedValue(true)
+    isOWURNUnique.mockResolvedValue(true)
+
+    await isURNNumberUnique({ db, sbi, laboratoryURN, includeWithdrawns: true })
+
+    expect(isNWURNUnique).toHaveBeenCalledWith({
+      db,
+      applicationReferences: ['IAHW-7NF8-3KB9'],
+      laboratoryURN,
+      includeWithdrawns: true
+    })
   })
 })
 

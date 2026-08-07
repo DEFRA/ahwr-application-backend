@@ -10,7 +10,8 @@ import {
   removeHerdFromClaimData,
   deleteClaim,
   getClaimsCount,
-  updateHerd
+  updateHerd,
+  isURNUnique
 } from './claim-repository.js'
 import { CLAIMS_COLLECTION } from '../constants/index.js'
 import { STATUS, POULTRY_SCHEME, AHWR_SCHEME } from 'ffc-ahwr-common-library'
@@ -34,7 +35,8 @@ describe('claim-repository', () => {
 
       expect(mockCollection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
       expect(mockFind).toHaveBeenCalledWith({
-        applicationReference: 'IAHW-8ZPZ-8CLI'
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(mockSort).toHaveBeenCalledWith({ createdAt: -1 })
       expect(result).toEqual(mockClaims)
@@ -52,9 +54,38 @@ describe('claim-repository', () => {
 
       expect(mockFind).toHaveBeenCalledWith({
         applicationReference: 'IAHW-8ZPZ-8CLI',
-        'data.typeOfLivestock': 'sheep'
+        'data.typeOfLivestock': 'sheep',
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(result).toEqual(mockClaims)
+    })
+
+    it('should exclude withdrawn claims by default', async () => {
+      mockToArray.mockResolvedValueOnce([])
+
+      await getByApplicationReference({
+        db: mockDb,
+        applicationReference: 'IAHW-8ZPZ-8CLI'
+      })
+
+      expect(mockFind).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+    })
+
+    it('should include withdrawn claims when includeWithdrawns is true', async () => {
+      mockToArray.mockResolvedValueOnce([])
+
+      await getByApplicationReference({
+        db: mockDb,
+        applicationReference: 'IAHW-8ZPZ-8CLI',
+        includeWithdrawns: true
+      })
+
+      expect(mockFind).toHaveBeenCalledWith({
+        applicationReference: 'IAHW-8ZPZ-8CLI'
+      })
     })
 
     it('should return an empty array when no results', async () => {
@@ -624,7 +655,8 @@ describe('claim-repository', () => {
 
       expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
-        'herd.id': { $ne: herdId }
+        'herd.id': { $ne: herdId },
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(result).toEqual(2)
     })
@@ -636,7 +668,20 @@ describe('claim-repository', () => {
 
       expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
-        'herd.id': { $ne: undefined }
+        'herd.id': { $ne: undefined },
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+      expect(result).toEqual(2)
+    })
+
+    it('includes withdrawn claims when includeWithdrawns is true', async () => {
+      mockCountDocuments.mockResolvedValue(2)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId, includeWithdrawns: true })
+
+      expect(mockCountDocuments).toHaveBeenCalledWith({
+        'herd.cph': cph,
+        'herd.id': { $ne: herdId }
       })
       expect(result).toEqual(2)
     })
@@ -650,7 +695,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: herdId },
-          'data.typesOfPoultry': { $exists: true }
+          'data.typesOfPoultry': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
         expect(result).toEqual(1)
       })
@@ -663,7 +709,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: herdId },
-          'data.typeOfLivestock': { $exists: true }
+          'data.typeOfLivestock': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
         expect(result).toEqual(3)
       })
@@ -676,7 +723,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: undefined },
-          'data.typesOfPoultry': { $exists: true }
+          'data.typesOfPoultry': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
       })
     })
@@ -686,6 +734,48 @@ describe('claim-repository', () => {
       mockCountDocuments.mockRejectedValue(error)
 
       await expect(getClaimsCount({ db: mockDb, cph, herdId })).rejects.toThrow('DB failure')
+    })
+  })
+
+  describe('isURNUnique', () => {
+    const mockFindOne = jest.fn()
+    const mockDb = { collection: jest.fn(() => ({ findOne: mockFindOne })) }
+    const applicationReferences = ['IAHW-7NF8-3KB9']
+    const laboratoryURN = 'AK-2024-38'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('excludes withdrawn claims by default', async () => {
+      mockFindOne.mockResolvedValue(null)
+
+      const result = await isURNUnique({ db: mockDb, applicationReferences, laboratoryURN })
+
+      expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+      expect(mockFindOne).toHaveBeenCalledWith({
+        applicationReference: { $in: applicationReferences },
+        'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' },
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+      expect(result).toBe(true)
+    })
+
+    it('includes withdrawn claims when includeWithdrawns is true', async () => {
+      mockFindOne.mockResolvedValue({ reference: 'FUBC-JTTU-SDQ7' })
+
+      const result = await isURNUnique({
+        db: mockDb,
+        applicationReferences,
+        laboratoryURN,
+        includeWithdrawns: true
+      })
+
+      expect(mockFindOne).toHaveBeenCalledWith({
+        applicationReference: { $in: applicationReferences },
+        'data.laboratoryURN': { $regex: `^${laboratoryURN}$`, $options: 'i' }
+      })
+      expect(result).toBe(false)
     })
   })
 })
