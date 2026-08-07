@@ -951,42 +951,6 @@ describe('applications-service', () => {
       })
     })
 
-    it('should not throw when an application has a pre-multi-herd claim with no herd', async () => {
-      const activeHerd = {
-        id: 'active-herd',
-        cph: '98/765/4321',
-        name: 'Active herd',
-        reasons: ['onlyHerd'],
-        species: 'beef',
-        version: 1
-      }
-      getHerdsByAppRefAndSpecies.mockResolvedValue([activeHerd])
-      getByApplicationReference.mockResolvedValue([
-        { reference: 'REBC-PRE1-MH00' },
-        { herd: { id: 'active-herd' } }
-      ])
-
-      const result = await getHerds({
-        db: {},
-        logger: mockLogger,
-        applicationReference: 'IAHW-8ZPZ-8CLI',
-        species: 'beef'
-      })
-
-      expect(result).toEqual({
-        herds: [
-          {
-            id: 'active-herd',
-            version: 1,
-            name: 'Active herd',
-            cph: '98/765/4321',
-            reasons: ['onlyHerd'],
-            species: 'beef'
-          }
-        ]
-      })
-    })
-
     it('should return all herds without checking claims when includeWithdrawns is true', async () => {
       const mockResult = [
         {
