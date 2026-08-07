@@ -91,7 +91,8 @@ export const claimsHandlers = [
         query: joi.object({
           cph: joi.string().optional(),
           herdId: joi.string().optional(),
-          scheme: joi.string().valid(POULTRY_SCHEME, AHWR_SCHEME).optional()
+          scheme: joi.string().valid(POULTRY_SCHEME, AHWR_SCHEME).optional(),
+          includeWithdrawns: joi.boolean().optional().default(false)
         })
       },
       handler: getClaimsCountHandler

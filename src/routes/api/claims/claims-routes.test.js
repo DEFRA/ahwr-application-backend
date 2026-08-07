@@ -193,7 +193,8 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
         cph: '123456789',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        scheme: POULTRY_SCHEME
+        scheme: POULTRY_SCHEME,
+        includeWithdrawns: false
       })
     })
 
@@ -212,7 +213,8 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
         cph: '123456789',
         herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
-        scheme: AHWR_SCHEME
+        scheme: AHWR_SCHEME,
+        includeWithdrawns: false
       })
     })
 
@@ -244,7 +246,8 @@ describe('claims-routes', () => {
       expect(getClaimsCountHandler).toHaveBeenCalledTimes(1)
       expect(getClaimsCountHandler.mock.calls[0][0].query).toEqual({
         cph: '123456789',
-        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742'
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        includeWithdrawns: false
       })
     })
 

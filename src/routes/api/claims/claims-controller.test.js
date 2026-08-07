@@ -284,6 +284,27 @@ describe('getClaimsCountHandler', () => {
     })
   })
 
+  it('should pass includeWithdrawns through to getClaimsCount', async () => {
+    const requestWithIncludeWithdrawns = {
+      ...mockRequest,
+      query: {
+        cph: '22/333/4444',
+        herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+        includeWithdrawns: true
+      }
+    }
+    getClaimsCount.mockResolvedValue(2)
+
+    await getClaimsCountHandler(requestWithIncludeWithdrawns, mockHapi)
+
+    expect(getClaimsCount).toHaveBeenCalledWith({
+      cph: '22/333/4444',
+      herdId: '0e4f55ea-ed42-4139-9c46-c75ba63b0742',
+      includeWithdrawns: true,
+      db: requestWithIncludeWithdrawns.db
+    })
+  })
+
   it('should rethrow Boom errors', async () => {
     const boomError = Boom.badRequest('Invalid input')
     getClaimsCount.mockRejectedValue(boomError)

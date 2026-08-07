@@ -655,7 +655,8 @@ describe('claim-repository', () => {
 
       expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
-        'herd.id': { $ne: herdId }
+        'herd.id': { $ne: herdId },
+        status: { $ne: STATUS.WITHDRAWN }
       })
       expect(result).toEqual(2)
     })
@@ -667,7 +668,20 @@ describe('claim-repository', () => {
 
       expect(mockCountDocuments).toHaveBeenCalledWith({
         'herd.cph': cph,
-        'herd.id': { $ne: undefined }
+        'herd.id': { $ne: undefined },
+        status: { $ne: STATUS.WITHDRAWN }
+      })
+      expect(result).toEqual(2)
+    })
+
+    it('includes withdrawn claims when includeWithdrawns is true', async () => {
+      mockCountDocuments.mockResolvedValue(2)
+
+      const result = await getClaimsCount({ db: mockDb, cph, herdId, includeWithdrawns: true })
+
+      expect(mockCountDocuments).toHaveBeenCalledWith({
+        'herd.cph': cph,
+        'herd.id': { $ne: herdId }
       })
       expect(result).toEqual(2)
     })
@@ -681,7 +695,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: herdId },
-          'data.typesOfPoultry': { $exists: true }
+          'data.typesOfPoultry': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
         expect(result).toEqual(1)
       })
@@ -694,7 +709,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: herdId },
-          'data.typeOfLivestock': { $exists: true }
+          'data.typeOfLivestock': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
         expect(result).toEqual(3)
       })
@@ -707,7 +723,8 @@ describe('claim-repository', () => {
         expect(mockCountDocuments).toHaveBeenCalledWith({
           'herd.cph': cph,
           'herd.id': { $ne: undefined },
-          'data.typesOfPoultry': { $exists: true }
+          'data.typesOfPoultry': { $exists: true },
+          status: { $ne: STATUS.WITHDRAWN }
         })
       })
     })

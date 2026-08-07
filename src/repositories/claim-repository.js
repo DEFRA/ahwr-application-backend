@@ -126,11 +126,15 @@ export const isURNUnique = async ({
   return !result
 }
 
-export const getClaimsCount = async ({ db, cph, herdId, scheme }) => {
+export const getClaimsCount = async ({ db, cph, herdId, scheme, includeWithdrawns = false }) => {
   const query = {
     'herd.cph': cph,
     'herd.id': { $ne: herdId },
     ...SCHEME_FILTER[scheme]
+  }
+
+  if (!includeWithdrawns) {
+    query.status = { $ne: STATUS.WITHDRAWN }
   }
 
   return db.collection(CLAIMS_COLLECTION).countDocuments(query)
