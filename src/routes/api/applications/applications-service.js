@@ -171,7 +171,7 @@ const keepHerdsWithNonWithdrawnClaims = async ({ db, applicationReference, herds
     applicationReference,
     includeWithdrawns: false
   })
-  const herdIdsWithClaims = new Set(claims.map((claim) => claim.herd?.id))
+  const herdIdsWithClaims = new Set(claims.map((claim) => claim.herd.id))
 
   return herds.filter((herd) => herdIdsWithClaims.has(herd.id))
 }
