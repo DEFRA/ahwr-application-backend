@@ -49,7 +49,7 @@ export const costOfChanges = {
   noIntention: 'no-intention'
 }
 
-export const interview = {
+export const biosecurityImprovements = {
   yes: 'yes',
   no: 'no'
 }
