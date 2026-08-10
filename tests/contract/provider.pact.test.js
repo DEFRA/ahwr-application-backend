@@ -26,12 +26,6 @@ describe('Pact provider verification: ahwr-application-backend', () => {
     config.set('port', 0)
     server = await setupTestEnvironment()
     await server.start()
-
-    await server.db.collection('applications').deleteMany({})
-    await server.db.collection('claims').deleteMany({})
-
-    await server.db.collection('applications').insertMany(applications)
-    await server.db.collection('claims').insertMany(claims)
   }, 30000)
 
   afterAll(async () => {
@@ -43,6 +37,15 @@ describe('Pact provider verification: ahwr-application-backend', () => {
       provider: 'ahwr-application-backend',
       providerBaseUrl: `http://localhost:${server.info.port}`,
       pactUrls: [path.resolve('pacts/ahwr-backoffice-ui-ahwr-application-backend.json')],
+      stateHandlers: {
+        '7 claims exist: livestock and poultry each with a not-flagged application, a flagged application, and no matching application, plus a livestock claim with a resolving application but no herd':
+          async () => {
+            await server.db.collection('applications').deleteMany({})
+            await server.db.collection('claims').deleteMany({})
+            await server.db.collection('applications').insertMany(applications)
+            await server.db.collection('claims').insertMany(claims)
+          }
+      },
       requestFilter: (req, _res, next) => {
         // Pact paths omit the /api prefix (applicationApiUri in the UI includes it
         // in production but not in the pact mock), so prepend it for all endpoints.

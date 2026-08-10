@@ -1,6 +1,5 @@
 // The 7 claims for the "7 claims exist: ..." provider state - 5 whose applicationReference
-// resolves to a document in applications.js, 2 that don't. Real values taken from Test env
-// where noted; kept in sync with the consumer fixtures in
+// resolves to a document in applications.js, 2 that don't. kept in sync with the consumer fixtures in
 // ahwr-backoffice-ui/test/contract/data/claims.js.
 
 export const claims = [
