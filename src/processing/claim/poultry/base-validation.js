@@ -2,10 +2,10 @@ import { claimType, TYPE_OF_POULTRY } from 'ffc-ahwr-common-library'
 import joi from 'joi'
 import {
   biosecurity,
+  biosecurityImprovements,
   biosecurityUsefulness,
   changesInBiosecurity,
   costOfChanges,
-  interview,
   isOnlyHerdOnSbi,
   speciesNumbers
 } from '../../../constants/index.js'
@@ -50,9 +50,9 @@ const getDataModel = () =>
       .string()
       .valid(...Object.values(costOfChanges))
       .required(),
-    interview: joi
+    biosecurityImprovements: joi
       .string()
-      .valid(...Object.values(interview))
+      .valid(...Object.values(biosecurityImprovements))
       .optional()
   })
 

@@ -55,7 +55,7 @@ describe('processClaim', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         site: {
           id: 'db32152a-724a-4c5d-8073-0901c8d307f7',
           version: 2,
@@ -96,7 +96,7 @@ describe('processClaim', () => {
             biosecurityUsefulness: 'very-useful',
             changesInBiosecurity: 'bird-handling',
             costOfChanges: 'over-4500',
-            interview: 'no',
+            biosecurityImprovements: 'no',
             claimType: 'REVIEW'
           },
           type: 'REVIEW',
@@ -147,8 +147,8 @@ describe('processClaim', () => {
       )
     })
 
-    test('creates and returns claim when interview is omitted from the payload', async () => {
-      const { interview, ...dataWithoutInterview } = payload.data
+    test('creates and returns claim when biosecurityImprovements is omitted from the payload', async () => {
+      const { biosecurityImprovements, ...dataWithoutInterview } = payload.data
       const payloadWithoutInterview = { ...payload, data: dataWithoutInterview }
 
       const application = {

@@ -41,7 +41,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         site: {
           cph: '81/445/6789',
           id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
@@ -109,7 +109,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         amount: 430,
         claimType: 'REVIEW'
       },
@@ -224,7 +224,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         site: {
           cph: '81/445/6789',
           id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
@@ -281,7 +281,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         site: {
           cph: '81/445/6789',
           id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
@@ -321,7 +321,7 @@ describe('savePoultryClaimAndRelatedData', () => {
         biosecurityUsefulness: 'very-useful',
         changesInBiosecurity: 'bird-handling',
         costOfChanges: 'over-4500',
-        interview: 'no',
+        biosecurityImprovements: 'no',
         site: {
           cph: '81/445/6789',
           id: '01d6b3f1-3fa2-465e-8dc7-cc28393ba902',
