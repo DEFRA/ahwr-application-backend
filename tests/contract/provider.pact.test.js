@@ -2,8 +2,8 @@ import path from 'path'
 import { Verifier } from '@pact-foundation/pact'
 import { config } from '../../src/config/config.js'
 import { setupTestEnvironment, teardownTestEnvironment } from '../integration/test-utils.js'
-import { application } from './data/applications.js'
-import { claim } from './data/claims.js'
+import { applications } from './data/applications.js'
+import { claims } from './data/claims.js'
 
 jest.mock('../../src/messaging/fcp-messaging-service.js', () => ({
   startFcpMessagingService: jest.fn(),
@@ -30,8 +30,8 @@ describe('Pact provider verification: ahwr-application-backend', () => {
     await server.db.collection('applications').deleteMany({})
     await server.db.collection('claims').deleteMany({})
 
-    await server.db.collection('applications').insertOne(application)
-    await server.db.collection('claims').insertOne(claim)
+    await server.db.collection('applications').insertMany(applications)
+    await server.db.collection('claims').insertMany(claims)
   }, 30000)
 
   afterAll(async () => {

@@ -1,10 +1,10 @@
 # Contract tests (Pact)
 
-Provider-side verification for AHWR-2144. Consumer-driven contract tests between `ahwr-backoffice-ui` (consumer) and `ahwr-application-backend` (provider), using [Pact](https://docs.pact.io/).
+Consumer-driven contract tests between `ahwr-backoffice-ui` (consumer) and `ahwr-application-backend` (provider), using [Pact](https://docs.pact.io/).
 
 ## Why this exists
 
-AHWR-2059 changed the shape of the `/api/claims/search` response. Nothing in the existing test tiers would have caught a shape mismatch before both sides were deployed together:
+ Nothing in the existing test tiers catch a shape mismatch before both sides were deployed together:
 
 - Unit tests mock the repository entirely
 - Integration tests verify the backend against its own assumptions, not the UI's
