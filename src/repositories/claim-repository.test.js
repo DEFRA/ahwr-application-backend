@@ -590,6 +590,17 @@ describe('claim-repository', () => {
       expect(result).toEqual(fakeClaims)
     })
 
+    it('queries only for ON_HOLD claims updated on or before beforeDate', async () => {
+      mockCursor.toArray.mockResolvedValue([])
+
+      await findOnHoldClaims({ db: mockDb, beforeDate })
+
+      expect(mockFind.find).toHaveBeenCalledWith({
+        status: STATUS.ON_HOLD,
+        updatedAt: { $lte: beforeDate }
+      })
+    })
+
     it('respects a custom limit when provided', async () => {
       const fakeClaims = [{ reference: 'RESH-FDRE-2234' }]
       mockCursor.toArray.mockResolvedValue(fakeClaims)
