@@ -4,7 +4,7 @@ Consumer-driven contract tests between `ahwr-backoffice-ui` (consumer) and `ahwr
 
 ## Why this exists
 
- Nothing in the existing test tiers catch a shape mismatch before both sides were deployed together:
+Nothing in the existing test tiers catch a shape mismatch before both sides were deployed together:
 
 - Unit tests mock the repository entirely
 - Integration tests verify the backend against its own assumptions, not the UI's
