@@ -6,7 +6,8 @@ import { MongoClient } from 'mongodb'
 jest.mock('mongodb', () => {
   const mockDb = {
     collection: jest.fn(() => ({
-      createIndex: jest.fn()
+      createIndex: jest.fn(),
+      createIndexes: jest.fn()
     }))
   }
   const mockClient = {
