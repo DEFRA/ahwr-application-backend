@@ -10,3 +10,9 @@ export const createWithdrawalRequestIndexes = async (db) => {
 export const createWithdrawalRequest = async ({ db, withdrawalRequest }) => {
   return db.collection(WITHDRAWAL_REQUESTS_COLLECTION).insertOne(withdrawalRequest)
 }
+
+export const getWithdrawalRequestByClaimReference = async ({ db, claimReference }) => {
+  return db
+    .collection(WITHDRAWAL_REQUESTS_COLLECTION)
+    .findOne({ claimReference }, { sort: { createdAt: -1 } })
+}

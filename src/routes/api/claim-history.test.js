@@ -2,9 +2,11 @@ import Hapi from '@hapi/hapi'
 import { claimHistoryHandlers } from './claim-history.js'
 import { getClaimByReference } from '../../repositories/claim-repository.js'
 import { getApplicationWithFullFlags } from '../../repositories/application-repository.js'
+import { getWithdrawalRequestByClaimReference } from '../../repositories/withdrawal-request-repository.js'
 
 jest.mock('../../repositories/application-repository')
 jest.mock('../../repositories/claim-repository')
+jest.mock('../../repositories/withdrawal-request-repository')
 
 const mockLogger = {
   info: jest.fn(() => {}),
@@ -153,5 +155,67 @@ describe('Claim history test', () => {
     ]
 
     expect(JSON.parse(res.payload)).toEqual({ historyRecords: expectedHistoryRecords })
+  })
+
+  test('attaches withdrawal details to the withdrawn status record', async () => {
+    getClaimByReference.mockResolvedValueOnce({
+      applicationReference: 'IAHW-1234-APP1',
+      statusHistory: [
+        {
+          note: 'in check',
+          status: 'IN_CHECK',
+          createdBy: 'Daniel Jones',
+          createdAt: new Date('2023-03-23T10:00:12.000Z')
+        },
+        {
+          note: 'Withdrawal requested',
+          status: 'WITHDRAWN',
+          createdBy: 'Amanda Hassan',
+          createdAt: new Date('2023-03-25T11:10:15.000Z')
+        }
+      ],
+      updateHistory: []
+    })
+    getApplicationWithFullFlags.mockResolvedValueOnce({ flags: [] })
+    getWithdrawalRequestByClaimReference.mockResolvedValueOnce({
+      reasonForWithdrawal: 'unintentionalTypingError',
+      issueDiscovery: 'customerContactedRPA',
+      withdrawalDetails: 'The date of visit was a typo'
+    })
+
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/claims/REBC-VA4R-TRL7/history'
+    })
+
+    expect(getWithdrawalRequestByClaimReference).toHaveBeenCalledWith({
+      db: mockDb,
+      claimReference: 'REBC-VA4R-TRL7'
+    })
+    expect(JSON.parse(res.payload)).toEqual({
+      historyRecords: [
+        {
+          eventType: 'status-updated',
+          newValue: 'IN_CHECK',
+          note: 'in check',
+          updatedAt: '2023-03-23T10:00:12.000Z',
+          updatedBy: 'Daniel Jones',
+          updatedProperty: 'status'
+        },
+        {
+          eventType: 'status-updated',
+          newValue: 'WITHDRAWN',
+          note: 'Withdrawal requested',
+          updatedAt: '2023-03-25T11:10:15.000Z',
+          updatedBy: 'Amanda Hassan',
+          updatedProperty: 'status',
+          withdrawal: {
+            reasonForWithdrawal: 'unintentionalTypingError',
+            issueDiscovery: 'customerContactedRPA',
+            withdrawalDetails: 'The date of visit was a typo'
+          }
+        }
+      ]
+    })
   })
 })

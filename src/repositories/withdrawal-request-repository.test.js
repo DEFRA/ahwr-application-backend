@@ -1,6 +1,7 @@
 import {
   createWithdrawalRequestIndexes,
-  createWithdrawalRequest
+  createWithdrawalRequest,
+  getWithdrawalRequestByClaimReference
 } from './withdrawal-request-repository.js'
 import { WITHDRAWAL_REQUESTS_COLLECTION } from '../constants/index.js'
 
@@ -39,6 +40,32 @@ describe('withdrawal-request-repository', () => {
       expect(mockDb.collection).toHaveBeenCalledWith(WITHDRAWAL_REQUESTS_COLLECTION)
       expect(mockInsertOne).toHaveBeenCalledWith(withdrawalRequest)
       expect(result).toEqual({ insertedId: 'abc' })
+    })
+  })
+
+  describe('getWithdrawalRequestByClaimReference', () => {
+    it('should return the most recent withdrawal request for the claim reference', async () => {
+      const withdrawalRequest = {
+        claimReference: 'REBC-VA4R-TRL7',
+        reasonForWithdrawal: 'unintentionalTypingError',
+        issueDiscovery: 'customerContactedRPA',
+        withdrawalDetails: 'The date of visit was a typo'
+      }
+      const mockFindOne = jest.fn().mockResolvedValue(withdrawalRequest)
+      const mockCollection = { findOne: mockFindOne }
+      const mockDb = { collection: jest.fn(() => mockCollection) }
+
+      const result = await getWithdrawalRequestByClaimReference({
+        db: mockDb,
+        claimReference: 'REBC-VA4R-TRL7'
+      })
+
+      expect(mockDb.collection).toHaveBeenCalledWith(WITHDRAWAL_REQUESTS_COLLECTION)
+      expect(mockFindOne).toHaveBeenCalledWith(
+        { claimReference: 'REBC-VA4R-TRL7' },
+        { sort: { createdAt: -1 } }
+      )
+      expect(result).toEqual(withdrawalRequest)
     })
   })
 })
