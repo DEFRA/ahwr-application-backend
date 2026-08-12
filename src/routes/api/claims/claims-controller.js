@@ -142,6 +142,12 @@ export const withdrawClaimHandler = async (request, h) => {
   }
 }
 
+const respondClaimWithdrawn = (h) =>
+  h
+    .response('Claim has been withdrawn and can no longer be changed')
+    .code(StatusCodes.CONFLICT)
+    .takeover()
+
 export const updateClaimStatusHandler = async (request, h) => {
   const { reference, status, note, user } = request.payload
   const { db, logger } = request
@@ -149,6 +155,10 @@ export const updateClaimStatusHandler = async (request, h) => {
   const claim = await getClaimByReference(db, reference)
   if (!claim) {
     return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
+  }
+
+  if (claim.status === STATUS.WITHDRAWN) {
+    return respondClaimWithdrawn(h)
   }
 
   const {
@@ -267,6 +277,10 @@ export const updateClaimDataHandler = async (request, h) => {
   const claim = await getClaimByReference(db, reference)
   if (claim === null) {
     return h.response('Not Found').code(StatusCodes.NOT_FOUND).takeover()
+  }
+
+  if (claim.status === STATUS.WITHDRAWN) {
+    return respondClaimWithdrawn(h)
   }
 
   const [updatedProperty, newValue] = Object.entries(dataPayload)

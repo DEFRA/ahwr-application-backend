@@ -643,6 +643,36 @@ describe('updateClaimStatusHandler', () => {
     expect(publishRequestForPaymentEvent).not.toHaveBeenCalled()
   })
 
+  test('Update claim should be rejected when the claim is withdrawn', async () => {
+    const mockLogger = { error: jest.fn(), info: jest.fn() }
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      payload: {
+        reference: 'REBC-J9AR-KILQ',
+        status: 'READY_TO_PAY',
+        user: 'admin'
+      }
+    }
+
+    getClaimByReference.mockResolvedValueOnce({
+      reference: 'REBC-J9AR-KILQ',
+      status: STATUS.WITHDRAWN
+    })
+
+    await updateClaimStatusHandler(mockRequest, mockHapi)
+
+    expect(mockHapi.response).toHaveBeenCalledWith(
+      'Claim has been withdrawn and can no longer be changed'
+    )
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.CONFLICT)
+    expect(mockHapi.takeover).toHaveBeenCalled()
+    expect(updateClaimStatus).not.toHaveBeenCalled()
+    expect(raiseClaimEvents).not.toHaveBeenCalled()
+    expect(publishStatusChangeEvent).not.toHaveBeenCalled()
+    expect(publishRequestForPaymentEvent).not.toHaveBeenCalled()
+  })
+
   test('should update claim and submit payment request when piHunt is yes', async () => {
     isVisitDateAfterPIHuntAndDairyGoLive.mockImplementation(() => {
       return true
@@ -1053,6 +1083,33 @@ describe('updateClaimDataHandler', () => {
     await updateClaimDataHandler(mockRequest, mockHapi)
 
     expect(mockHapi.code).toHaveBeenCalledWith(404)
+  })
+
+  test('should reject the update when the claim is withdrawn', async () => {
+    const mockRequest = {
+      logger: mockLogger,
+      db: {},
+      params: { reference: 'FUBC-JTTU-SDQ7' },
+      payload: {
+        vetsName: 'New Vet',
+        user: 'tester',
+        note: 'Changed vet name'
+      }
+    }
+    getClaimByReference.mockResolvedValue({
+      status: STATUS.WITHDRAWN,
+      data: { vetsName: 'Old Vet' }
+    })
+
+    await updateClaimDataHandler(mockRequest, mockHapi)
+
+    expect(mockHapi.response).toHaveBeenCalledWith(
+      'Claim has been withdrawn and can no longer be changed'
+    )
+    expect(mockHapi.code).toHaveBeenCalledWith(StatusCodes.CONFLICT)
+    expect(mockHapi.takeover).toHaveBeenCalled()
+    expect(updateClaimData).not.toHaveBeenCalled()
+    expect(claimDataUpdateEvent).not.toHaveBeenCalled()
   })
 
   test('should return 204 when no data changes', async () => {
