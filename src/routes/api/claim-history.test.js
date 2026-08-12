@@ -218,4 +218,43 @@ describe('Claim history test', () => {
       ]
     })
   })
+
+  test('leaves the withdrawn status record unchanged when no withdrawal request exists', async () => {
+    getClaimByReference.mockResolvedValueOnce({
+      applicationReference: 'IAHW-1234-APP1',
+      statusHistory: [
+        {
+          note: 'Withdrawal requested',
+          status: 'WITHDRAWN',
+          createdBy: 'Amanda Hassan',
+          createdAt: new Date('2023-03-25T11:10:15.000Z')
+        }
+      ],
+      updateHistory: []
+    })
+    getApplicationWithFullFlags.mockResolvedValueOnce({ flags: [] })
+    getWithdrawalRequestByClaimReference.mockResolvedValueOnce(null)
+
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/claims/REBC-VA4R-TRL7/history'
+    })
+
+    expect(getWithdrawalRequestByClaimReference).toHaveBeenCalledWith({
+      db: mockDb,
+      claimReference: 'REBC-VA4R-TRL7'
+    })
+    expect(JSON.parse(res.payload)).toEqual({
+      historyRecords: [
+        {
+          eventType: 'status-updated',
+          newValue: 'WITHDRAWN',
+          note: 'Withdrawal requested',
+          updatedAt: '2023-03-25T11:10:15.000Z',
+          updatedBy: 'Amanda Hassan',
+          updatedProperty: 'status'
+        }
+      ]
+    })
+  })
 })
