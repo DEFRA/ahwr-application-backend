@@ -71,5 +71,3 @@ export const buildOrphanedClaim = (reference, applicationReference, data, create
   data,
   herd: {}
 })
-
-

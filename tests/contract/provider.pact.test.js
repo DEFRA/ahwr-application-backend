@@ -43,21 +43,23 @@ describe('Pact provider verification: ahwr-application-backend', () => {
             await server.db.collection('applications').deleteMany({})
             await server.db.collection('claims').deleteMany({})
             await server.db.collection('applications').insertMany(applications)
-            await server.db.collection('claims').insertMany([
-              ...resolvingClaims,
-              buildOrphanedClaim(
-                parameters.livestockOrphanedClaim.reference,
-                parameters.livestockOrphanedClaim.applicationReference,
-                { typeOfLivestock: 'beef' },
-                '2026-08-01T10:55:12.634Z'
-              ),
-              buildOrphanedClaim(
-                parameters.poultryOrphanedClaim.reference,
-                parameters.poultryOrphanedClaim.applicationReference,
-                { typesOfPoultry: ['geese'] },
-                '2026-08-02T10:55:12.634Z'
-              )
-            ])
+            await server.db
+              .collection('claims')
+              .insertMany([
+                ...resolvingClaims,
+                buildOrphanedClaim(
+                  parameters.livestockOrphanedClaim.reference,
+                  parameters.livestockOrphanedClaim.applicationReference,
+                  { typeOfLivestock: 'beef' },
+                  '2026-08-01T10:55:12.634Z'
+                ),
+                buildOrphanedClaim(
+                  parameters.poultryOrphanedClaim.reference,
+                  parameters.poultryOrphanedClaim.applicationReference,
+                  { typesOfPoultry: ['geese'] },
+                  '2026-08-02T10:55:12.634Z'
+                )
+              ])
           }
       },
       requestFilter: (req, _res, next) => {
