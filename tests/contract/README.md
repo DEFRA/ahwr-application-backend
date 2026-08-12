@@ -14,26 +14,37 @@ Contract tests verify request/response shape agreement between the two services 
 
 ## How it works
 
-The consumer (`ahwr-backoffice-ui`) defines the contract — what requests it sends and what responses it expects. This generates a pact file (`pacts/ahwr-backoffice-ui-ahwr-application-backend.json`) which is published as a GitHub Release asset tagged `pact-contracts` on the UI repo when its `main` branch is updated.
+The consumer (`ahwr-backoffice-ui`) defines the contract — what requests it sends and what responses it expects. This generates a pact file (`pacts/ahwr-backoffice-ui-ahwr-application-backend.json`) which is committed directly in that repo, kept in sync with the test that generates it via a verify check (see that repo's `test/contract/README.md`).
 
-This backend downloads that file in CI and runs `verifyProvider()`, which replays each recorded interaction against the real running server and checks the responses match.
+This backend fetches that file in CI via `curl` against `raw.githubusercontent.com` (the UI repo is private, so this uses the same `UI_TESTS_PAT` secret as before) and runs `verifyProvider()`, which replays each recorded interaction against the real running server and checks the responses match.
 
 ## Running locally
 
-The pact file is not committed — it is downloaded by CI. To run locally, copy it from the UI repo first:
+The pact file lives in the UI repo, not this one. To run locally, copy it from a sibling checkout:
 
 ```bash
 cp ../ahwr-backoffice-ui/pacts/ahwr-backoffice-ui-ahwr-application-backend.json pacts/
-npx jest tests/contract --runInBand --no-coverage
+npm run test:contract
 ```
+
+If you don't have a sibling checkout, fetch it the same way CI does (needs a token with read access to the UI repo):
+
+```bash
+curl -fsSL -H "Authorization: token $GH_TOKEN" \
+  -o pacts/ahwr-backoffice-ui-ahwr-application-backend.json \
+  https://raw.githubusercontent.com/DEFRA/ahwr-backoffice-ui/main/pacts/ahwr-backoffice-ui-ahwr-application-backend.json
+npm run test:contract
+```
+
+Contract tests are excluded from `jest.config.cjs` (the default config used by `npm test` and `npx jest`), so `npx jest tests/contract` will find no tests. Use `npm run test:contract` instead — it uses `jest.contract.config.cjs` which targets `tests/contract/` explicitly.
 
 ## Structure
 
 ```
 tests/contract/
   data/
-    applications.js   seed fixture for the applications collection
-    claims.js         seed fixture for the claims collection
+    applications-seed.js   seed fixture for the applications collection
+    claims-seed.js         seed fixture for the claims collection
   provider.pact.test.js
   README.md
 ```
@@ -48,8 +59,8 @@ Seed data uses real values from Test env (claim REBC-DN1M-HS6D / application IAH
 
 **The `/api` prefix is added in `requestFilter`.** The UI's `applicationApiUri` config includes `/api` in production, so the consumer calls `/claims/search` relative to that base. The pact records it without the prefix. The `requestFilter` prepends `/api` to all non-internal requests before forwarding to the provider. Pact's own internal `/_pact*` routes are excluded from the rewrite.
 
-**No Pact Broker — GitHub Releases instead.** The pact file is shared via a rolling GitHub Release tagged `pact-contracts` on `ahwr-backoffice-ui`. This is sufficient for a single consumer-provider pair without deployment gating needs.
+**No Pact Broker — the committed file on `main` instead.** The pact file is committed directly in `ahwr-backoffice-ui` and fetched via `curl` against `raw.githubusercontent.com`. This is sufficient for a single consumer-provider pair without deployment gating needs; a real Pact Broker would be the answer if version-aware resolution (which consumer version is compatible with which provider version) is ever actually needed.
 
-**Merge order matters for bootstrapping.** The UI PR must be merged first so the pact is published before the backend CI tries to download it. Once both sides are live this is no longer a concern — the pact always exists.
+**Merge order matters for bootstrapping.** The UI PR must be merged first so the pact is committed on `main` before the backend CI tries to fetch it. Once both sides are live this is no longer a concern — the pact always exists.
 
-**Adding a new endpoint.** Add consumer interactions in `ahwr-backoffice-ui`. The UI merge publishes an updated pact. The backend's `verifyProvider()` picks up the new interactions automatically. The only backend change needed is additional seed data in `beforeAll` if the new endpoint requires data not already seeded.
+**Adding a new endpoint.** Add consumer interactions in `ahwr-backoffice-ui` and commit the regenerated pact alongside them (a verify check there fails the build if you forget). The UI merge lands the updated pact on `main`. The backend's `verifyProvider()` picks up the new interactions automatically. The only backend change needed is additional seed data in `beforeAll` if the new endpoint requires data not already seeded.

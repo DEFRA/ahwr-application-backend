@@ -1,8 +1,13 @@
-// The 7 claims for the "7 claims exist: ..." provider state - 5 whose applicationReference
-// resolves to a document in applications.js, 2 that don't. kept in sync with the consumer fixtures in
-// ahwr-backoffice-ui/test/contract/data/claims.js.
+// The 5 resolving claims for the "7 claims exist: ..." provider state - each applicationReference
+// resolves to a document in applications-seed.js. Kept in sync with the consumer fixtures in
+// ahwr-backoffice-ui/test/contract/data/claims-response.js.
+//
+// The 2 orphaned claims aren't listed here - their reference/applicationReference come from the
+// consumer's .given() state parameters instead (see buildOrphanedClaim below and its use in
+// provider.pact.test.js), since those two fields are the only thing about the orphaned claims
+// the consumer's contract actually documents anywhere.
 
-export const claims = [
+export const resolvingClaims = [
   {
     reference: 'REBC-DN1M-HS6D',
     applicationReference: 'IAHW-5KHC-D7ZN',
@@ -49,23 +54,22 @@ export const claims = [
     createdAt: new Date('2026-08-01T14:20:10.742Z'),
     data: { typesOfPoultry: ['geese'] },
     herd: { name: 'Flagged Farm', cph: '12/345/6812' }
-  },
-  {
-    reference: 'REBC-9999-ORPH',
-    applicationReference: 'IAHW-9999-NOPE',
-    status: 'IN_CHECK',
-    type: 'REVIEW',
-    createdAt: new Date('2026-08-01T10:55:12.634Z'),
-    data: { typeOfLivestock: 'beef' },
-    herd: { name: 'Orphaned cattle herd', cph: '11/222/3999' }
-  },
-  {
-    reference: 'PORE-9999-ORPH',
-    applicationReference: 'POUL-9999-NOPE',
-    status: 'IN_CHECK',
-    type: 'REVIEW',
-    createdAt: new Date('2026-08-02T10:55:12.634Z'),
-    data: { typesOfPoultry: ['geese'] },
-    herd: { name: 'Orphaned Farm', cph: '12/345/6999' }
   }
 ]
+
+// Builds an orphaned claim (no resolving application) from the consumer's .given() state
+// parameters. Only reference/applicationReference come from the contract - status/type/herd are
+// never asserted on, since orphaned claims are excluded from the response entirely and only affect
+// the total count. `data` and `createdAt` are still passed explicitly per call though, so the two
+// orphaned claims stay distinct records rather than differing only by reference.
+export const buildOrphanedClaim = (reference, applicationReference, data, createdAt) => ({
+  reference,
+  applicationReference,
+  status: 'IN_CHECK',
+  type: 'REVIEW',
+  createdAt: new Date(createdAt),
+  data,
+  herd: {}
+})
+
+

@@ -2,8 +2,8 @@ import path from 'path'
 import { Verifier } from '@pact-foundation/pact'
 import { config } from '../../src/config/config.js'
 import { setupTestEnvironment, teardownTestEnvironment } from '../integration/test-utils.js'
-import { applications } from './data/applications.js'
-import { claims } from './data/claims.js'
+import { applications } from './data/applications-seed.js'
+import { resolvingClaims, buildOrphanedClaim } from './data/claims-seed.js'
 
 jest.mock('../../src/messaging/fcp-messaging-service.js', () => ({
   startFcpMessagingService: jest.fn(),
@@ -39,11 +39,25 @@ describe('Pact provider verification: ahwr-application-backend', () => {
       pactUrls: [path.resolve('pacts/ahwr-backoffice-ui-ahwr-application-backend.json')],
       stateHandlers: {
         '7 claims exist: livestock and poultry each with a not-flagged application, a flagged application, and no matching application, plus a livestock claim with a resolving application but no herd':
-          async () => {
+          async (parameters) => {
             await server.db.collection('applications').deleteMany({})
             await server.db.collection('claims').deleteMany({})
             await server.db.collection('applications').insertMany(applications)
-            await server.db.collection('claims').insertMany(claims)
+            await server.db.collection('claims').insertMany([
+              ...resolvingClaims,
+              buildOrphanedClaim(
+                parameters.livestockOrphanedClaim.reference,
+                parameters.livestockOrphanedClaim.applicationReference,
+                { typeOfLivestock: 'beef' },
+                '2026-08-01T10:55:12.634Z'
+              ),
+              buildOrphanedClaim(
+                parameters.poultryOrphanedClaim.reference,
+                parameters.poultryOrphanedClaim.applicationReference,
+                { typesOfPoultry: ['geese'] },
+                '2026-08-02T10:55:12.634Z'
+              )
+            ])
           }
       },
       requestFilter: (req, _res, next) => {

@@ -1,6 +1,6 @@
-// Applications for the 5 claims in claims.js whose applicationReference should resolve.
+// Applications for the 5 claims in claims-seed.js whose applicationReference should resolve.
 // Real values taken from Test env where noted; kept in sync with the consumer fixtures in
-// ahwr-backoffice-ui/test/contract/data/claims.js. Deliberately no application exists for
+// ahwr-backoffice-ui/test/contract/data/claims-response.js. Deliberately no application exists for
 // IAHW-9999-NOPE / POUL-9999-NOPE - those are the orphaned claims' non-resolving references.
 
 const flag = { id: '278872ee-ecfa-4d5e-8087-0c0fd7c16ed8', deleted: false }
