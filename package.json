@@ -62,7 +62,7 @@
     "@babel/preset-env": "7.27.2",
     "autoprefixer": "10.5.4",
     "babel-jest": "30.4.1",
-    "dotenv": "16.0.3",
+    "dotenv": "17.4.2",
     "eslint": "9.29.0",
     "eslint-plugin-no-commented-code": "1.0.10",
     "husky": "9.1.7",
