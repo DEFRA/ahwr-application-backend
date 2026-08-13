@@ -21,6 +21,7 @@ import {
   savePoultryClaimAndRelatedData
 } from '../../../processing/claim/poultry/processor.js'
 import { trackError } from '../../../logging/logger.js'
+import { raiseClaimWithdrawnEvent } from '../../../event-publisher/index.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
@@ -29,6 +30,7 @@ jest.mock('../../../repositories/withdrawal-request-repository.js')
 jest.mock('../../../processing/claim/ahwr/processor.js')
 jest.mock('../../../processing/claim/poultry/processor.js')
 jest.mock('../../../logging/logger.js')
+jest.mock('../../../event-publisher/index.js')
 jest.mock('@hapi/boom', () => ({
   notFound: jest.fn((msg) => new Error(`NotFound: ${msg}`)),
   badRequest: jest.fn((msg) => new Error(`BadRequest: ${JSON.stringify(msg)}`)),
@@ -663,7 +665,14 @@ describe('withdrawClaim', () => {
   })
 
   describe('when the claim is in check and the agreement is not flagged', () => {
-    const updatedClaim = { reference, status: 'WITHDRAWN' }
+    const updatedClaim = {
+      _id: { toString: () => 'claim-id-1' },
+      reference,
+      applicationReference: 'IAHW-1234-APP1',
+      status: 'WITHDRAWN',
+      updatedBy: 'admin',
+      updatedAt: new Date('2026-01-01T09:00:00.000Z')
+    }
 
     beforeEach(() => {
       getClaimByReference.mockResolvedValue({
@@ -707,6 +716,18 @@ describe('withdrawClaim', () => {
         user: 'admin',
         updatedAt: expect.any(Date),
         note: 'Withdrawal requested'
+      })
+      expect(raiseClaimWithdrawnEvent).toHaveBeenCalledWith({
+        raisedBy: updatedClaim.updatedBy,
+        raisedOn: updatedClaim.updatedAt,
+        sbi: '123456789',
+        data: {
+          reference: updatedClaim.reference,
+          applicationReference: updatedClaim.applicationReference,
+          status: updatedClaim.status,
+          withdrawalReason: 'unintentionalTypingError',
+          withdrawalDiscoveryMethod: 'customerContactedRPA'
+        }
       })
       expect(result).toBe(updatedClaim)
     })

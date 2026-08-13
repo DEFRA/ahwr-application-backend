@@ -24,6 +24,7 @@ import {
   generatePoultryEventsAndComms,
   savePoultryClaimAndRelatedData
 } from '../../../processing/claim/poultry/processor.js'
+import { raiseClaimWithdrawnEvent } from '../../../event-publisher/index.js'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
 
@@ -255,7 +256,7 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
     }
   })
 
-  return updateClaimStatus({
+  const updatedClaim = await updateClaimStatus({
     db,
     reference,
     status: STATUS.WITHDRAWN,
@@ -263,4 +264,19 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
     updatedAt: withdrawnAt,
     note: 'Withdrawal requested'
   })
+
+  await raiseClaimWithdrawnEvent({
+    raisedBy: updatedClaim.updatedBy,
+    raisedOn: updatedClaim.updatedAt,
+    sbi: application.organisation.sbi,
+    data: {
+      reference: updatedClaim.reference,
+      applicationReference: updatedClaim.applicationReference,
+      status: updatedClaim.status,
+      withdrawalReason: withdrawal.reasonForWithdrawal,
+      withdrawalDiscoveryMethod: withdrawal.issueDiscovery
+    }
+  })
+
+  return updatedClaim
 }

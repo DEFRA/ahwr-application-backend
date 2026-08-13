@@ -110,3 +110,24 @@ export const raiseHerdEvent = async ({
     raisedOn
   })
 }
+
+export const raiseClaimWithdrawnEvent = async ({
+  sbi,
+  data,
+  raisedBy,
+  raisedOn = new Date().toISOString()
+}) => {
+  await getFcpEventPublisher().publishEvent({
+    name: SEND_SESSION_EVENT,
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: serviceName,
+    status: 'success',
+    type: 'claim-withdrawn',
+    message: 'Claim withdrawn',
+    data,
+    raisedBy,
+    raisedOn
+  })
+}
