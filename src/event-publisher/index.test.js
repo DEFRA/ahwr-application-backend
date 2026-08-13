@@ -2,6 +2,7 @@ import {
   raiseApplicationFlaggedEvent,
   raiseApplicationStatusEvent,
   raiseClaimEvents,
+  raiseClaimWithdrawnEvent,
   raiseHerdEvent,
   SEND_SESSION_EVENT
 } from './index.js'
@@ -121,6 +122,62 @@ describe('FCP Event Raising Functions', () => {
         sbi: '888',
         data: { key: 'val' },
         type: 'herd-update'
+      })
+    )
+  })
+
+  it('raiseClaimWithdrawnEvent calls publishEvent with correct payload', async () => {
+    const eventData = {
+      sbi: '777',
+      raisedBy: 'tester',
+      raisedOn: '2025-12-30T12:00:00.000Z',
+      data: {
+        reference: 'CREF1',
+        applicationReference: 'AREF1',
+        status: 'WITHDRAWN',
+        withdrawalReason: 'Incorrect claim',
+        withdrawalDiscoveryMethod: 'Vet visit'
+      }
+    }
+
+    await raiseClaimWithdrawnEvent(eventData)
+
+    expect(publishEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: SEND_SESSION_EVENT,
+        id: expect.any(String),
+        sbi: '777',
+        cph: 'n/a',
+        checkpoint: 'TEST_SERVICE',
+        status: 'success',
+        type: 'claim-withdrawn',
+        message: 'Claim withdrawn',
+        data: {
+          reference: 'CREF1',
+          applicationReference: 'AREF1',
+          status: 'WITHDRAWN',
+          withdrawalReason: 'Incorrect claim',
+          withdrawalDiscoveryMethod: 'Vet visit'
+        },
+        raisedBy: 'tester',
+        raisedOn: '2025-12-30T12:00:00.000Z'
+      })
+    )
+  })
+
+  it('raiseClaimWithdrawnEvent defaults raisedOn to the current time when not provided', async () => {
+    const realDate = new Date('2025-12-31T09:30:00Z')
+    jest.useFakeTimers().setSystemTime(realDate)
+
+    await raiseClaimWithdrawnEvent({
+      sbi: '777',
+      raisedBy: 'tester',
+      data: { reference: 'CREF1' }
+    })
+
+    expect(publishEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        raisedOn: realDate.toISOString()
       })
     )
   })
