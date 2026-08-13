@@ -1,5 +1,5 @@
 import neostandard from 'neostandard'
-import noCommentedCode from 'eslint-plugin-no-commented-code'
+import sonarjs from 'eslint-plugin-sonarjs'
 
 export default [
   ...neostandard({
@@ -10,10 +10,10 @@ export default [
   }),
   {
     plugins: {
-      'no-commented-code': noCommentedCode
+      sonarjs
     },
     rules: {
-      'no-commented-code/no-commented-code': 'error'
+      'sonarjs/no-commented-code': 'error'
     }
   }
 ]

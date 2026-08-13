@@ -1,6 +1,5 @@
 import Joi from 'joi'
 
-// eslint-disable-next-line no-commented-code/no-commented-code
 /** @type {readonly {DELETION: 'deletion', FIELD_CHANGE: 'fieldChange'}} */
 export const TYPE_OF_CHANGE = {
   DELETION: 'deletion',
