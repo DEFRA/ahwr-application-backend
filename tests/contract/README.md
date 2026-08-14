@@ -10,13 +10,13 @@ Nothing in the existing test tiers catch a shape mismatch before both sides were
 - Integration tests verify the backend against its own assumptions, not the UI's
 - E2E tests only catch this once both sides are already deployed
 
-Contract tests verify request/response shape agreement between the two services independently, in CI, before either side is deployed.
+Contract tests verify request/response shape agreement between the two services independently, in CI, before the changes are deployed.
 
 ## How it works
 
 The consumer (`ahwr-backoffice-ui`) defines the contract — what requests it sends and what responses it expects. This generates a pact file (`pacts/ahwr-backoffice-ui-ahwr-application-backend.json`) which is committed directly in that repo, kept in sync with the test that generates it via a verify check (see that repo's `test/contract/README.md`).
 
-This backend fetches that file in CI via `curl` against `raw.githubusercontent.com` (the UI repo is private, so this uses the same `UI_TESTS_PAT` secret as before) and runs `verifyProvider()`, which replays each recorded interaction against the real running server and checks the responses match.
+This backend fetches that file in CI via `curl` and runs `verifyProvider()`, which replays each recorded interaction against the real running server and checks the responses match.
 
 ## Running locally
 
@@ -49,7 +49,7 @@ tests/contract/
   README.md
 ```
 
-Seed data uses real values from Test env (claim REBC-DN1M-HS6D / application IAHW-5KHC-D7ZN), kept in sync with the consumer fixtures in `ahwr-backoffice-ui/test/contract/data/`.
+Seed data uses sample values from Test env (claim REBC-DN1M-HS6D / application IAHW-5KHC-D7ZN), kept in sync with the consumer fixtures in `ahwr-backoffice-ui/test/contract/data/`.
 
 ## Design decisions worth knowing before extending this
 
@@ -62,5 +62,3 @@ Seed data uses real values from Test env (claim REBC-DN1M-HS6D / application IAH
 **No Pact Broker — the committed file on `main` instead.** The pact file is committed directly in `ahwr-backoffice-ui` and fetched via `curl` against `raw.githubusercontent.com`. This is sufficient for a single consumer-provider pair without deployment gating needs; a real Pact Broker would be the answer if version-aware resolution (which consumer version is compatible with which provider version) is ever actually needed.
 
 **Merge order matters for bootstrapping.** The UI PR must be merged first so the pact is committed on `main` before the backend CI tries to fetch it. Once both sides are live this is no longer a concern — the pact always exists.
-
-**Adding a new endpoint.** Add consumer interactions in `ahwr-backoffice-ui` and commit the regenerated pact alongside them (a verify check there fails the build if you forget). The UI merge lands the updated pact on `main`. The backend's `verifyProvider()` picks up the new interactions automatically. The only backend change needed is additional seed data in `beforeAll` if the new endpoint requires data not already seeded.
