@@ -267,7 +267,7 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
 
   await raiseClaimWithdrawnEvent({
     raisedBy: updatedClaim.updatedBy,
-    raisedOn: updatedClaim.updatedAt,
+    raisedOn: updatedClaim.updatedAt.toISOString(),
     sbi: application.organisation.sbi,
     data: {
       reference: updatedClaim.reference,

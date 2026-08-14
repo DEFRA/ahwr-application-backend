@@ -719,7 +719,7 @@ describe('withdrawClaim', () => {
       })
       expect(raiseClaimWithdrawnEvent).toHaveBeenCalledWith({
         raisedBy: updatedClaim.updatedBy,
-        raisedOn: updatedClaim.updatedAt,
+        raisedOn: updatedClaim.updatedAt.toISOString(),
         sbi: '123456789',
         data: {
           reference: updatedClaim.reference,
