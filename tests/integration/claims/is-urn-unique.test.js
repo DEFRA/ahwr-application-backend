@@ -32,50 +32,39 @@ describe('Is URN Unique', () => {
     await teardownTestEnvironment()
   })
 
-  test('returns urn is unique when urn does not exist on claims for sbi', async () => {
-    const res = await server.inject({
-      ...options,
-      payload: {
-        sbi: '123456789',
-        laboratoryURN: '1353454'
-      }
-    })
-
-    expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload)).toEqual({
+  test.each([
+    {
+      description: 'urn does not exist on claims for sbi',
+      laboratoryURN: '1353454',
       isURNUnique: true
-    })
-  })
-
-  test('returns urn is not unique when urn exists on old world claim for sbi', async () => {
-    const res = await server.inject({
-      ...options,
-      payload: {
-        sbi: '123456789',
-        laboratoryURN: '355981'
-      }
-    })
-
-    expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload)).toEqual({
+    },
+    {
+      description: 'urn exists on old world claim for sbi',
+      laboratoryURN: '355981',
       isURNUnique: false
-    })
-  })
-
-  test('returns urn is not unique when urn exists on claim for sbi', async () => {
-    const res = await server.inject({
-      ...options,
-      payload: {
-        sbi: '123456789',
-        laboratoryURN: 'w5436346ret'
-      }
-    })
-
-    expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload)).toEqual({
+    },
+    {
+      description: 'urn exists on claim for sbi',
+      laboratoryURN: 'w5436346ret',
       isURNUnique: false
-    })
-  })
+    }
+  ])(
+    'returns isURNUnique $isURNUnique when $description',
+    async ({ laboratoryURN, isURNUnique }) => {
+      const res = await server.inject({
+        ...options,
+        payload: {
+          sbi: '123456789',
+          laboratoryURN
+        }
+      })
+
+      expect(res.statusCode).toBe(StatusCodes.OK)
+      expect(JSON.parse(res.payload)).toEqual({
+        isURNUnique
+      })
+    }
+  )
 
   test('should return not authorised when no api key sent', async () => {
     const res = await server.inject({
