@@ -39,21 +39,6 @@ export const getHerdsByAppRefAndSpecies = async ({ db, applicationReference, spe
     .toArray()
 }
 
-// TODO: 1495 impl
 export const redactHerdPII = async (_applicationReference) => {
   return {}
-
-  // await models.herd.update(
-  //   {
-  //     herdName: `${REDACT_PII_VALUES.REDACTED_HERD_NAME}`,
-  //     cph: `${REDACT_PII_VALUES.REDACTED_CPH}`,
-  //     updatedBy: 'admin',
-  //     updatedAt: Date.now()
-  //   },
-  //   {
-  //     where: {
-  //       applicationReference
-  //     }
-  //   }
-  // )
 }
