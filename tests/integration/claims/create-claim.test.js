@@ -2,6 +2,7 @@ import { setupTestEnvironment, teardownTestEnvironment } from '../test-utils.js'
 import { application } from '../../data/application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
+import { STATUS } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
 jest.mock('../../../src/event-publisher/index.js')
@@ -43,13 +44,19 @@ describe('Create claim', () => {
     }
   })
 
+  const originalComplianceCheckRatio = config.get('complianceCheckRatio')
+
   beforeEach(async () => {
+    // Ratio <= 0 turns compliance checks off, so new claims are deterministically ON_HOLD
+    config.set('complianceCheckRatio', 0)
+
     await server.db.collection('applications').deleteMany({})
     await server.db.collection('claims').deleteMany({})
     await server.db.collection('applications').insertOne(application)
   })
 
   afterAll(async () => {
+    config.set('complianceCheckRatio', originalComplianceCheckRatio)
     await teardownTestEnvironment()
   })
 
@@ -83,18 +90,36 @@ describe('Create claim', () => {
         version: 1
       },
       reference: 'RESH-O9UD-0025',
-      status: expect.any(String), // TODO: Depending on how/where this runs it's either ON_HOLD or IN_CHECK, sort this out when doing compliance check stuff
+      status: STATUS.ON_HOLD,
       statusHistory: [
         {
           createdAt: expect.any(String),
           createdBy: 'admin',
-          status: expect.any(String) // TODO: Depending on how/where this runs it's either ON_HOLD or IN_CHECK, sort this out when doing compliance check stuff
+          status: STATUS.ON_HOLD
         }
       ],
       updateHistory: [],
       type: 'REVIEW',
       updatedAt: expect.any(String)
     })
+  })
+
+  test('creates the claim IN_CHECK when it is selected for a compliance check', async () => {
+    // Ratio of 1 means every claim is selected for a compliance check
+    config.set('complianceCheckRatio', 1)
+
+    const res = await server.inject(options)
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    const claim = JSON.parse(res.payload)
+    expect(claim.status).toBe(STATUS.IN_CHECK)
+    expect(claim.statusHistory).toEqual([
+      {
+        createdAt: expect.any(String),
+        createdBy: 'admin',
+        status: STATUS.IN_CHECK
+      }
+    ])
   })
 
   test('returns bad request when application does not exist', async () => {
