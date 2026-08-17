@@ -1,18 +1,10 @@
-// import { config } from '../../config/config.js'
 import { reminders as reminderTypes } from 'ffc-ahwr-common-library'
 import { processReminderEmailRequest } from './process-reminder-email.js'
-// import { sendMessageToSNS } from '../send-message.js'
 import { getRemindersToSend, updateReminders } from '../../repositories/application-repository.js'
 
 const { threeMonths, sixMonths, nineMonths } = reminderTypes.notClaimed
 
-// const { messageGeneratorMsgTypeReminder } = config.get('messageTypes')
-// const { reminderRequestedTopicArn } = config.get('sns')
-
 const mockPublishEvent = jest.fn()
-// jest.mock('../../messaging/send-message.js', () => ({
-//   sendMessageToSNS: jest.fn()
-// }))
 jest.mock('../../repositories/application-repository.js')
 jest.mock('../../messaging/fcp-messaging-service.js', () => ({
   getFcpEventPublisher: jest.fn().mockImplementation(() => ({
@@ -25,7 +17,6 @@ const subtractMonthsUTC = (date, months) => {
   const year = d.getUTCFullYear()
   const month = d.getUTCMonth()
 
-  // Set year/month in UTC
   d.setUTCFullYear(year, month - months)
 
   return d
@@ -40,10 +31,12 @@ const getPreviousQuarterDates = (date) => ({
 describe('processReminderEmailRequest', () => {
   const fakeMaxBatchSize = 5000
 
-  const mockLogger = {
-    setBindings: jest.fn(),
+  const childLogger = {
     info: jest.fn(),
     error: jest.fn()
+  }
+  const mockLogger = {
+    child: jest.fn(() => childLogger)
   }
   const mockDb = {}
 
@@ -72,14 +65,15 @@ describe('processReminderEmailRequest', () => {
 
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
+    expect(mockLogger.child).toHaveBeenCalledWith({ requestedDate: message.requestedDate })
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
     expect(getRemindersToSend.mock.calls[0][1].toISOString()).toBe(nineMonthsBefore.toISOString())
     expect(getRemindersToSend.mock.calls[1][1].toISOString()).toBe(sixMonthsBefore.toISOString())
     expect(getRemindersToSend.mock.calls[2][1].toISOString()).toBe(threeMonthsBefore.toISOString())
 
-    expect(mockLogger.info).toHaveBeenCalledTimes(2)
-    expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
-    expect(mockLogger.info).toHaveBeenCalledWith('No new applications due reminders')
+    expect(childLogger.info).toHaveBeenCalledTimes(2)
+    expect(childLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
+    expect(childLogger.info).toHaveBeenCalledWith('No new applications due reminders')
     expect(mockPublishEvent).toHaveBeenCalledTimes(0)
     expect(updateReminders).toHaveBeenCalledTimes(0)
   })
@@ -102,9 +96,9 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(mockLogger.info).toHaveBeenCalledTimes(2)
-    expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
-    expect(mockLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
+    expect(childLogger.info).toHaveBeenCalledTimes(2)
+    expect(childLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
+    expect(childLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
     expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
@@ -112,7 +106,7 @@ describe('processReminderEmailRequest', () => {
       threeMonths,
       undefined,
       mockDb,
-      mockLogger
+      childLogger
     )
   })
 
@@ -125,8 +119,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy1@example.com',
         orgEmail: 'dummy2@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         reminderType: sixMonths,
         createdAt: getPreviousQuarterDates(requestedDate).sixMonthsBefore
       }
@@ -136,19 +128,17 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(mockLogger.info).toHaveBeenCalledTimes(2)
-    expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
-    expect(mockLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
+    expect(childLogger.info).toHaveBeenCalledTimes(2)
+    expect(childLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
+    expect(childLogger.info).toHaveBeenCalledWith('Successfully processed reminders request')
     expect(mockPublishEvent).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledTimes(1)
     expect(updateReminders).toHaveBeenCalledWith(
       'IAHW-BEKR-AWIU',
       sixMonths,
-      // TODO replace this is condition that checks application history
-      // threeMonths,
       undefined,
       mockDb,
-      mockLogger
+      childLogger
     )
   })
 
@@ -175,11 +165,12 @@ describe('processReminderEmailRequest', () => {
       nineMonths,
       undefined,
       mockDb,
-      mockLogger
+      childLogger
     )
   })
 
-  // TODO replace this is condition that checks application history
+  // Unskip once the reminder history tracking is in place. Currently we do
+  // not record the history of reminders
   it.skip('should not promote to notClaimed_nineMonths when 8months old but has reminders previously sent', async () => {
     getRemindersToSend.mockResolvedValueOnce([])
     getRemindersToSend.mockResolvedValueOnce([
@@ -189,8 +180,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy1@example.com',
         orgEmail: 'dummy2@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         reminderType: nineMonths,
         createdAt: getPreviousQuarterDates(requestedDate).nineMonthsBefore
       }
@@ -205,7 +194,7 @@ describe('processReminderEmailRequest', () => {
       sixMonths,
       undefined,
       mockDb,
-      mockLogger
+      childLogger
     )
   })
 
@@ -218,8 +207,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         reminderType: nineMonths,
         createdAt: getPreviousQuarterDates(requestedDate).nineMonthsBefore
       }
@@ -234,7 +221,7 @@ describe('processReminderEmailRequest', () => {
       nineMonths,
       undefined,
       mockDb,
-      mockLogger
+      childLogger
     )
   })
 
@@ -248,8 +235,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
@@ -258,8 +243,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
@@ -268,8 +251,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
@@ -278,8 +259,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       },
       {
@@ -288,8 +267,6 @@ describe('processReminderEmailRequest', () => {
         sbi: '106282723',
         email: 'dummy@example.com',
         orgEmail: 'dummy@example.com',
-        // TODO replace this is condition that checks application history
-        // reminders: threeMonths,
         createdAt: getPreviousQuarterDates(requestedDate).threeMonthsBefore
       }
     ])
@@ -297,7 +274,7 @@ describe('processReminderEmailRequest', () => {
     await processReminderEmailRequest(message, mockDb, mockLogger)
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(mockLogger.info).toHaveBeenCalledTimes(2)
+    expect(childLogger.info).toHaveBeenCalledTimes(2)
     expect(mockPublishEvent).toHaveBeenCalledTimes(5)
     expect(updateReminders).toHaveBeenCalledTimes(5)
   })
@@ -320,10 +297,10 @@ describe('processReminderEmailRequest', () => {
     await expect(processReminderEmailRequest(message, mockDb, mockLogger)).rejects.toThrow()
 
     expect(getRemindersToSend).toHaveBeenCalledTimes(3)
-    expect(mockLogger.info).toHaveBeenCalledTimes(1)
-    expect(mockLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
-    expect(mockLogger.error).toHaveBeenCalledTimes(1)
-    expect(mockLogger.error).toHaveBeenCalledWith(
+    expect(childLogger.info).toHaveBeenCalledTimes(1)
+    expect(childLogger.info).toHaveBeenCalledWith('Processing reminders request started..')
+    expect(childLogger.error).toHaveBeenCalledTimes(1)
+    expect(childLogger.error).toHaveBeenCalledWith(
       expect.any(Object),
       'Failed to processed reminders request'
     )

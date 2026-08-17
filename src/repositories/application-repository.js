@@ -324,8 +324,6 @@ export const getRemindersToSend = async (
     sbi: { $eq: ['$organisation.sbi'] },
     email: { $eq: ['$organisation.email'] },
     orgEmail: { $eq: ['$organisation.orgEmail'] },
-    // TODO replace this is condition that checks application history
-    // reminders: 1,
     reminderType: { $literal: reminderType },
     createdAt: 1
   }
@@ -342,11 +340,10 @@ export const getRemindersToSend = async (
 }
 
 export const updateReminders = async (reference, _newReminder, _oldReminder, db, logger) => {
+  // This should get the count from the history of the application
+  // and update correctly the reminders in the document
   const filter = { reference }
-  // TODO replace this is condition that checks application history
   const updateDocument = {}
-  // TODO add updated history to above!
-
   const result = db.collection(APPLICATION_COLLECTION).updateOne(filter, updateDocument)
 
   logger.info(`Successfully updated reminders, rows affected: ${result.modifiedCount}`)

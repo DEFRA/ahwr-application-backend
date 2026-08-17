@@ -18,8 +18,9 @@ export const deleteFlagHandler = async (request, h) => {
   const { user, deletedNote } = request.payload
   const { flagId } = request.params
 
-  // TODO: find solution using labels perhaps?
-  request.logger.setBindings({ flagId, user })
+  // Nest under the ECS `labels` field so these custom keys don't collide with
+  // the top-level ECS schema in CDP logging.
+  request.logger.setBindings({ labels: { flagId, user } })
 
   let updatedApplication = await deleteFlag(request.db, flagId, user, deletedNote)
 

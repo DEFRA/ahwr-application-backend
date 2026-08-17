@@ -11,19 +11,20 @@ const serviceName = config.get('serviceName')
 export const processReminderEmailRequest = async (message, db, logger) => {
   const { requestedDate, maxBatchSize } = message
 
-  // TODO setBindings values aren't appearing in CDP logging
-  logger.setBindings({ requestedDate })
-  logger.info('Processing reminders request started..')
+  // A child logger carries requestedDate on every line without mutating the
+  // shared root logger (which duplicates the ECS base fields and breaks CDP).
+  const reminderLogger = logger.child({ requestedDate })
+  reminderLogger.info('Processing reminders request started..')
 
   const applicationsDueReminder = await getApplicationsDueReminderEmail(
     requestedDate,
     maxBatchSize,
     db,
-    logger
+    reminderLogger
   )
 
   if (applicationsDueReminder.length === 0) {
-    logger.info('No new applications due reminders')
+    reminderLogger.info('No new applications due reminders')
     return
   }
 
@@ -32,13 +33,13 @@ export const processReminderEmailRequest = async (message, db, logger) => {
     try {
       await sendToMessageGenerator(payload)
       await sendApplicationSessionEvent(application)
-      await saveLastReminderSent(application, db, logger)
+      await saveLastReminderSent(application, db, reminderLogger)
     } catch (error) {
-      logger.error(error, 'Failed to processed reminders request')
+      reminderLogger.error(error, 'Failed to processed reminders request')
       throw error
     }
   }
-  logger.info('Successfully processed reminders request')
+  reminderLogger.info('Successfully processed reminders request')
 }
 
 const getApplicationsDueReminderEmail = async (requestedDate, maxBatchSize, db, logger) => {
@@ -158,7 +159,7 @@ const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
 
 // prevents contacting users too often
 const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
-  // TODO replace this is condition that checks application history
+  // We should check the application history to know what we should do
   if (!reminder.reminders) {
     const FIVE_MONTHS = 5
     const EIGHT_MONTHS = 8
@@ -196,7 +197,6 @@ const sendToMessageGenerator = async (_reminder) => {
 const sendApplicationSessionEvent = async ({ sbi, reference, reminderType }) => {
   const data = { applicationReference: reference, reminderType }
 
-  // TODO move this to reusable application event fuction, see claim-data-update-event.js
   const event = {
     name: SEND_SESSION_EVENT,
     properties: {

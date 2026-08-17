@@ -5,7 +5,6 @@ import { StatusCodes } from 'http-status-codes'
 import { STATUS } from 'ffc-ahwr-common-library'
 
 jest.mock('../../../src/messaging/publish-outbound-notification.js')
-jest.mock('../../../src/event-publisher/index.js')
 
 describe('Create claim', () => {
   let server

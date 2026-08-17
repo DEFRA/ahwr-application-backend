@@ -133,10 +133,6 @@ describe('application-repository', () => {
               $gte: '2024-05-05T00:00:00.000Z',
               $lte: '2025-08-05T00:00:00.000Z'
             },
-            // TODO replace this is condition that checks application history
-            // reminders: {
-            //   $nin: [threeMonths, sixMonths, nineMonths]
-            // },
             claimMatches: { $size: 0 }
           }
         }
@@ -150,8 +146,6 @@ describe('application-repository', () => {
         sbi: { $eq: ['$organisation.sbi'] },
         email: { $eq: ['$organisation.email'] },
         orgEmail: { $eq: ['$organisation.orgEmail'] },
-        // TODO replace this is condition that checks application history
-        // reminders: 1,
         reminderType: { $literal: threeMonths },
         createdAt: 1
       })

@@ -3,8 +3,6 @@ import { application } from '../../data/application-data.js'
 import { config } from '../../../src/config/config.js'
 import { StatusCodes } from 'http-status-codes'
 
-jest.mock('../../../src/event-publisher/index.js') //TODO remove mock
-
 describe('Create application', () => {
   let server
   let options

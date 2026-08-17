@@ -193,6 +193,9 @@ describe('flags-controller', () => {
 
       const result = await deleteFlagHandler(mockRequest, mockH)
 
+      expect(mockLogger.setBindings).toHaveBeenCalledWith({
+        labels: { flagId: 'ABC-1234', user: 'Ken Kong' }
+      })
       expect(deleteFlag).toHaveBeenCalledWith(
         mockDb,
         'ABC-1234',
