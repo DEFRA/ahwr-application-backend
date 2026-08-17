@@ -58,7 +58,8 @@ describe('runDistributedStartupJob', () => {
   })
 
   it('does not run job when already been run', async () => {
-    mockCollection.insertOne.mockRejectedValueOnce('job already been run')
+    // Another instance already holds the lock → duplicate _id → Mongo error code 11000
+    mockCollection.insertOne.mockRejectedValueOnce({ code: 11000 })
 
     await runDistributedStartupJob(mockDB, mockLogger, {
       environment: 'local',
@@ -71,6 +72,20 @@ describe('runDistributedStartupJob', () => {
     expect(mockDB.collection).toHaveBeenCalled()
     expect(mockCollection.insertOne).toHaveBeenCalled()
     expect(mockLogger.info).not.toHaveBeenCalled()
+  })
+
+  it('rethrows when the lock insert fails for a reason other than a duplicate key', async () => {
+    mockCollection.insertOne.mockRejectedValueOnce(new Error('connection timed out'))
+
+    await expect(
+      runDistributedStartupJob(mockDB, mockLogger, {
+        environment: 'local',
+        dataChanges: {
+          version: '1',
+          data: [{ claimRef: 'test', sbi: '123', applicationRef: 'app', action: 'deletion' }]
+        }
+      })
+    ).rejects.toThrow('connection timed out')
   })
 
   it('does not run job when data field returns null', async () => {

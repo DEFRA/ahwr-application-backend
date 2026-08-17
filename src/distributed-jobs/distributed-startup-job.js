@@ -62,7 +62,13 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 
     hasRun = false
   } catch (e) {
-    hasRun = true
+    if (e.code === 11000) {
+      // Another instance already inserted the lock for this version → job has run
+      // This is error E11000 Duplicate Key
+      hasRun = true
+    } else {
+      throw e // real failure (connection, auth, timeout) — don't mistake it for "already ran"
+    }
   }
 
   return hasRun
