@@ -33,7 +33,7 @@ describe('Pact provider verification: ahwr-application-backend', () => {
   })
 
   it('satisfies all consumer expectations from ahwr-backoffice-ui', async () => {
-    await new Verifier({
+    const output = await new Verifier({
       provider: 'ahwr-application-backend',
       providerBaseUrl: `http://localhost:${server.info.port}`,
       pactUrls: [path.resolve('pacts/ahwr-backoffice-ui-ahwr-application-backend.json')],
@@ -73,5 +73,7 @@ describe('Pact provider verification: ahwr-application-backend', () => {
         next()
       }
     }).verifyProvider()
+
+    expect(output).toBeDefined()
   }, 30000)
 })
