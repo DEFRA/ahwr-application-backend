@@ -33,6 +33,15 @@ jobs:
           npm ci
           npm test
 
+      - name: Verify Pact contracts
+        run: |
+          mkdir -p pacts
+          curl -fsSL \
+            -H "Authorization: token ${{ secrets.UI_TESTS_PAT }}" \
+            -o pacts/ahwr-backoffice-ui-ahwr-application-backend.json \
+            https://raw.githubusercontent.com/DEFRA/ahwr-backoffice-ui/main/pacts/ahwr-backoffice-ui-ahwr-application-backend.json
+          npm run test:contract
+
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
         with:
