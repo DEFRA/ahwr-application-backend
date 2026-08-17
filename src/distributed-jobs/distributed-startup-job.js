@@ -62,7 +62,8 @@ const hasStartupJobAlreadyRun = async (serviceVersion, environmentsJobWillRun, d
 
     hasRun = false
   } catch (e) {
-    if (e.code === 11000) {
+    const DUPLICATED_KEY = 11000
+    if (e.code === DUPLICATED_KEY) {
       // Another instance already inserted the lock for this version → job has run
       // This is error E11000 Duplicate Key
       hasRun = true
