@@ -27,10 +27,10 @@ cp ../ahwr-backoffice-ui/pacts/ahwr-backoffice-ui-ahwr-application-backend.json 
 npm run test:contract
 ```
 
-If you don't have a sibling checkout, fetch it the same way CI does (needs a token with read access to the UI repo):
+If you don't have a sibling checkout, fetch it the same way CI does:
 
 ```bash
-curl -fsSL -H "Authorization: token $GH_TOKEN" \
+curl -fsSL \
   -o pacts/ahwr-backoffice-ui-ahwr-application-backend.json \
   https://raw.githubusercontent.com/DEFRA/ahwr-backoffice-ui/main/pacts/ahwr-backoffice-ui-ahwr-application-backend.json
 npm run test:contract
