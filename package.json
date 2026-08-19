@@ -72,7 +72,7 @@
     "jest": "30.4.2",
     "jest-junit": "17.0.0",
     "jest-when": "4.0.3",
-    "knip": "6.32.1",
+    "knip": "6.32.2",
     "mongodb-memory-server": "11.2.0",
     "nano-staged": "1.0.2",
     "neostandard": "0.13.0",
