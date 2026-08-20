@@ -48,10 +48,6 @@ updates:
 
     versioning-strategy: increase
 
-    allow:
-      # Include direct package.json updates
-      - dependency-type: direct
-
     ignore:
       # global-agent pinned to 3.x — v4 reworks the proxy API and breaks CDP forward-proxy setup
       - dependency-name: global-agent
