@@ -11,7 +11,7 @@ import {
 } from '../../../repositories/ow-application-repository.js'
 import { getAllFlags } from '../../../repositories/flag-repository.js'
 import { isOWAppRef } from '../../../lib/context-helper.js'
-import { randomUUID } from 'node:crypto'
+import { buildFlag } from '../../../lib/build-flag.js'
 import { raiseApplicationFlagDeletedEvent } from '../../../event-publisher/index.js'
 
 export const deleteFlagHandler = async (request, h) => {
@@ -79,14 +79,7 @@ export const createFlagHandler = async (request, h) => {
     return h.response().code(HttpStatus.NO_CONTENT)
   }
 
-  const data = {
-    id: randomUUID(),
-    note,
-    createdAt: new Date(),
-    createdBy: user,
-    appliesToMh,
-    deleted: false
-  }
+  const data = buildFlag({ note, createdBy: user, appliesToMh })
 
   owAppRef ? await createOWFlag(db, ref, data) : await createFlag(db, ref, data)
 

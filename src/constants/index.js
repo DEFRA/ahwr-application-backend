@@ -96,3 +96,5 @@ export const OW_APPLICATION_COLLECTION = 'owapplications'
 export const CLAIMS_COLLECTION = 'claims'
 export const HERDS_COLLECTION = 'herds'
 export const WITHDRAWAL_REQUESTS_COLLECTION = 'withdrawalrequests'
+
+export const WITHDRAWAL_FLAG_NOTE = 'withdrawal request'

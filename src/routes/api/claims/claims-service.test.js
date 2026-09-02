@@ -2,7 +2,8 @@ import { ValidationError } from 'joi'
 import { processClaim, isURNNumberUnique, getClaim, withdrawClaim } from './claims-service.js'
 import {
   getApplication,
-  getApplicationsBySbi
+  getApplicationsBySbi,
+  createFlag
 } from '../../../repositories/application-repository.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createWithdrawalRequest } from '../../../repositories/withdrawal-request-repository.js'
@@ -704,6 +705,21 @@ describe('withdrawClaim', () => {
           createdAt: expect.any(Date)
         }
       })
+    })
+
+    it('flags the agreement with a withdrawal request note', async () => {
+      await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
+
+      expect(createFlag).toHaveBeenCalledWith(
+        db,
+        'IAHW-1234-APP1',
+        expect.objectContaining({
+          note: 'withdrawal request',
+          createdBy: 'admin',
+          appliesToMh: false,
+          deleted: false
+        })
+      )
     })
 
     it('withdraws the claim', async () => {
