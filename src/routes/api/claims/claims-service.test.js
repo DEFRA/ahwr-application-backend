@@ -637,7 +637,16 @@ describe('withdrawClaim', () => {
     })
   })
 
-  describe('when the agreement is flagged', () => {
+  describe('when the claim is in check and the agreement is already flagged', () => {
+    const updatedClaim = {
+      _id: { toString: () => 'claim-id-1' },
+      reference,
+      applicationReference: 'IAHW-1234-APP1',
+      status: 'WITHDRAWN',
+      updatedBy: 'admin',
+      updatedAt: new Date('2026-01-01T09:00:00.000Z')
+    }
+
     beforeEach(() => {
       getClaimByReference.mockResolvedValue({
         reference,
@@ -649,19 +658,21 @@ describe('withdrawClaim', () => {
         organisation: { sbi: '123456789' },
         flags: [{ appliesToMh: true }]
       })
+      updateClaimStatus.mockResolvedValue(updatedClaim)
     })
 
-    it('throws', async () => {
-      await expect(withdrawClaim({ db, reference, withdrawal, user: 'admin' })).rejects.toThrow(
-        'Agreement is flagged, claim cannot be withdrawn'
-      )
+    it('withdraws the claim', async () => {
+      const result = await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
+
+      expect(createWithdrawalRequest).toHaveBeenCalled()
+      expect(updateClaimStatus).toHaveBeenCalled()
+      expect(result).toBe(updatedClaim)
     })
 
-    it('does not save the withdrawal', async () => {
-      await expect(withdrawClaim({ db, reference, withdrawal, user: 'admin' })).rejects.toThrow()
+    it('does not flag the agreement again', async () => {
+      await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
 
-      expect(createWithdrawalRequest).not.toHaveBeenCalled()
-      expect(updateClaimStatus).not.toHaveBeenCalled()
+      expect(createFlag).not.toHaveBeenCalled()
     })
   })
 
@@ -714,7 +725,7 @@ describe('withdrawClaim', () => {
         db,
         'IAHW-1234-APP1',
         expect.objectContaining({
-          note: 'withdrawal request',
+          note: 'Flag added due to withdrawn claim',
           createdBy: 'admin',
           appliesToMh: false,
           deleted: false

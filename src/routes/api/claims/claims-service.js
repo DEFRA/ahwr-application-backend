@@ -241,9 +241,6 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
   }
 
   const application = await getApplication({ db, reference: claim.applicationReference })
-  if (application.flags.length > 0) {
-    throw Boom.conflict('Agreement is flagged, claim cannot be withdrawn')
-  }
 
   const withdrawnAt = new Date()
 
@@ -259,16 +256,18 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
     }
   })
 
-  await createFlag(
-    db,
-    claim.applicationReference,
-    buildFlag({
-      note: WITHDRAWAL_FLAG_NOTE,
-      createdBy: user,
-      appliesToMh: false,
-      createdAt: withdrawnAt
-    })
-  )
+  if (application.flags.length === 0) {
+    await createFlag(
+      db,
+      claim.applicationReference,
+      buildFlag({
+        note: WITHDRAWAL_FLAG_NOTE,
+        createdBy: user,
+        appliesToMh: false,
+        createdAt: withdrawnAt
+      })
+    )
+  }
 
   const updatedClaim = await updateClaimStatus({
     db,
