@@ -174,6 +174,41 @@ export const updateClaimData = async ({
   )
 }
 
+export const deleteClaimDataField = async ({
+  db,
+  reference,
+  deletedProperty,
+  oldValue,
+  note,
+  user,
+  updatedAt
+}) => {
+  return db.collection(CLAIMS_COLLECTION).findOneAndUpdate(
+    { reference },
+    {
+      $unset: {
+        [`data.${deletedProperty}`]: ''
+      },
+      $set: {
+        updatedAt,
+        updatedBy: user
+      },
+      $push: {
+        updateHistory: {
+          id: crypto.randomUUID(),
+          note,
+          newValue: null,
+          oldValue,
+          createdAt: updatedAt,
+          createdBy: user,
+          eventType: `claim-${deletedProperty}`,
+          updatedProperty: deletedProperty
+        }
+      }
+    }
+  )
+}
+
 export const addHerdToClaimData = async ({
   claimRef,
   claimHerdData,

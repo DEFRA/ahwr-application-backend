@@ -2,6 +2,7 @@ import { claimDataUpdateEvent } from '../../event-publisher/claim-data-update-ev
 import { raiseClaimEvents, raiseHerdEvent } from '../../event-publisher/index.js'
 import {
   deleteClaim,
+  deleteClaimDataField,
   getClaimByReference,
   updateClaimData,
   updateHerd
@@ -18,13 +19,14 @@ const HERD_PROPERTY_BY_FIELD = {
 
 const DOES_NOT_EXIST_MESSAGE = 'Does not exist'
 const HERD_DOES_NOT_EXIST_MESSAGE = 'Herd does not exist'
+const CANNOT_DELETE_HERD_FIELD_MESSAGE = 'Cannot delete a herd field'
 
 /**
  * @typedef {object} Change
  * @property {string} claimRef - The claim reference
  * @property {string} sbi - Single Business Identifier
  * @property {string} applicationRef - The application reference
- * @property {'deletion' | 'fieldChange'} action - The type of change to process
+ * @property {'deletion' | 'fieldChange' | 'fieldDeletion'} action - The type of change to process
  * @property {string} [field] - Field name (required for fieldChange)
  * @property {string} [dateRequested] - The day when the request was done in ISO 8601
  * @property {string} [requester] - Who has made the request
@@ -66,6 +68,12 @@ export const processChanges = async (changesToProcess, db, logger) => {
             return processHerdChange(change, db)
           } else {
             return processDataChange(change, db)
+          }
+        case TYPE_OF_CHANGE.FIELD_DELETION:
+          if (HERD_PROPERTY_BY_FIELD[change.field]) {
+            return { success: false, ...change, reason: CANNOT_DELETE_HERD_FIELD_MESSAGE }
+          } else {
+            return processFieldDeletion(change, db)
           }
         default:
           // This shouldn't ever happen as the scheme gets validated
@@ -155,6 +163,52 @@ const processDataChange = async (change, db) => {
         applicationReference: change.applicationRef,
         reference: change.claimRef,
         newValue: change.newValue,
+        oldValue: change.oldValue,
+        updatedProperty: change.field,
+        note: `Requested on ${change.dateRequested} by ${change.requester}`
+      },
+      `claim-${change.field}`,
+      raisedBy,
+      new Date(),
+      change.sbi
+    )
+
+    return { success: true, ...change }
+  } catch (error) {
+    return { success: false, ...change, reason: error.message }
+  }
+}
+
+/**
+ * Removes a single data field from a claim and raises a claim data update event.
+ * Used for fields stored directly on the claim (not versioned on the herd).
+ *
+ * @param {Change} change - The field deletion to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
+const processFieldDeletion = async (change, db) => {
+  const raisedBy = 'Admin2'
+  try {
+    const result = await deleteClaimDataField({
+      db,
+      reference: change.claimRef,
+      deletedProperty: change.field,
+      oldValue: change.oldValue,
+      note: `Requested on ${change.dateRequested} by ${change.requester}`,
+      user: raisedBy,
+      updatedAt: new Date()
+    })
+
+    if (result === null) {
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
+    }
+
+    await claimDataUpdateEvent(
+      {
+        applicationReference: change.applicationRef,
+        reference: change.claimRef,
+        newValue: null,
         oldValue: change.oldValue,
         updatedProperty: change.field,
         note: `Requested on ${change.dateRequested} by ${change.requester}`

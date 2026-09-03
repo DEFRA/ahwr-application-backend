@@ -53,6 +53,17 @@ const changeOfDataField = {
   action: TYPE_OF_CHANGE.FIELD_CHANGE
 }
 
+const deletionOfDataField = {
+  claimRef: 'RESH-VASQ-XIXS',
+  sbi: '107695939',
+  applicationRef: 'IAHW-21C5-1417',
+  field: 'dateOfTesting',
+  dateRequested: '2025-12-12T00:00:00.000Z',
+  requester: 'Some_One',
+  oldValue: '2025-12-11T00:00:00.000Z',
+  action: TYPE_OF_CHANGE.FIELD_DELETION
+}
+
 const mockPublishEvent = jest.fn()
 
 beforeEach(() => {
@@ -311,6 +322,108 @@ describe('Field change', () => {
     expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
     expect(mockLogger.info).toHaveBeenCalledWith(
       `${changeOfDataField.claimRef} has failed because Connection failed`
+    )
+  })
+})
+
+describe('Field deletion', () => {
+  test('We can delete a data field', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: deletionOfDataField.claimRef })
+    const results = await processChanges([deletionOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...deletionOfDataField, success: true })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: deletionOfDataField.claimRef },
+      {
+        $unset: {
+          [`data.${deletionOfDataField.field}`]: ''
+        },
+        $set: {
+          updatedAt: expect.any(Date),
+          updatedBy: 'Admin2'
+        },
+        $push: {
+          updateHistory: {
+            id: expect.any(String),
+            updatedProperty: deletionOfDataField.field,
+            newValue: null,
+            oldValue: deletionOfDataField.oldValue,
+            note: `Requested on ${deletionOfDataField.dateRequested} by ${deletionOfDataField.requester}`,
+            eventType: 'claim-dateOfTesting',
+            createdAt: expect.any(Date),
+            createdBy: 'Admin2'
+          }
+        }
+      }
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${deletionOfDataField.claimRef} has processed successfully`
+    )
+  })
+
+  test('When we delete a data field, an event is being sent', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: deletionOfDataField.claimRef })
+    await processChanges([deletionOfDataField], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: deletionOfDataField.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'claim-dateOfTesting',
+      message: 'Claim data updated',
+      data: {
+        applicationReference: deletionOfDataField.applicationRef,
+        reference: deletionOfDataField.claimRef,
+        newValue: null,
+        oldValue: deletionOfDataField.oldValue,
+        updatedProperty: 'dateOfTesting',
+        note: `Requested on ${deletionOfDataField.dateRequested} by ${deletionOfDataField.requester}`
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('If the claim does not exist, we return no success', async () => {
+    mockFindOneAndUpdate.mockResolvedValue(null)
+    const results = await processChanges([deletionOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...deletionOfDataField, success: false, reason: 'Does not exist' })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${deletionOfDataField.claimRef} has failed because Does not exist`
+    )
+  })
+
+  test('If an error is thrown, we return no success', async () => {
+    mockFindOneAndUpdate.mockRejectedValue(new Error('Connection failed'))
+    const results = await processChanges([deletionOfDataField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...deletionOfDataField,
+      success: false,
+      reason: 'Connection failed'
+    })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${deletionOfDataField.claimRef} has failed because Connection failed`
+    )
+  })
+
+  test('We cannot delete a herd field', async () => {
+    const herdFieldDeletion = { ...deletionOfDataField, field: 'herdName' }
+    const results = await processChanges([herdFieldDeletion], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...herdFieldDeletion,
+      success: false,
+      reason: 'Cannot delete a herd field'
+    })
+    expect(mockFindOneAndUpdate).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${herdFieldDeletion.claimRef} has failed because Cannot delete a herd field`
     )
   })
 })

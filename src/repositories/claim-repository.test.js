@@ -4,6 +4,7 @@ import {
   updateClaimStatus,
   updateClaimData,
   addHerdToClaimData,
+  deleteClaimDataField,
   updateClaimStatuses,
   findOnHoldClaims,
   createClaimIndexes,
@@ -324,6 +325,56 @@ describe('claim-repository', () => {
               id: expect.any(String),
               note: 'Vets name updated',
               newValue: 'Jane',
+              oldValue: 'John',
+              createdAt: updatedAt,
+              createdBy: 'test-user',
+              eventType: 'claim-vetsName',
+              updatedProperty: 'vetsName'
+            }
+          }
+        }
+      )
+    })
+  })
+
+  describe('deleteClaimDataField', () => {
+    const mockDb = { collection: jest.fn() }
+    const mockCollection = { findOneAndUpdate: jest.fn() }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      mockDb.collection.mockReturnValue(mockCollection)
+    })
+
+    it('should unset the data property and record the deletion in history', async () => {
+      const updatedAt = new Date('2024-11-20T13:51:24.291Z')
+
+      await deleteClaimDataField({
+        db: mockDb,
+        reference: 'FUBC-JTTU-SDQ7',
+        deletedProperty: 'vetsName',
+        oldValue: 'John',
+        note: 'Vets name deleted',
+        user: 'test-user',
+        updatedAt
+      })
+
+      expect(mockDb.collection).toHaveBeenCalledWith('claims')
+      expect(mockCollection.findOneAndUpdate).toHaveBeenCalledWith(
+        { reference: 'FUBC-JTTU-SDQ7' },
+        {
+          $unset: {
+            'data.vetsName': ''
+          },
+          $set: {
+            updatedAt,
+            updatedBy: 'test-user'
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              note: 'Vets name deleted',
+              newValue: null,
               oldValue: 'John',
               createdAt: updatedAt,
               createdBy: 'test-user',
