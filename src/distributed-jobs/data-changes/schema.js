@@ -1,17 +1,23 @@
 import Joi from 'joi'
 
-/** @type {readonly {DELETION: 'deletion', FIELD_CHANGE: 'fieldChange'}} */
+/** @type {readonly {DELETION: 'deletion', FIELD_CHANGE: 'fieldChange', FIELD_DELETION: 'fieldDeletion'}} */
 export const TYPE_OF_CHANGE = {
   DELETION: 'deletion',
-  FIELD_CHANGE: 'fieldChange'
+  FIELD_CHANGE: 'fieldChange',
+  FIELD_DELETION: 'fieldDeletion'
 }
+
+// Actions that target a single named field on the claim
+const FIELD_ACTIONS = Joi.valid(TYPE_OF_CHANGE.FIELD_CHANGE, TYPE_OF_CHANGE.FIELD_DELETION)
 
 export const changeSchema = Joi.object({
   claimRef: Joi.string().required(),
   sbi: Joi.string().required(),
   applicationRef: Joi.string().required(),
-  action: Joi.string().valid(TYPE_OF_CHANGE.DELETION, TYPE_OF_CHANGE.FIELD_CHANGE).required(),
-  field: Joi.string().when('action', { is: TYPE_OF_CHANGE.FIELD_CHANGE, then: Joi.required() }),
+  action: Joi.string()
+    .valid(TYPE_OF_CHANGE.DELETION, TYPE_OF_CHANGE.FIELD_CHANGE, TYPE_OF_CHANGE.FIELD_DELETION)
+    .required(),
+  field: Joi.string().when('action', { is: FIELD_ACTIONS, then: Joi.required() }),
   dateRequested: Joi.date().iso().required(),
   requester: Joi.string().required(),
   newValue: Joi.alternatives()
@@ -19,7 +25,7 @@ export const changeSchema = Joi.object({
     .when('action', { is: TYPE_OF_CHANGE.FIELD_CHANGE, then: Joi.required() }),
   oldValue: Joi.alternatives()
     .try(Joi.string(), Joi.array())
-    .when('action', { is: TYPE_OF_CHANGE.FIELD_CHANGE, then: Joi.required() }),
+    .when('action', { is: FIELD_ACTIONS, then: Joi.required() }),
   skipDataChange: Joi.boolean(),
   skipSendEvent: Joi.boolean()
 })
