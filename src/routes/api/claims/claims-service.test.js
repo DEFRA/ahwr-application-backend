@@ -714,7 +714,7 @@ describe('withdrawClaim', () => {
         db,
         'IAHW-1234-APP1',
         expect.objectContaining({
-          note: 'withdrawal request',
+          note: 'Flag added due to withdrawn claim',
           createdBy: 'admin',
           appliesToMh: false,
           deleted: false

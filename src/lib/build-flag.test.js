@@ -5,7 +5,7 @@ describe('buildFlag', () => {
     const createdAt = new Date('2026-01-01T09:00:00.000Z')
 
     const flag = buildFlag({
-      note: 'withdrawal request',
+      note: 'Flag added due to withdrawn claim',
       createdBy: 'admin',
       appliesToMh: false,
       createdAt
@@ -13,7 +13,7 @@ describe('buildFlag', () => {
 
     expect(flag).toEqual({
       id: expect.any(String),
-      note: 'withdrawal request',
+      note: 'Flag added due to withdrawn claim',
       createdBy: 'admin',
       appliesToMh: false,
       createdAt,
