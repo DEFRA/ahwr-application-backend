@@ -5,9 +5,12 @@ import {
 } from '../../../repositories/claim-repository.js'
 import {
   getApplication,
-  getApplicationsBySbi
+  getApplicationsBySbi,
+  createFlag
 } from '../../../repositories/application-repository.js'
 import { createWithdrawalRequest } from '../../../repositories/withdrawal-request-repository.js'
+import { buildFlag } from '../../../lib/build-flag.js'
+import { WITHDRAWAL_FLAG_NOTE } from '../../../constants/index.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference, createPoultryClaimReference } from '../../../lib/create-reference.js'
 import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType, STATUS } from 'ffc-ahwr-common-library'
@@ -255,6 +258,17 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
       createdAt: withdrawnAt
     }
   })
+
+  await createFlag(
+    db,
+    claim.applicationReference,
+    buildFlag({
+      note: WITHDRAWAL_FLAG_NOTE,
+      createdBy: user,
+      appliesToMh: false,
+      createdAt: withdrawnAt
+    })
+  )
 
   const updatedClaim = await updateClaimStatus({
     db,
