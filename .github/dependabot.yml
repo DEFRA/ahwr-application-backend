@@ -54,6 +54,13 @@ updates:
         update-types:
           - version-update:semver-major
 
+      # mongodb 7.6.0 sends malformed client metadata under babel-jest (missing 'driver'
+      # sub-document), so mongod rejects the handshake and every integration test times out.
+      # Pinned to 7.5.0; re-evaluate when the driver regression is fixed upstream.
+      - dependency-name: mongodb
+        versions:
+          - "7.6.0"
+
   # Update GitHub Actions
   - package-ecosystem: github-actions
     directory: /
