@@ -23,7 +23,6 @@ const commonSearchFields = {
 
 export const applicationSearchPayloadSchema = {
   ...commonSearchFields,
-  status: Joi.string().valid('AGREED', 'NOT_AGREED').optional(),
   sort: Joi.object({
     field: Joi.string().valid().optional().default('CREATEDAT'),
     direction: Joi.string().valid().optional().allow('ASC')

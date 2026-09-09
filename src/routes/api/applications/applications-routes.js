@@ -124,8 +124,7 @@ export const applicationRoutes = [
             agreementType: request.payload.agreementType,
             flag: request.payload.flag,
             dateFrom: request.payload.dateFrom,
-            dateTo: request.payload.dateTo,
-            status: request.payload.status
+            dateTo: request.payload.dateTo
           },
           request.payload.offset,
           request.payload.limit,
