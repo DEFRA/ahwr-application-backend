@@ -92,6 +92,7 @@ create_topic_and_queue "ahwr_payment_update" "ahwr_application_backend_queue" &
 create_topic_and_queue "ahwr_document_request" "ahwr_document_generator_queue" &
 create_topic_and_queue "ahwr_reminder_request" "ahwr_message_generator_queue" &
 create_topic_and_queue "ahwr_status_change" "ahwr_message_generator_queue" &
+create_topic_and_queue "ahwr_payment_request" "ahwr_payment_request_queue" &
 create_bucket "local-ahwr-documents"
 upload_pdf
 
