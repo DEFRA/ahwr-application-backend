@@ -48,7 +48,7 @@
     "hapi-pino": "12.1.0",
     "hapi-pulse": "4.0.0",
     "http-status-codes": "2.3.0",
-    "joi": "18.2.5",
+    "joi": "18.2.6",
     "mongo-locks": "3.2.0",
     "mongodb": "7.5.0",
     "pino": "10.3.1"
