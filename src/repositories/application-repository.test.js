@@ -244,11 +244,7 @@ describe('application-repository', () => {
 
     test.each([
       { search: { text: '444444444', type: 'sbi' }, expectedMatch: 'organisation.sbi' },
-      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' },
-      {
-        search: { text: 'AHWR-555A-FD6E', type: 'ref' },
-        expectedMatch: 'reference'
-      }
+      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' }
     ])(
       'Calls through to search database with expected query for simple criteria',
       async ({ search, expectedMatch }) => {
