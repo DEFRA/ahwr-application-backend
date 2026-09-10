@@ -9,39 +9,37 @@ updates:
     # Group packages into shared PR
     groups:
       dev:
-        applies-to: "version-updates"
-        dependency-type: "development"
+        applies-to: 'version-updates'
+        dependency-type: 'development'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
         patterns:
-          - "*"
+          - '*'
 
       prod:
-        applies-to: "version-updates"
-        dependency-type: "production"
+        applies-to: 'version-updates'
+        dependency-type: 'production'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
         patterns:
-          - "*"
+          - '*'
 
       security:
-        applies-to: "security-updates"
+        applies-to: 'security-updates'
         patterns:
-          - "*"
+          - '*'
 
       other:
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
         patterns:
-          - "*"
+          - '*'
 
-    # Schedule run nightly
     schedule:
-      interval: "cron"
-      cronjob: "0 0 * * *"
+      interval: 'weekly'
 
     cooldown:
       default-days: 7
@@ -59,16 +57,14 @@ updates:
       # Pinned to 7.5.0; re-evaluate when the driver regression is fixed upstream.
       - dependency-name: mongodb
         versions:
-          - "7.6.0"
+          - '7.6.0'
 
   # Update GitHub Actions
   - package-ecosystem: github-actions
     directory: /
 
-    # Schedule run nightly
     schedule:
-      interval: "cron"
-      cronjob: "0 0 * * *"
+      interval: 'weekly'
 
     cooldown:
       default-days: 7
