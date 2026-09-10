@@ -21,8 +21,8 @@ Created from the Core delivery platform Node.js Backend Template.
   - [Development image](#development-image)
   - [Production image](#production-image)
   - [Docker Compose](#docker-compose)
-  - [Dependabot](#dependabot)
-  - [SonarCloud](#sonarcloud)
+- [Dependabot](#dependabot)
+- [SonarCloud](#sonarcloud)
 - [Data Changes](#datachanges)
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
@@ -247,11 +247,11 @@ A local environment with:
 docker compose up --build -d
 ```
 
-### Dependabot
+## Dependabot
 
 Currently setup to work into four groups, so we don't have PRs per package. The updates run once a week, on a Monday. Except for the security group, which is advisory-triggered and ignores the schedule.
 
-### SonarCloud
+## SonarCloud
 
 Sonarcoud is enabled for this repository. All pull requests will be analysed.
 You can view the reports at [Sonarcloud](https://sonarcloud.io/project/overview?id=DEFRA_ahwr-application-backend)
