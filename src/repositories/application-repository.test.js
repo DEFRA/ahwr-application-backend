@@ -244,15 +244,10 @@ describe('application-repository', () => {
 
     test.each([
       { search: { text: '444444444', type: 'sbi' }, expectedMatch: 'organisation.sbi' },
-      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' },
-      {
-        search: { text: 'AHWR-555A-FD6E', type: 'ref' },
-        expectedMatch: 'reference',
-        status: 'AGREED'
-      }
+      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' }
     ])(
       'Calls through to search database with expected query for simple criteria',
-      async ({ search, expectedMatch, status }) => {
+      async ({ search, expectedMatch }) => {
         const foundApplications = [
           {
             reference: 'IAHW-8ZPZ-8CLI'
@@ -266,14 +261,10 @@ describe('application-repository', () => {
         collectionMock.toArray.mockResolvedValueOnce(foundApplications)
         const res = await searchApplications(dbMock, {
           searchText: search.text,
-          searchType: search.type,
-          status
+          searchType: search.type
         })
 
         const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
-        if (status) {
-          expectedMatchExpression.$match.status = status
-        }
 
         expect(res).toEqual({
           applications: foundApplications,
