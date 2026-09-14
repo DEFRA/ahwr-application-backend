@@ -1,8 +1,12 @@
 import { MULTIPLE_HERD_REASONS } from 'ffc-ahwr-common-library'
-import { CLAIMS_COLLECTION, HERDS_COLLECTION } from '../../constants/index.js'
+import {
+  APPLICATION_COLLECTION,
+  CLAIMS_COLLECTION,
+  HERDS_COLLECTION
+} from '../../constants/index.js'
 import { processChanges } from './process_changes.js'
 import { getFcpEventPublisher } from '../../messaging/fcp-messaging-service.js'
-import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
+import { CHANGE_TARGET, changeSchema, TYPE_OF_CHANGE } from './schema.js'
 
 jest.mock('../../messaging/fcp-messaging-service')
 
@@ -62,6 +66,18 @@ const deletionOfDataField = {
   requester: 'Some_One',
   oldValue: '2025-12-11T00:00:00.000Z',
   action: TYPE_OF_CHANGE.FIELD_DELETION
+}
+
+const changeOfApplicationField = {
+  sbi: '107695939',
+  applicationRef: 'IAHW-21C5-1417',
+  target: CHANGE_TARGET.APPLICATION,
+  field: 'createdAt',
+  dateRequested: '2025-12-12T00:00:00.000Z',
+  requester: 'Some_One',
+  newValue: '2025-12-12T00:00:00.000Z',
+  oldValue: '2025-12-11T00:00:00.000Z',
+  action: TYPE_OF_CHANGE.FIELD_CHANGE
 }
 
 const mockPublishEvent = jest.fn()
@@ -425,6 +441,146 @@ describe('Field deletion', () => {
     expect(mockLogger.info).toHaveBeenCalledWith(
       `${herdFieldDeletion.claimRef} has failed because Cannot delete a herd field`
     )
+  })
+
+  test('We cannot delete an application field', async () => {
+    const applicationFieldDeletion = {
+      ...changeOfApplicationField,
+      action: TYPE_OF_CHANGE.FIELD_DELETION
+    }
+
+    const results = await processChanges([applicationFieldDeletion], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...applicationFieldDeletion,
+      success: false,
+      reason: 'Cannot delete an application field'
+    })
+    expect(mockFindOneAndUpdate).not.toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${applicationFieldDeletion.applicationRef} has failed because Cannot delete an application field`
+    )
+  })
+})
+
+describe('application changes', () => {
+  test('We can change an application field', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: changeOfApplicationField.applicationRef })
+    const results = await processChanges([changeOfApplicationField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...changeOfApplicationField, success: true })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: changeOfApplicationField.applicationRef },
+      {
+        // newValue/oldValue are coerced to a real Date since createdAt is sorted/range-filtered as one elsewhere
+        $set: {
+          createdAt: new Date(changeOfApplicationField.newValue),
+          updatedAt: expect.any(Date),
+          updatedBy: 'Admin2'
+        },
+        $push: {
+          updateHistory: {
+            id: expect.any(String),
+            updatedProperty: 'createdAt',
+            newValue: new Date(changeOfApplicationField.newValue),
+            oldValue: new Date(changeOfApplicationField.oldValue),
+            note: `Requested on ${changeOfApplicationField.dateRequested} by ${changeOfApplicationField.requester}`,
+            eventType: 'application-createdAt',
+            createdAt: expect.any(Date),
+            createdBy: 'Admin2'
+          }
+        }
+      },
+      { returnDocument: 'after' }
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(APPLICATION_COLLECTION)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfApplicationField.applicationRef} has processed successfully`
+    )
+  })
+
+  test('When we change an application field, an event is being sent', async () => {
+    mockFindOneAndUpdate.mockResolvedValue({ reference: changeOfApplicationField.applicationRef })
+    await processChanges([changeOfApplicationField], mockDb, mockLogger)
+
+    expect(mockPublishEvent).toHaveBeenCalledWith({
+      name: 'send-session-event',
+      id: expect.any(String),
+      sbi: changeOfApplicationField.sbi,
+      cph: 'n/a',
+      checkpoint: expect.any(String),
+      status: 'success',
+      type: 'claim-createdAt',
+      message: 'Application Claim data updated',
+      data: {
+        applicationReference: changeOfApplicationField.applicationRef,
+        reference: changeOfApplicationField.applicationRef,
+        newValue: changeOfApplicationField.newValue,
+        oldValue: changeOfApplicationField.oldValue,
+        updatedProperty: 'createdAt',
+        note: `Requested on ${changeOfApplicationField.dateRequested} by ${changeOfApplicationField.requester}`
+      },
+      raisedBy: 'Admin2',
+      raisedOn: expect.any(String)
+    })
+  })
+
+  test('If the application does not exist, we return no success', async () => {
+    mockFindOneAndUpdate.mockResolvedValue(null)
+    const results = await processChanges([changeOfApplicationField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...changeOfApplicationField,
+      success: false,
+      reason: 'Does not exist'
+    })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfApplicationField.applicationRef} has failed because Does not exist`
+    )
+  })
+
+  test('If an error is thrown, we return no success', async () => {
+    mockFindOneAndUpdate.mockRejectedValue(new Error('Connection failed'))
+    const results = await processChanges([changeOfApplicationField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...changeOfApplicationField,
+      success: false,
+      reason: 'Connection failed'
+    })
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      `${changeOfApplicationField.applicationRef} has failed because Connection failed`
+    )
+  })
+
+  test('A field named the same as an application field but with no target is treated as a claim change', async () => {
+    // Claim and application documents can share field names (e.g. status, createdAt, reference),
+    // so routing must key off the explicit target rather than the field name alone
+    const sameNamedClaimField = {
+      claimRef: 'RESH-VASQ-XIXS',
+      sbi: '107695939',
+      applicationRef: 'IAHW-21C5-1417',
+      field: 'createdAt',
+      dateRequested: '2025-12-12T00:00:00.000Z',
+      requester: 'Some_One',
+      newValue: '2025-12-12T00:00:00.000Z',
+      oldValue: '2025-12-11T00:00:00.000Z',
+      action: TYPE_OF_CHANGE.FIELD_CHANGE
+    }
+    mockFindOneAndUpdate.mockResolvedValue({ reference: sameNamedClaimField.claimRef })
+
+    const results = await processChanges([sameNamedClaimField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({ ...sameNamedClaimField, success: true })
+    expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+      { reference: sameNamedClaimField.claimRef },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          [`data.${sameNamedClaimField.field}`]: sameNamedClaimField.newValue
+        })
+      })
+    )
+    expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
   })
 })
 
