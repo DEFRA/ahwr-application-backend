@@ -1,5 +1,9 @@
 import { QueueDoesNotExist } from '@aws-sdk/client-sqs'
-import { getQueueMessages } from './support-service'
+import {
+  applyQueueMessageActions,
+  checkIsDeadLetterQueue,
+  getQueueMessages
+} from './support-service'
 import { sqsClient } from 'ffc-ahwr-common-library'
 import Boom from '@hapi/boom'
 
@@ -102,5 +106,91 @@ describe('getQueueMessages', () => {
         logger: loggerMock
       })
     ).rejects.toThrow(error)
+  })
+})
+
+describe('checkIsDeadLetterQueue', () => {
+  const loggerMock = { info: jest.fn() }
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns the dead-letter queue flag from the sqs client', async () => {
+    sqsClient.isDeadLetterQueue.mockResolvedValue(true)
+
+    const result = await checkIsDeadLetterQueue({
+      queueUrl: 'http://localhost:45666/queueName',
+      logger: loggerMock
+    })
+
+    expect(sqsClient.setupClient).toHaveBeenCalledWith(
+      'eu-west-2',
+      'http://localhost:4566',
+      loggerMock
+    )
+    expect(sqsClient.isDeadLetterQueue).toHaveBeenCalledWith('http://localhost:45666/queueName')
+    expect(result).toBe(true)
+  })
+
+  it('should throw 404 error when queue does not exist', async () => {
+    sqsClient.isDeadLetterQueue.mockRejectedValue(
+      new QueueDoesNotExist({ message: 'The specified queue does not exist.', $metadata: {} })
+    )
+
+    await expect(
+      checkIsDeadLetterQueue({ queueUrl: 'localhost:45666', logger: loggerMock })
+    ).rejects.toThrow(Boom.notFound('Queue not found: localhost:45666'))
+  })
+})
+
+describe('applyQueueMessageActions', () => {
+  const loggerMock = { info: jest.fn() }
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('applies the actions when the queue is a dead-letter queue', async () => {
+    sqsClient.isDeadLetterQueue.mockResolvedValue(true)
+    sqsClient.applyDlqActions.mockResolvedValue([{ id: '1', action: 'delete', status: 'done' }])
+
+    const result = await applyQueueMessageActions({
+      queueUrl: 'http://localhost:45666/queueName',
+      actionsById: { 1: 'delete' },
+      logger: loggerMock
+    })
+
+    expect(sqsClient.applyDlqActions).toHaveBeenCalledWith('http://localhost:45666/queueName', {
+      1: 'delete'
+    })
+    expect(result).toEqual([{ id: '1', action: 'delete', status: 'done' }])
+  })
+
+  it('throws 400 when the queue is not a dead-letter queue', async () => {
+    sqsClient.isDeadLetterQueue.mockResolvedValue(false)
+
+    await expect(
+      applyQueueMessageActions({
+        queueUrl: 'localhost:45666',
+        actionsById: { 1: 'delete' },
+        logger: loggerMock
+      })
+    ).rejects.toThrow(Boom.badRequest('Not a dead-letter queue: localhost:45666'))
+    expect(sqsClient.applyDlqActions).not.toHaveBeenCalled()
+  })
+
+  it('throws 404 when the queue does not exist', async () => {
+    sqsClient.isDeadLetterQueue.mockRejectedValue(
+      new QueueDoesNotExist({ message: 'The specified queue does not exist.', $metadata: {} })
+    )
+
+    await expect(
+      applyQueueMessageActions({
+        queueUrl: 'localhost:45666',
+        actionsById: { 1: 'delete' },
+        logger: loggerMock
+      })
+    ).rejects.toThrow(Boom.notFound('Queue not found: localhost:45666'))
   })
 })

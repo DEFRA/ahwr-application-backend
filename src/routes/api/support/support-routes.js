@@ -1,8 +1,10 @@
 import joi from 'joi'
 import {
   supportApplicationHandler,
+  supportApplyQueueActionsHandler,
   supportClaimHandler,
   supportHerdHandler,
+  supportIsDeadLetterQueueHandler,
   supportQueueMessagesHandler
 } from './support-controller.js'
 
@@ -58,6 +60,42 @@ export const supportHandlers = [
         })
       },
       handler: supportQueueMessagesHandler
+    }
+  },
+  {
+    method: 'GET',
+    path: '/api/support/queue-messages/is-dlq',
+    options: {
+      description: 'Check whether a queue is a dead-letter queue',
+      validate: {
+        query: joi.object({
+          queueUrl: joi.string().required()
+        })
+      },
+      handler: supportIsDeadLetterQueueHandler
+    }
+  },
+  {
+    method: 'POST',
+    path: '/api/support/queue-messages/actions',
+    options: {
+      description: 'Delete or reapply dead-letter queue messages',
+      validate: {
+        payload: joi.object({
+          queueUrl: joi.string().required(),
+          actions: joi
+            .array()
+            .items(
+              joi.object({
+                id: joi.string().required(),
+                action: joi.string().valid('delete', 'reapply').required()
+              })
+            )
+            .min(1)
+            .required()
+        })
+      },
+      handler: supportApplyQueueActionsHandler
     }
   }
 ]
