@@ -103,8 +103,8 @@ describe('Search applications', () => {
     })
 
     expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload).total).toBe(2)
-    expect(references(res.payload)).toEqual(['AHWR-BBBB-0002', 'IAHW-AAAA-0001'])
+    expect(JSON.parse(res.payload).total).toBe(1)
+    expect(references(res.payload)).toEqual(['IAHW-AAAA-0001'])
   })
 
   test('PBR returns only poultry agreements, regardless of date', async () => {
@@ -135,7 +135,6 @@ describe('Search applications', () => {
 
     expect(res.statusCode).toBe(StatusCodes.OK)
     expect(references(res.payload)).toEqual([
-      'AHWR-BBBB-0002',
       'IAHW-AAAA-0001',
       'IAHW-DDDD-0004',
       'IAHW-GGGG-0007',
@@ -151,6 +150,6 @@ describe('Search applications', () => {
     })
 
     expect(res.statusCode).toBe(StatusCodes.OK)
-    expect(JSON.parse(res.payload).total).toBe(7)
+    expect(JSON.parse(res.payload).total).toBe(6)
   })
 })

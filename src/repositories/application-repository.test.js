@@ -244,7 +244,8 @@ describe('application-repository', () => {
 
     test.each([
       { search: { text: '444444444', type: 'sbi' }, expectedMatch: 'organisation.sbi' },
-      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' }
+      { search: { text: 'AHWR-555A-FD6E', type: 'ref' }, expectedMatch: 'reference' },
+      { search: { text: 'AGREED', type: 'status' }, expectedMatch: 'status' }
     ])(
       'Calls through to search database with expected query for simple criteria',
       async ({ search, expectedMatch }) => {
@@ -264,7 +265,9 @@ describe('application-repository', () => {
           searchType: search.type
         })
 
-        const expectedMatchExpression = { $match: { [`${expectedMatch}`]: search.text } }
+        const expectedMatchExpression = {
+          $match: { [`${expectedMatch}`]: search.text, status: STATUS.AGREED }
+        }
 
         expect(res).toEqual({
           applications: foundApplications,
@@ -344,7 +347,8 @@ describe('application-repository', () => {
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         {
           $match: {
-            'organisation.name': { $regex: search.text, $options: 'i' }
+            'organisation.name': { $regex: search.text, $options: 'i' },
+            status: STATUS.AGREED
           }
         },
         {
@@ -353,7 +357,8 @@ describe('application-repository', () => {
             pipeline: [
               {
                 $match: {
-                  'organisation.name': { $regex: search.text, $options: 'i' }
+                  'organisation.name': { $regex: search.text, $options: 'i' },
+                  status: STATUS.AGREED
                 }
               }
             ]
@@ -364,7 +369,8 @@ describe('application-repository', () => {
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         {
           $match: {
-            'organisation.name': { $regex: search.text, $options: 'i' }
+            'organisation.name': { $regex: search.text, $options: 'i' },
+            status: STATUS.AGREED
           }
         },
         {
@@ -378,7 +384,8 @@ describe('application-repository', () => {
             pipeline: [
               {
                 $match: {
-                  'organisation.name': { $regex: search.text, $options: 'i' }
+                  'organisation.name': { $regex: search.text, $options: 'i' },
+                  status: STATUS.AGREED
                 }
               },
               {
@@ -441,7 +448,7 @@ describe('application-repository', () => {
         await searchApplications(dbMock, { searchText: '', filter: [], agreementType })
 
         const expectedMatch = {
-          $match: { reference: { $regex: expectedRegex, $options: 'i' } }
+          $match: { reference: { $regex: expectedRegex, $options: 'i' }, status: STATUS.AGREED }
         }
         expect(collectionMock.aggregate).toHaveBeenCalledWith([
           expectedMatch,
@@ -465,11 +472,11 @@ describe('application-repository', () => {
         await searchApplications(dbMock, { searchText: '', filter: [], agreementType })
 
         expect(collectionMock.aggregate).toHaveBeenCalledWith([
-          { $match: {} },
+          { $match: { status: STATUS.AGREED } },
           {
             $unionWith: {
               coll: 'owapplications',
-              pipeline: [{ $match: {} }]
+              pipeline: [{ $match: { status: STATUS.AGREED } }]
             }
           },
           { $count: 'total' }
@@ -488,7 +495,7 @@ describe('application-repository', () => {
         agreementType: 'IAHW'
       })
 
-      const expectedMatch = { $match: { reference: 'POUL-8ZPZ-8CLI' } }
+      const expectedMatch = { $match: { reference: 'POUL-8ZPZ-8CLI', status: STATUS.AGREED } }
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         expectedMatch,
         {
@@ -508,7 +515,7 @@ describe('application-repository', () => {
 
       await searchApplications(dbMock, { searchText: '', filter: [], dateFrom })
 
-      const expectedMatch = { $match: { createdAt: { $gte: dateFrom } } }
+      const expectedMatch = { $match: { createdAt: { $gte: dateFrom }, status: STATUS.AGREED } }
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         expectedMatch,
         {
@@ -528,7 +535,7 @@ describe('application-repository', () => {
 
       await searchApplications(dbMock, { searchText: '', filter: [], dateTo })
 
-      const expectedMatch = { $match: { createdAt: { $lte: dateTo } } }
+      const expectedMatch = { $match: { createdAt: { $lte: dateTo }, status: STATUS.AGREED } }
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         expectedMatch,
         {
@@ -549,7 +556,9 @@ describe('application-repository', () => {
 
       await searchApplications(dbMock, { searchText: '', filter: [], dateFrom, dateTo })
 
-      const expectedMatch = { $match: { createdAt: { $gte: dateFrom, $lte: dateTo } } }
+      const expectedMatch = {
+        $match: { createdAt: { $gte: dateFrom, $lte: dateTo }, status: STATUS.AGREED }
+      }
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
         expectedMatch,
         {
@@ -569,11 +578,11 @@ describe('application-repository', () => {
       await searchApplications(dbMock, { searchText: '', filter: [] })
 
       expect(collectionMock.aggregate).toHaveBeenCalledWith([
-        { $match: {} },
+        { $match: { status: STATUS.AGREED } },
         {
           $unionWith: {
             coll: 'owapplications',
-            pipeline: [{ $match: {} }]
+            pipeline: [{ $match: { status: STATUS.AGREED } }]
           }
         },
         { $count: 'total' }

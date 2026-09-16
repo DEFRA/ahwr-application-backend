@@ -5,6 +5,7 @@ import { flagNotDeletedFilter, getApplicationsFromCollectionBySbi } from './comm
 import { applyAgreementTypeFilter } from './filters/agreement-type-filter.js'
 import { applyDateRangeFilter } from './filters/date-range-filter.js'
 import { applyFlagFilter } from './filters/flag-filter.js'
+import { applyStatusFilter } from './filters/status-filter.js'
 
 export const createApplicationIndexes = async (db) => {
   await db.collection(APPLICATION_COLLECTION).createIndex({
@@ -121,6 +122,8 @@ const buildSearchQuery = ({ searchText, searchType, agreementType, flag, dateFro
   applyDateRangeFilter(query, dateFrom, dateTo)
 
   applyFlagFilter(query, flag)
+
+  applyStatusFilter(query, STATUS.AGREED)
 
   return query
 }
