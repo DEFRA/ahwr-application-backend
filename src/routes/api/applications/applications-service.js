@@ -77,7 +77,7 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
       })}`
     )
   }
-
+  const organisationSbi = applicationRequest.organisation.sbi
   const application = buildApplication(applicationRequest)
 
   const result = await appRepo.createApplication(db, application)
@@ -104,7 +104,14 @@ export const createApplication = async ({ applicationRequest, logger, db }) => {
 
   await raiseApplicationStatusEvent({
     message: 'New application has been created',
-    application: { ...application, id: result.insertedId.toString() },
+    application: {
+      ...application,
+      id: result.insertedId.toString(),
+      organisation: {
+        ...application.organisation,
+        sbi: organisationSbi
+      }
+    },
     raisedBy: application.createdBy,
     raisedOn: application.createdAt
   })
