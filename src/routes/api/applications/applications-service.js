@@ -16,6 +16,24 @@ const buildApplication = (applicationRequest) => {
   const status = applicationRequest.offerStatus === 'rejected' ? STATUS.NOT_AGREED : STATUS.AGREED
   const createdAt = new Date()
   const createdBy = 'admin'
+  let organisation = {}
+  const redacted = 'REDACTED'
+
+  if (status === STATUS.NOT_AGREED) {
+    organisation = {
+      sbi: redacted,
+      farmerName: redacted,
+      name: redacted,
+      email: redacted,
+      orgEmail: redacted,
+      address: redacted,
+      crn: redacted,
+      frn: redacted,
+      userType: 'newUser'
+    }
+  } else {
+    organisation = applicationRequest.organisation
+  }
 
   return {
     reference: createApplicationReference(applicationRequest.reference, applicationRequest.type),
@@ -25,7 +43,7 @@ const buildApplication = (applicationRequest) => {
       offerStatus: applicationRequest.offerStatus,
       confirmCheckDetails: applicationRequest.confirmCheckDetails
     },
-    organisation: applicationRequest.organisation,
+    organisation,
     createdBy,
     createdAt,
     status,

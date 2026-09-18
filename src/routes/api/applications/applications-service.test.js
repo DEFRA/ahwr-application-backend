@@ -451,6 +451,17 @@ describe('applications-service', () => {
         })
         const expectedApplicationNotAgreed = {
           ...expectedApplication,
+          organisation: {
+            address: 'REDACTED',
+            crn: 'REDACTED',
+            email: 'REDACTED',
+            farmerName: 'REDACTED',
+            frn: 'REDACTED',
+            name: 'REDACTED',
+            orgEmail: 'REDACTED',
+            sbi: 'REDACTED',
+            userType: 'newUser'
+          },
           statusHistory: [
             {
               status: 'NOT_AGREED',
@@ -482,7 +493,7 @@ describe('applications-service', () => {
         expect(publishDocumentRequestEvent).toHaveBeenCalledTimes(0)
         expect(mockLogger.info).toHaveBeenCalledWith({
           event: {
-            category: 'status: rejected sbi:118409263',
+            category: 'status: rejected sbi:REDACTED',
             outcome: 'true',
             reference: 'IAHW-8ZPZ-8CLI',
             type: 'process-application-api'
