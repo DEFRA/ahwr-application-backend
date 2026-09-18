@@ -74,6 +74,14 @@ describe('Search applications', () => {
       organisation: { sbi: '777777777', name: 'IAHW Only Deleted Flag' },
       flags: [{ id: 'flag-2', deleted: true }]
     })
+
+    await server.db.collection('applications').insertOne({
+      reference: 'IAHW-GGGG-0008',
+      status: 'NOT_AGREED',
+      createdAt: new Date('2025-09-18T00:00:00.000Z'),
+      organisation: { sbi: '888888888', name: 'IAHW NOT AGREED' },
+      flags: []
+    })
   })
 
   afterAll(async () => {
@@ -141,6 +149,16 @@ describe('Search applications', () => {
       'POUL-CCCC-0003',
       'POUL-EEEE-0005'
     ])
+  })
+
+  test('NOT AGREED agreements should be filtered out', async () => {
+    const res = await server.inject({
+      ...options,
+      payload: searchPayload({ agreementType: 'IAHW' })
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.OK)
+    expect(references(res.payload)).not.toContain('IAHW-GGGG-0008')
   })
 
   test('ALL returns flagged and unflagged applications', async () => {

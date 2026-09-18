@@ -485,6 +485,10 @@ describe('applications-service', () => {
           message: 'New application has been created',
           application: {
             ...expectedApplicationNotAgreed,
+            organisation: {
+              ...expectedApplicationNotAgreed.organisation,
+              sbi: expectedApplication.organisation.sbi
+            },
             id: '690e04e10341b23a7d3cb9e5'
           },
           raisedBy: 'admin',
