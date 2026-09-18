@@ -191,4 +191,40 @@ describe('support-routes', () => {
       })
     })
   })
+
+  describe('GET /api/support/queue-messages/is-dlq', () => {
+    it('returns 400 when queueUrl is missing', async () => {
+      const response = await server.inject({
+        method: 'GET',
+        url: '/api/support/queue-messages/is-dlq'
+      })
+
+      expect(response.statusCode).toBe(400)
+    })
+  })
+
+  describe('POST /api/support/queue-messages/actions', () => {
+    it('returns 400 when an action is not valid', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/support/queue-messages/actions',
+        payload: {
+          queueUrl: 'https://sqs.test/queue-dlq',
+          actions: [{ id: '1', action: 'explode' }]
+        }
+      })
+
+      expect(response.statusCode).toBe(400)
+    })
+
+    it('returns 400 when actions are missing', async () => {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/support/queue-messages/actions',
+        payload: { queueUrl: 'https://sqs.test/queue-dlq' }
+      })
+
+      expect(response.statusCode).toBe(400)
+    })
+  })
 })
