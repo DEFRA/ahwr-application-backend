@@ -160,9 +160,7 @@ describe('Search applications', () => {
     expect(res.statusCode).toBe(StatusCodes.OK)
     expect(references(res.payload)).not.toContain('IAHW-GGGG-0008')
   })
-  //test('array does not contain grape', () => {
-  //   expect(fruits).not.toContain('grape')
-  // })
+
   test('ALL returns flagged and unflagged applications', async () => {
     const res = await server.inject({
       ...options,
