@@ -487,7 +487,7 @@ describe('applications-service', () => {
             ...expectedApplicationNotAgreed,
             organisation: {
               ...expectedApplicationNotAgreed.organisation,
-              sbi:expectedApplication.organisation.sbi,
+              sbi: expectedApplication.organisation.sbi
             },
             id: '690e04e10341b23a7d3cb9e5'
           },
