@@ -1,6 +1,8 @@
 import Boom from '@hapi/boom'
 import { StatusCodes } from 'http-status-codes'
 import {
+  applyQueueMessageActions,
+  checkIsDeadLetterQueue,
   getQueueMessages,
   getSupportApplication,
   getSupportClaim,
@@ -83,6 +85,50 @@ export const supportQueueMessagesHandler = async (request, h) => {
     return h.response(result).code(StatusCodes.OK)
   } catch (error) {
     request.logger.error({ error }, 'Failed to get queue messages')
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+
+    throw Boom.internal(error)
+  }
+}
+
+export const supportIsDeadLetterQueueHandler = async (request, h) => {
+  try {
+    const { queueUrl } = request.query
+
+    const isDlq = await checkIsDeadLetterQueue({
+      queueUrl,
+      logger: request.logger
+    })
+
+    return h.response({ isDlq }).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to check if queue is a dead-letter queue')
+
+    if (Boom.isBoom(error)) {
+      throw error
+    }
+
+    throw Boom.internal(error)
+  }
+}
+
+export const supportApplyQueueActionsHandler = async (request, h) => {
+  try {
+    const { queueUrl, actions } = request.payload
+    const actionsById = Object.fromEntries(actions.map(({ id, action }) => [id, action]))
+
+    const result = await applyQueueMessageActions({
+      queueUrl,
+      actionsById,
+      logger: request.logger
+    })
+
+    return h.response(result).code(StatusCodes.OK)
+  } catch (error) {
+    request.logger.error({ error }, 'Failed to apply queue message actions')
 
     if (Boom.isBoom(error)) {
       throw error

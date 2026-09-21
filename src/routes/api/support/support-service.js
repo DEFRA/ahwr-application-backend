@@ -36,14 +36,45 @@ export const getSupportHerd = async ({ db, id }) => {
   return claim
 }
 
-export const getQueueMessages = async ({ queueUrl, limit, logger }) => {
-  const region = config.get('aws.region')
-  const endpointUrl = config.get('aws.endpointUrl')
+const setupSqsClient = (logger) => {
+  sqsClient.setupClient(config.get('aws.region'), config.get('aws.endpointUrl'), logger)
+}
 
-  sqsClient.setupClient(region, endpointUrl, logger)
+export const getQueueMessages = async ({ queueUrl, limit, logger }) => {
+  setupSqsClient(logger)
 
   try {
     return await sqsClient.peekMessages(queueUrl, limit)
+  } catch (error) {
+    if (error instanceof QueueDoesNotExist) {
+      throw Boom.notFound(`Queue not found: ${queueUrl}`)
+    }
+    throw error
+  }
+}
+
+export const checkIsDeadLetterQueue = async ({ queueUrl, logger }) => {
+  setupSqsClient(logger)
+
+  try {
+    return await sqsClient.isDeadLetterQueue(queueUrl)
+  } catch (error) {
+    if (error instanceof QueueDoesNotExist) {
+      throw Boom.notFound(`Queue not found: ${queueUrl}`)
+    }
+    throw error
+  }
+}
+
+export const applyQueueMessageActions = async ({ queueUrl, actionsById, logger }) => {
+  setupSqsClient(logger)
+
+  try {
+    if (!(await sqsClient.isDeadLetterQueue(queueUrl))) {
+      throw Boom.badRequest(`Not a dead-letter queue: ${queueUrl}`)
+    }
+
+    return await sqsClient.applyDlqActions(queueUrl, actionsById)
   } catch (error) {
     if (error instanceof QueueDoesNotExist) {
       throw Boom.notFound(`Queue not found: ${queueUrl}`)
