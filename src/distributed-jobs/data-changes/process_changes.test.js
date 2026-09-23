@@ -510,8 +510,8 @@ describe('application changes', () => {
       cph: 'n/a',
       checkpoint: expect.any(String),
       status: 'success',
-      type: 'claim-createdAt',
-      message: 'Application Claim data updated',
+      type: 'application-createdAt',
+      message: 'Application data updated',
       data: {
         applicationReference: changeOfApplicationField.applicationRef,
         reference: changeOfApplicationField.applicationRef,

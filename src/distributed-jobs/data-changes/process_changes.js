@@ -16,6 +16,7 @@ import {
   HERD_PROPERTY_BY_FIELD,
   TYPE_OF_CHANGE
 } from './schema.js'
+import { applicationDataUpdateEvent } from '../../event-publisher/application-data-update-event.js'
 
 const DOES_NOT_EXIST_MESSAGE = 'Does not exist'
 const HERD_DOES_NOT_EXIST_MESSAGE = 'Herd does not exist'
@@ -225,7 +226,7 @@ const processApplicationDataChange = async (change, db) => {
       return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
     }
 
-    await claimDataUpdateEvent(
+    await applicationDataUpdateEvent(
       {
         applicationReference: change.applicationRef,
         reference: change.applicationRef,
