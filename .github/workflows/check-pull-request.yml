@@ -76,6 +76,9 @@ jobs:
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
+          allow-dependencies-licenses: >-
+            pkg:githubactions/github/codeql-action/init,
+            pkg:githubactions/github/codeql-action/analyze
 
   codeql:
     name: CodeQL Analysis
