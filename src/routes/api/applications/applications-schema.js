@@ -14,7 +14,7 @@ const organisationValidations = () => ({
   sbi: Joi.string().required(),
   id: Joi.number().optional(),
   cph: Joi.string().optional(),
-  crn: Joi.string().optional(),
+  crn: Joi.string().required(),
   frn: Joi.string().optional(),
   address: Joi.string().required(),
   email: Joi.string().required().lowercase().email({ tlds: false }),
