@@ -1,0 +1,22 @@
+import { randomUUID } from 'node:crypto'
+import { SEND_SESSION_EVENT } from './index.js'
+import { getFcpEventPublisher } from '../messaging/fcp-messaging-service.js'
+import { config } from '../config/config.js'
+
+export const applicationDataUpdateEvent = async (data, type, updatedBy, updatedAt, sbi) => {
+  const event = {
+    name: SEND_SESSION_EVENT,
+    id: randomUUID(),
+    sbi,
+    cph: 'n/a',
+    checkpoint: config.get('serviceName'),
+    status: 'success',
+    type,
+    message: `Application data updated`,
+    data,
+    raisedBy: updatedBy,
+    raisedOn: updatedAt.toISOString()
+  }
+
+  await getFcpEventPublisher().publishEvent(event)
+}

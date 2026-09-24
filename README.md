@@ -272,6 +272,8 @@ The `version` is used to create a lock/register, so the same version is never de
 
 If for any reason there was a problem with the data you will want to add to `version` `-{n}` where `{n}` is just an incremented number.
 
+By default a change applies to a claim (or, for `herdReasons`/`herdCph`/`herdName`, the herd it's currently associated with) and requires a `claimRef`. To update the application itself instead, set `"target":"application"` and omit `claimRef` - `field` is then the actual property name on the application document, e.g. `createdAt` (see `APPLICATION_FIELD_TYPES` in src/distributed-jobs/data-changes/schema.js for the fields this supports).
+
 ### Examples
 
 Deleting records:
@@ -279,6 +281,9 @@ Deleting records:
 
 Changing values:
 {"version":"1908","data":[{"claimRef":"FUDC-7F88-40CB","sbi":"106438775","applicationRef":"IAHW-1169-3902","field":"laboratoryURN","oldValue":"ab12345","newValue":"cd6789","action":"fieldChange","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"},{"claimRef":"FUSH-1E7B-8C83","sbi":"106908592","applicationRef":"IAHW-1467-F90C","field":"laboratoryURN","oldValue":"7300929","newValue":"ABC12345","action":"fieldChange","requester":"Some_Name","dateRequested":"2026-05-13T00:00:00.000Z"}]}
+
+Changing the application's values (agreement date, i.e. `createdAt` - no `claimRef` needed):
+{"version":"1909","data":[{"applicationRef":"IAHW-JIMI-GJUC","sbi":"124578589","target":"application","field":"createdAt","oldValue":"2025-12-12T14:07:07.899Z","newValue":"2025-11-28T09:30:00.000Z","action":"fieldChange","requester":"Some_Name","dateRequested":"2026-09-11T00:00:00.000Z"}]}
 
 Although the examples are separated, they can be mix and matched.
 
