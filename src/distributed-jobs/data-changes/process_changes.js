@@ -8,24 +8,27 @@ import {
   updateHerd
 } from '../../repositories/claim-repository.js'
 import { createHerd, getHerdById, updateIsCurrentHerd } from '../../repositories/herd-repository.js'
-import { changeSchema, TYPE_OF_CHANGE } from './schema.js'
-
-// Fields that are versioned on the herd rather than stored on the claim data
-const HERD_PROPERTY_BY_FIELD = {
-  herdReasons: 'reasons',
-  herdCph: 'cph',
-  herdName: 'name'
-}
+import { updateApplication } from '../../repositories/application-repository.js'
+import {
+  APPLICATION_FIELD_TYPES,
+  changeSchema,
+  CHANGE_TARGET,
+  HERD_PROPERTY_BY_FIELD,
+  TYPE_OF_CHANGE
+} from './schema.js'
+import { applicationDataUpdateEvent } from '../../event-publisher/application-data-update-event.js'
 
 const DOES_NOT_EXIST_MESSAGE = 'Does not exist'
 const HERD_DOES_NOT_EXIST_MESSAGE = 'Herd does not exist'
 const CANNOT_DELETE_HERD_FIELD_MESSAGE = 'Cannot delete a herd field'
+const CANNOT_DELETE_APPLICATION_FIELD_MESSAGE = 'Cannot delete an application field'
 
 /**
  * @typedef {object} Change
- * @property {string} claimRef - The claim reference
+ * @property {string} [claimRef] - The claim reference. Not required when target is CHANGE_TARGET.APPLICATION
  * @property {string} sbi - Single Business Identifier
  * @property {string} applicationRef - The application reference
+ * @property {'claim' | 'application'} [target] - The document the change applies to. Defaults to 'claim'
  * @property {'deletion' | 'fieldChange' | 'fieldDeletion'} action - The type of change to process
  * @property {string} [field] - Field name (required for fieldChange)
  * @property {string} [dateRequested] - The day when the request was done in ISO 8601
@@ -64,13 +67,17 @@ export const processChanges = async (changesToProcess, db, logger) => {
         case TYPE_OF_CHANGE.DELETION:
           return processDeletion(change, db)
         case TYPE_OF_CHANGE.FIELD_CHANGE:
-          if (HERD_PROPERTY_BY_FIELD[change.field]) {
+          if (change.target === CHANGE_TARGET.APPLICATION) {
+            return processApplicationDataChange(change, db)
+          } else if (HERD_PROPERTY_BY_FIELD[change.field]) {
             return processHerdChange(change, db)
           } else {
             return processDataChange(change, db)
           }
         case TYPE_OF_CHANGE.FIELD_DELETION:
-          if (HERD_PROPERTY_BY_FIELD[change.field]) {
+          if (change.target === CHANGE_TARGET.APPLICATION) {
+            return { success: false, ...change, reason: CANNOT_DELETE_APPLICATION_FIELD_MESSAGE }
+          } else if (HERD_PROPERTY_BY_FIELD[change.field]) {
             return { success: false, ...change, reason: CANNOT_DELETE_HERD_FIELD_MESSAGE }
           } else {
             return processFieldDeletion(change, db)
@@ -83,10 +90,12 @@ export const processChanges = async (changesToProcess, db, logger) => {
   )
 
   results.forEach((result) => {
+    // Application-level changes have no claimRef, so fall back to the applicationRef
+    const reference = result.claimRef ?? result.applicationRef
     if (result.success) {
-      logger.info(`${result.claimRef} has processed successfully`)
+      logger.info(`${reference} has processed successfully`)
     } else {
-      logger.info(`${result.claimRef} has failed because ${result.reason}`)
+      logger.info(`${reference} has failed because ${result.reason}`)
     }
   })
 
@@ -168,6 +177,65 @@ const processDataChange = async (change, db) => {
         note: `Requested on ${change.dateRequested} by ${change.requester}`
       },
       `claim-${change.field}`,
+      raisedBy,
+      new Date(),
+      change.sbi
+    )
+
+    return { success: true, ...change }
+  } catch (error) {
+    return { success: false, ...change, reason: error.message }
+  }
+}
+
+/**
+ * Coerces a change's newValue/oldValue (always a string or array on the wire) to the type
+ * the target application property is actually stored as.
+ *
+ * @param {string | string[] | undefined} value - The raw value from the change
+ * @param {string} [type] - The type to coerce to (currently only 'date' is used)
+ * @returns {*} The coerced value, or the original value if no coercion applies
+ */
+const coerceApplicationValue = (value, type) =>
+  type === 'date' && typeof value === 'string' ? new Date(value) : value
+
+/**
+ * Updates a single field on the application and raises
+ * an application data update event.
+ *
+ * @param {Change} change - The field change to process
+ * @param {object} db - MongoDB database connection
+ * @returns {Promise<Change & ChangeResult>} The original change merged with the success status
+ */
+const processApplicationDataChange = async (change, db) => {
+  const raisedBy = 'Admin2'
+  const type = APPLICATION_FIELD_TYPES[change.field]
+  try {
+    const result = await updateApplication({
+      db,
+      reference: change.applicationRef,
+      updatedPropertyPath: change.field,
+      newValue: coerceApplicationValue(change.newValue, type),
+      oldValue: coerceApplicationValue(change.oldValue, type),
+      note: `Requested on ${change.dateRequested} by ${change.requester}`,
+      user: raisedBy,
+      updatedAt: new Date()
+    })
+
+    if (result === null) {
+      return { success: false, ...change, reason: DOES_NOT_EXIST_MESSAGE }
+    }
+
+    await applicationDataUpdateEvent(
+      {
+        applicationReference: change.applicationRef,
+        reference: change.applicationRef,
+        newValue: change.newValue,
+        oldValue: change.oldValue,
+        updatedProperty: change.field,
+        note: `Requested on ${change.dateRequested} by ${change.requester}`
+      },
+      `application-${change.field}`,
       raisedBy,
       new Date(),
       change.sbi

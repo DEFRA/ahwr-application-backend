@@ -23,7 +23,8 @@ describe('Create application', () => {
           sbi: '123456789',
           address: '1 Example Road',
           email: 'business@email.com',
-          userType: 'newUser'
+          userType: 'newUser',
+          crn: '123456789'
         }
       },
       headers: { 'x-api-key': config.get('apiKeys.backofficeUiApiKey') }
@@ -67,7 +68,7 @@ describe('Create application', () => {
     })
   })
 
-  test('returns error when validation fails as missing required property', async () => {
+  test('returns error when validation fails as offerStatus missing required property', async () => {
     const res = await server.inject({
       ...options,
       payload: { ...options.payload, offerStatus: undefined }
@@ -77,6 +78,30 @@ describe('Create application', () => {
     expect(JSON.parse(res.payload)).toEqual({
       error: 'Bad Request',
       message: '"offerStatus" is required',
+      statusCode: 400
+    })
+  })
+
+  test('returns error when validation fails as organisation crn missing required property', async () => {
+    const organisation = {
+      ...options.payload.organisation,
+      farmerName: 'Mr Farmer',
+      name: 'My Amazing Farm',
+      sbi: '123456789',
+      address: '1 Example Road',
+      email: 'business@email.com',
+      userType: 'newUser',
+      crn: undefined
+    }
+    const res = await server.inject({
+      ...options,
+      payload: { ...options.payload, organisation }
+    })
+
+    expect(res.statusCode).toBe(StatusCodes.BAD_REQUEST)
+    expect(JSON.parse(res.payload)).toEqual({
+      error: 'Bad Request',
+      message: '"organisation.crn" is required',
       statusCode: 400
     })
   })
