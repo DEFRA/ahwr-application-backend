@@ -9,6 +9,6 @@ module.exports = {
     '^.+\\.[j]sx?$': 'babel-jest'
   },
   transformIgnorePatterns: [
-    '/node_modules/(?!(ffc-ahwr-common-library|@defra/hapi-tracing|@defra/hapi-secure-context|p-limit|yocto-queue)/)'
+    '/node_modules/(?!(ffc-ahwr-common-library|@defra/hapi-tracing|@defra/hapi-secure-context|p-limit|yocto-queue|https-proxy-agent|agent-base|proxy-agent-negotiate)/)'
   ]
 }
