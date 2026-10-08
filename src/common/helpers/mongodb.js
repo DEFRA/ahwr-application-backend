@@ -3,6 +3,7 @@ import { LockManager } from 'mongo-locks'
 import { createApplicationIndexes } from '../../repositories/application-repository.js'
 import { createClaimIndexes } from '../../repositories/claim-repository.js'
 import { createWithdrawalRequestIndexes } from '../../repositories/withdrawal-request-repository.js'
+import os from 'node:os'
 
 export const mongoDb = {
   plugin: {
@@ -12,7 +13,10 @@ export const mongoDb = {
       server.logger.info('Setting up MongoDb')
 
       const client = await MongoClient.connect(options.mongoUrl, {
-        ...options.mongoOptions
+        ...options.mongoOptions,
+        runtimeAdapters: {
+          os
+        }
       })
 
       const databaseName = options.databaseName

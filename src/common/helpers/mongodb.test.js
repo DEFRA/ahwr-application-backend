@@ -2,6 +2,7 @@ import { createApplicationIndexes } from '../../repositories/application-reposit
 import { createClaimIndexes } from '../../repositories/claim-repository'
 import { mongoDb } from './mongodb'
 import { MongoClient } from 'mongodb'
+import os from 'node:os'
 
 jest.mock('mongodb', () => {
   const mockDb = {
@@ -44,7 +45,12 @@ describe('mongodb', () => {
   it('should connect to mongo db and decorate server', async () => {
     await mongoDb.plugin.register(server, options)
 
-    expect(MongoClient.connect).toHaveBeenCalledWith(options.mongoUrl, options.mongoOptions)
+    expect(MongoClient.connect).toHaveBeenCalledWith(options.mongoUrl, {
+      ...options.mongoOptions,
+      runtimeAdapters: {
+        os
+      }
+    })
     expect(server.logger.info).toHaveBeenCalledWith('Setting up MongoDb')
     expect(server.decorate).toHaveBeenCalledWith('server', 'mongoClient', expect.any(Object))
     expect(server.decorate).toHaveBeenCalledWith('server', 'db', expect.any(Object))
