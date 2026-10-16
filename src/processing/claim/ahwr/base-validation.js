@@ -31,6 +31,11 @@ const getDataModel = (multiHerds, specificValidationsForClaimType) =>
 const getClaimModel = (multiHerds, specificValidationsForClaimType) =>
   joi.object({
     applicationReference: joi.string().required(),
+    reviewReference: joi.string().when('type', {
+      is: claimType.endemics,
+      then: joi.required(),
+      otherwise: joi.optional().allow('', null)
+    }),
     reference: joi.string().required(),
     type: joi.string().valid(claimType.review, claimType.endemics).required(),
     createdBy: joi.string().required(),

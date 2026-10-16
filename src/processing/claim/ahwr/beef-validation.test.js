@@ -85,6 +85,7 @@ describe('Beef Validation Tests', () => {
       type: claimType.endemics,
       reference: 'REF123',
       applicationReference: 'APP123',
+      reviewReference: 'REV123',
       createdBy: 'somebody'
     }
 
