@@ -180,6 +180,7 @@ export const getClaims = async ({
     type: claim.type,
     data: claim.data,
     status: claim.status,
+    reviewReference: claim.reviewReference,
     herd: {
       id: claim.herd.id,
       cph: claim.herd.cph,
