@@ -89,7 +89,14 @@ const processLivestockClaim = async ({
 
   // now send outbound events and comms. For now, we will call directly here and not await. Ideally we would move this to an offline
   // async process by sending a message to the application input queue. But will save that for part 3 as this current change is already complex
-  await generateEventsAndComms(isMultiHerdsClaim, claim, application, herdData, herdGotUpdated, herd?.id)
+  await generateEventsAndComms(
+    isMultiHerdsClaim,
+    claim,
+    application,
+    herdData,
+    herdGotUpdated,
+    herd?.id
+  )
 
   return claim
 }
