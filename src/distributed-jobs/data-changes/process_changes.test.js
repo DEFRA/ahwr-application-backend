@@ -553,6 +553,65 @@ describe('application changes', () => {
     )
   })
 
+  test.each([
+    { field: 'organisation.email', updatedProperty: 'email' },
+    { field: 'organisation.orgEmail', updatedProperty: 'orgEmail' }
+  ])(
+    'We can change the nested application field $field using its full path',
+    async ({ field, updatedProperty }) => {
+      const changeOfNestedApplicationField = {
+        ...changeOfApplicationField,
+        field,
+        newValue: 'new@example.com',
+        oldValue: 'old@example.com'
+      }
+      mockFindOneAndUpdate.mockResolvedValue({
+        reference: changeOfNestedApplicationField.applicationRef
+      })
+      const results = await processChanges([changeOfNestedApplicationField], mockDb, mockLogger)
+
+      expect(results[0]).toEqual({ ...changeOfNestedApplicationField, success: true })
+      expect(mockFindOneAndUpdate).toHaveBeenCalledWith(
+        { reference: changeOfNestedApplicationField.applicationRef },
+        {
+          $set: {
+            [field]: 'new@example.com',
+            updatedAt: expect.any(Date),
+            updatedBy: 'Admin2'
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              updatedProperty,
+              newValue: 'new@example.com',
+              oldValue: 'old@example.com',
+              note: `Requested on ${changeOfNestedApplicationField.dateRequested} by ${changeOfNestedApplicationField.requester}`,
+              eventType: `application-${updatedProperty}`,
+              createdAt: expect.any(Date),
+              createdBy: 'Admin2'
+            }
+          }
+        },
+        { returnDocument: 'after' }
+      )
+    }
+  )
+
+  test('An application field that is not allowed to be changed fails validation', async () => {
+    const changeOfUnknownApplicationField = {
+      ...changeOfApplicationField,
+      field: 'organisation.sbi'
+    }
+    const results = await processChanges([changeOfUnknownApplicationField], mockDb, mockLogger)
+
+    expect(results[0]).toEqual({
+      ...changeOfUnknownApplicationField,
+      success: false,
+      reason: 'Incorrect data structure'
+    })
+    expect(mockFindOneAndUpdate).not.toHaveBeenCalled()
+  })
+
   test('A field named the same as an application field but with no target is treated as a claim change', async () => {
     // Claim and application documents can share field names (e.g. status, createdAt, reference),
     // so routing must key off the explicit target rather than the field name alone
