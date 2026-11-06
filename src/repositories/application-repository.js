@@ -214,7 +214,7 @@ export const updateApplication = async ({
     { reference },
     {
       $set: {
-        [updatedProperty]: newValue,
+        [updatedPropertyPath]: newValue,
         updatedAt,
         updatedBy: user
       },

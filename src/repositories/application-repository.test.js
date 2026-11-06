@@ -235,6 +235,45 @@ describe('application-repository', () => {
       )
       expect(result).toBe(updatedApplication)
     })
+
+    it('should set the full path when updating a nested property', async () => {
+      const updatedAt = new Date('2025-10-22T16:21:46.091Z')
+
+      await updateApplication({
+        db: dbMock,
+        reference: 'IAHW-8ZPZ-8CLI',
+        updatedPropertyPath: 'organisation.email',
+        newValue: 'new@example.com',
+        oldValue: 'old@example.com',
+        note: 'updating email',
+        user: 'test-user',
+        updatedAt
+      })
+
+      expect(collectionMock.findOneAndUpdate).toHaveBeenCalledWith(
+        { reference: 'IAHW-8ZPZ-8CLI' },
+        {
+          $set: {
+            'organisation.email': 'new@example.com',
+            updatedBy: 'test-user',
+            updatedAt
+          },
+          $push: {
+            updateHistory: {
+              id: expect.any(String),
+              note: 'updating email',
+              newValue: 'new@example.com',
+              oldValue: 'old@example.com',
+              createdAt: updatedAt,
+              createdBy: 'test-user',
+              eventType: 'application-email',
+              updatedProperty: 'email'
+            }
+          }
+        },
+        { returnDocument: 'after' }
+      )
+    })
   })
 
   describe('searchApplications', () => {

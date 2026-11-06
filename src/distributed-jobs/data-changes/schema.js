@@ -36,9 +36,12 @@ export const HERD_PROPERTY_BY_FIELD = {
  * strings/arrays (see newValue/oldValue below) but some application fields (e.g. createdAt,
  * which doubles as the agreement date, set when the application reaches AGREED status) are
  * real Dates elsewhere and are sorted/range-filtered as such.
+ * Nested properties use their full dot path as the key (e.g. 'organisation.email').
  */
 export const APPLICATION_FIELD_TYPES = {
-  createdAt: 'date'
+  createdAt: 'date',
+  'organisation.email': 'email',
+  'organisation.orgEmail': 'email'
 }
 
 /** Actions that target a single named field */
