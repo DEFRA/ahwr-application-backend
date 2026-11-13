@@ -1,16 +1,10 @@
 import {
   isURNUnique as isNWURNUnique,
   getClaimByReference,
-  updateClaimStatus
+  setWithdrawalRequested
 } from '../../../repositories/claim-repository.js'
-import {
-  getApplication,
-  getApplicationsBySbi,
-  createFlag
-} from '../../../repositories/application-repository.js'
+import { getApplication, getApplicationsBySbi } from '../../../repositories/application-repository.js'
 import { createWithdrawalRequest } from '../../../repositories/withdrawal-request-repository.js'
-import { buildFlag } from '../../../lib/build-flag.js'
-import { WITHDRAWAL_FLAG_NOTE } from '../../../constants/index.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference, createPoultryClaimReference } from '../../../lib/create-reference.js'
 import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType, STATUS } from 'ffc-ahwr-common-library'
@@ -27,7 +21,6 @@ import {
   generatePoultryEventsAndComms,
   savePoultryClaimAndRelatedData
 } from '../../../processing/claim/poultry/processor.js'
-import { raiseClaimWithdrawnEvent } from '../../../event-publisher/index.js'
 
 const isFollowUp = (payload) => payload.type === claimType.endemics
 
@@ -233,7 +226,8 @@ export const getClaim = async ({ db, reference }) => {
     status: claim.status,
     statusHistory: claim.statusHistory,
     herd: claim.herd,
-    updateHistory: claim.updateHistory
+    updateHistory: claim.updateHistory,
+    isWithdrawalRequested: claim.isWithdrawalRequested === true
   }
 }
 
@@ -244,59 +238,36 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
   }
 
   if (claim.status !== STATUS.IN_CHECK) {
-    throw Boom.conflict('Claim must be in check to be withdrawn')
+    throw Boom.conflict('Claim must be in check to request a withdrawal')
   }
 
   const application = await getApplication({ db, reference: claim.applicationReference })
 
-  const withdrawnAt = new Date()
-
-  await createWithdrawalRequest({
-    db,
-    withdrawalRequest: {
-      claimReference: reference,
-      agreementReference: claim.applicationReference,
-      sbi: application.organisation.sbi,
-      ...withdrawal,
-      createdBy: user,
-      createdAt: withdrawnAt
-    }
-  })
-
-  if (application.flags.length === 0) {
-    await createFlag(
-      db,
-      claim.applicationReference,
-      buildFlag({
-        note: WITHDRAWAL_FLAG_NOTE,
-        createdBy: user,
-        appliesToMh: false,
-        createdAt: withdrawnAt
-      })
-    )
+  // Submitting only records a request: the claim keeps its status, and gets isWithdrawalRequested
+  // set. The claim status, agreement flag and withdrawn event are applied when the request is
+  // authorised (separate ticket). The flag is set first and atomically, which also rejects a
+  // second request while one is pending.
+  const flagged = await setWithdrawalRequested({ db, reference, isWithdrawalRequested: true })
+  if (!flagged) {
+    throw Boom.conflict('A withdrawal request is already pending for this claim')
   }
 
-  const updatedClaim = await updateClaimStatus({
-    db,
-    reference,
-    status: STATUS.WITHDRAWN,
-    user,
-    updatedAt: withdrawnAt,
-    note: 'Withdrawal requested'
-  })
+  try {
+    await createWithdrawalRequest({
+      db,
+      withdrawalRequest: {
+        claimReference: reference,
+        agreementReference: claim.applicationReference,
+        sbi: application.organisation.sbi,
+        ...withdrawal,
+        createdBy: user,
+        createdAt: new Date()
+      }
+    })
+  } catch (error) {
+    await setWithdrawalRequested({ db, reference, isWithdrawalRequested: false })
+    throw error
+  }
 
-  await raiseClaimWithdrawnEvent({
-    raisedBy: updatedClaim.updatedBy,
-    raisedOn: updatedClaim.updatedAt.toISOString(),
-    sbi: application.organisation.sbi,
-    data: {
-      reference: updatedClaim.reference,
-      applicationReference: updatedClaim.applicationReference,
-      status: updatedClaim.status,
-      withdrawalReason: withdrawal.reasonForWithdrawal,
-      withdrawalDiscoveryMethod: withdrawal.issueDiscovery
-    }
-  })
-
-  return updatedClaim
+  return { ...claim, isWithdrawalRequested: true }
 }
