@@ -20,7 +20,9 @@ export const processOnHoldClaims = async (db) => {
   const date24HrsAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
   const onHoldClaims = await findOnHoldClaims({ db, beforeDate: date24HrsAgo })
-  const onHoldClaimReferences = onHoldClaims.map((/** @type {{ reference: string }} */ claim) => claim.reference)
+  const onHoldClaimReferences = onHoldClaims.map(
+    (/** @type {{ reference: string }} */ claim) => claim.reference
+  )
 
   const updatedAt = new Date()
   if (onHoldClaimReferences.length) {
@@ -41,33 +43,35 @@ export const processOnHoldClaims = async (db) => {
       )
     )
 
-    await Promise.allSettled(onHoldClaims.map(async (/** @type {{ applicationReference: string, reference: string, _id: import('mongodb').ObjectId }} */ claim, /** @type {number} */ index) => {
-      const application = applications[index]
+    await Promise.allSettled(
+      onHoldClaims.map(
+        async (
+          /** @type {{ applicationReference: string, reference: string, _id: import('mongodb').ObjectId }} */ claim,
+          /** @type {number} */ index
+        ) => {
+          const application = applications[index]
 
-      const { crn, frn, sbi } = application.organisation || {}
+          const { crn, frn, sbi } = application.organisation || {}
 
-      await raiseClaimEvents(
-        {
-          message: 'Claim has been updated',
-          claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
-          note: 'Automatic update',
-          raisedBy: 'admin',
-          raisedOn: updatedAt
-        },
-        sbi
+          await raiseClaimEvents(
+            {
+              message: 'Claim has been updated',
+              claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
+              note: 'Automatic update',
+              raisedBy: 'admin',
+              raisedOn: updatedAt
+            },
+            sbi
+          )
+
+          const { statusChangeMessageBody, paymentEventMessageBody } =
+            getSchemeSpecificMessageBodies(crn, sbi, frn, claim, updatedAt)
+
+          await publishStatusChangeEvent(getLogger(), statusChangeMessageBody)
+          await publishRequestForPaymentEvent(getLogger(), paymentEventMessageBody)
+        }
       )
-
-      const { statusChangeMessageBody, paymentEventMessageBody } = getSchemeSpecificMessageBodies(
-        crn,
-        sbi,
-        frn,
-        claim,
-        updatedAt
-      )
-
-      await publishStatusChangeEvent(getLogger(), statusChangeMessageBody)
-      await publishRequestForPaymentEvent(getLogger(), paymentEventMessageBody)
-    }))
+    )
     getLogger().info(
       `Of ${onHoldClaimReferences.length} claims on hold, ${updatedRecordCount} updated to ready to pay.`
     )

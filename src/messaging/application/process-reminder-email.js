@@ -33,17 +33,19 @@ export const processReminderEmailRequest = async (message, db, logger) => {
     return
   }
 
-  await Promise.allSettled(applicationsDueReminder.map(async (application) => {
-    const payload = constructMessage(application)
-    try {
-      await sendToMessageGenerator(payload)
-      await sendApplicationSessionEvent(application)
-      await saveLastReminderSent(application, db, reminderLogger)
-    } catch (error) {
-      reminderLogger.error(error, 'Failed to processed reminders request')
-      throw error
-    }
-  }))
+  await Promise.allSettled(
+    applicationsDueReminder.map(async (application) => {
+      const payload = constructMessage(application)
+      try {
+        await sendToMessageGenerator(payload)
+        await sendApplicationSessionEvent(application)
+        await saveLastReminderSent(application, db, reminderLogger)
+      } catch (error) {
+        reminderLogger.error(error, 'Failed to processed reminders request')
+        throw error
+      }
+    })
+  )
   reminderLogger.info('Successfully processed reminders request')
 }
 
