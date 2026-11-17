@@ -41,7 +41,7 @@ export const processOnHoldClaims = async (db) => {
       )
     )
 
-    await Promise.all(onHoldClaims.map(async (/** @type {{ applicationReference: string, reference: string, _id: import('mongodb').ObjectId }} */ claim, /** @type {number} */ index) => {
+    await Promise.allSettled(onHoldClaims.map(async (/** @type {{ applicationReference: string, reference: string, _id: import('mongodb').ObjectId }} */ claim, /** @type {number} */ index) => {
       const application = applications[index]
 
       const { crn, frn, sbi } = application.organisation || {}

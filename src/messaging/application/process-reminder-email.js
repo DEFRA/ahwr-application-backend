@@ -33,7 +33,7 @@ export const processReminderEmailRequest = async (message, db, logger) => {
     return
   }
 
-  await Promise.all(applicationsDueReminder.map(async (application) => {
+  await Promise.allSettled(applicationsDueReminder.map(async (application) => {
     const payload = constructMessage(application)
     try {
       await sendToMessageGenerator(payload)
