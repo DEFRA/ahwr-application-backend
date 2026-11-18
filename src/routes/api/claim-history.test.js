@@ -257,4 +257,70 @@ describe('Claim history test', () => {
       ]
     })
   })
+
+  test('adds a Pending withdrawal request record while the claim stays in check', async () => {
+    getClaimByReference.mockResolvedValueOnce({
+      applicationReference: 'IAHW-1234-APP1',
+      isWithdrawalRequested: true,
+      statusHistory: [
+        {
+          note: 'in check',
+          status: 'IN_CHECK',
+          createdBy: 'Daniel Jones',
+          createdAt: new Date('2023-03-23T10:00:12.000Z')
+        }
+      ],
+      updateHistory: []
+    })
+    getApplicationWithFullFlags.mockResolvedValueOnce({ flags: [] })
+    getWithdrawalRequestByClaimReference.mockResolvedValueOnce({
+      reasonForWithdrawal: 'unintentionalTypingError',
+      issueDiscovery: 'customerContactedRPA',
+      withdrawalDetails: 'The date of visit was a typo',
+      createdBy: 'Amanda Hassan',
+      createdAt: new Date('2023-03-25T11:10:15.000Z')
+    })
+
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/claims/REBC-VA4R-TRL7/history'
+    })
+
+    expect(JSON.parse(res.payload).historyRecords[1]).toEqual({
+      eventType: 'withdrawal-requested',
+      updatedProperty: 'withdrawalRequest',
+      newValue: 'Pending',
+      updatedAt: '2023-03-25T11:10:15.000Z',
+      updatedBy: 'Amanda Hassan',
+      withdrawal: {
+        reasonForWithdrawal: 'unintentionalTypingError',
+        issueDiscovery: 'customerContactedRPA',
+        withdrawalDetails: 'The date of visit was a typo'
+      }
+    })
+  })
+
+  test('does not look up a withdrawal request when the claim flag is not set', async () => {
+    getClaimByReference.mockResolvedValueOnce({
+      applicationReference: 'IAHW-1234-APP1',
+      statusHistory: [
+        {
+          note: 'in check',
+          status: 'IN_CHECK',
+          createdBy: 'Daniel Jones',
+          createdAt: new Date('2023-03-23T10:00:12.000Z')
+        }
+      ],
+      updateHistory: []
+    })
+    getApplicationWithFullFlags.mockResolvedValueOnce({ flags: [] })
+
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/claims/REBC-VA4R-TRL7/history'
+    })
+
+    expect(getWithdrawalRequestByClaimReference).not.toHaveBeenCalled()
+    expect(JSON.parse(res.payload).historyRecords).toHaveLength(1)
+  })
 })
