@@ -49,6 +49,7 @@ describe('Get claim', () => {
         vetsName: 'Mr C test'
       },
       herd: {},
+      isWithdrawalRequested: false,
       reference: 'REBC-VA4R-TRL7',
       status: 'IN_CHECK',
       statusHistory: [],

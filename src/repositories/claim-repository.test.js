@@ -6,6 +6,7 @@ import {
   addHerdToClaimData,
   deleteClaimDataField,
   updateClaimStatuses,
+  setWithdrawalRequested,
   findOnHoldClaims,
   createClaimIndexes,
   removeHerdFromClaimData,
@@ -543,6 +544,51 @@ describe('claim-repository', () => {
           },
           $set: { herd: {}, updatedAt: expect.any(Date), updatedBy: 'test-user' }
         }
+      )
+    })
+  })
+
+  describe('setWithdrawalRequested', () => {
+    const mockUpdateOne = jest.fn()
+    const mockDb = { collection: jest.fn(() => ({ updateOne: mockUpdateOne })) }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('sets the flag only on a claim that does not already have it', async () => {
+      mockUpdateOne.mockResolvedValue({ modifiedCount: 1 })
+
+      const result = await setWithdrawalRequested({
+        db: mockDb,
+        reference: 'REF',
+        isWithdrawalRequested: true
+      })
+
+      expect(mockDb.collection).toHaveBeenCalledWith(CLAIMS_COLLECTION)
+      expect(mockUpdateOne).toHaveBeenCalledWith(
+        { reference: 'REF', isWithdrawalRequested: { $ne: true } },
+        { $set: { isWithdrawalRequested: true } }
+      )
+      expect(result).toBe(true)
+    })
+
+    it('returns false when the flag was already set', async () => {
+      mockUpdateOne.mockResolvedValue({ modifiedCount: 0 })
+
+      expect(
+        await setWithdrawalRequested({ db: mockDb, reference: 'REF', isWithdrawalRequested: true })
+      ).toBe(false)
+    })
+
+    it('clears the flag with an unconditional update', async () => {
+      mockUpdateOne.mockResolvedValue({ modifiedCount: 1 })
+
+      await setWithdrawalRequested({ db: mockDb, reference: 'REF', isWithdrawalRequested: false })
+
+      expect(mockUpdateOne).toHaveBeenCalledWith(
+        { reference: 'REF' },
+        { $set: { isWithdrawalRequested: false } }
       )
     })
   })

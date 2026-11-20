@@ -70,6 +70,18 @@ export const updateClaimStatus = async ({ db, reference, status, user, updatedAt
   )
 }
 
+// Sets the claim's withdrawal-requested flag. Only matches when the flag is not already set, so
+// two simultaneous submits cannot both succeed: the caller checks modifiedCount.
+export const setWithdrawalRequested = async ({ db, reference, isWithdrawalRequested }) => {
+  const filter = isWithdrawalRequested
+    ? { reference, isWithdrawalRequested: { $ne: true } }
+    : { reference }
+  const result = await db
+    .collection(CLAIMS_COLLECTION)
+    .updateOne(filter, { $set: { isWithdrawalRequested } })
+  return result.modifiedCount === 1
+}
+
 export const updateClaimStatuses = async ({ db, references, status, user, updatedAt }) => {
   if (!Array.isArray(references) || references.length === 0) {
     throw new Error('references must be a non-empty array')

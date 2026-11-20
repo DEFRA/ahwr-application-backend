@@ -28,6 +28,32 @@ const withWithdrawalDetails = async (db, claimReference, statusHistory) => {
   )
 }
 
+const buildWithdrawalRequestEvents = async (db, claimReference, claim) => {
+  if (claim.isWithdrawalRequested !== true) {
+    return []
+  }
+
+  const request = await getWithdrawalRequestByClaimReference({
+    db,
+    claimReference
+  })
+  if (!request) {
+    return []
+  }
+
+  const { reasonForWithdrawal, issueDiscovery, withdrawalDetails, createdBy, createdAt } = request
+  return [
+    {
+      eventType: 'withdrawal-requested',
+      updatedProperty: 'withdrawalRequest',
+      newValue: 'Pending',
+      updatedBy: createdBy,
+      updatedAt: createdAt,
+      withdrawal: { reasonForWithdrawal, issueDiscovery, withdrawalDetails }
+    }
+  ]
+}
+
 export const claimHistoryHandlers = [
   {
     method: 'GET',
@@ -59,10 +85,13 @@ export const claimHistoryHandlers = [
         const normalisedUpdateHistory = updateHistory.map(normaliseUpdateHistory)
         const normalisedFlagHistory = buildFlagEvents(flags)
 
+        const withdrawalRequestHistory = await buildWithdrawalRequestEvents(db, claimRef, claim)
+
         const historyRecords = [
           ...normalisedStatusHistory,
           ...normalisedUpdateHistory,
-          ...normalisedFlagHistory
+          ...normalisedFlagHistory,
+          ...withdrawalRequestHistory
         ].sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
 
         return h.response({ historyRecords }).code(StatusCodes.OK)
