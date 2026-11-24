@@ -1,13 +1,19 @@
 import {
   isURNUnique as isNWURNUnique,
   getClaimByReference,
+  updateClaimStatus,
   setWithdrawalRequested
 } from '../../../repositories/claim-repository.js'
 import {
   getApplication,
-  getApplicationsBySbi
+  getApplicationsBySbi,
+  createFlag
 } from '../../../repositories/application-repository.js'
 import { createWithdrawalRequest } from '../../../repositories/withdrawal-request-repository.js'
+import { buildFlag } from '../../../lib/build-flag.js'
+import { WITHDRAWAL_FLAG_NOTE } from '../../../constants/index.js'
+import { config } from '../../../config/config.js'
+import { raiseClaimWithdrawnEvent } from '../../../event-publisher/index.js'
 import { isOWURNUnique } from '../../../repositories/ow-application-repository.js'
 import { createClaimReference, createPoultryClaimReference } from '../../../lib/create-reference.js'
 import { APPLICATION_REFERENCE_PREFIX_POULTRY, claimType, STATUS } from 'ffc-ahwr-common-library'
@@ -230,16 +236,72 @@ export const getClaim = async ({ db, reference }) => {
     statusHistory: claim.statusHistory,
     herd: claim.herd,
     updateHistory: claim.updateHistory,
-    isWithdrawalRequested: claim.isWithdrawalRequested === true
+    ...(config.get('withdrawalRequestEnabled') && {
+      isWithdrawalRequested: claim.isWithdrawalRequested === true
+    })
   }
 }
 
-export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
-  const claim = await getClaimByReference(db, reference)
-  if (!claim) {
-    throw Boom.notFound('Claim not found')
+const withdrawClaimImmediately = async ({ db, claim, reference, withdrawal, user }) => {
+  if (claim.status !== STATUS.IN_CHECK) {
+    throw Boom.conflict('Claim must be in check to be withdrawn')
   }
 
+  const application = await getApplication({ db, reference: claim.applicationReference })
+
+  const withdrawnAt = new Date()
+
+  await createWithdrawalRequest({
+    db,
+    withdrawalRequest: {
+      claimReference: reference,
+      agreementReference: claim.applicationReference,
+      sbi: application.organisation.sbi,
+      ...withdrawal,
+      createdBy: user,
+      createdAt: withdrawnAt
+    }
+  })
+
+  if (application.flags.length === 0) {
+    await createFlag(
+      db,
+      claim.applicationReference,
+      buildFlag({
+        note: WITHDRAWAL_FLAG_NOTE,
+        createdBy: user,
+        appliesToMh: false,
+        createdAt: withdrawnAt
+      })
+    )
+  }
+
+  const updatedClaim = await updateClaimStatus({
+    db,
+    reference,
+    status: STATUS.WITHDRAWN,
+    user,
+    updatedAt: withdrawnAt,
+    note: 'Withdrawal requested'
+  })
+
+  await raiseClaimWithdrawnEvent({
+    raisedBy: updatedClaim.updatedBy,
+    raisedOn: updatedClaim.updatedAt.toISOString(),
+    sbi: application.organisation.sbi,
+    data: {
+      reference: updatedClaim.reference,
+      applicationReference: updatedClaim.applicationReference,
+      status: updatedClaim.status,
+      withdrawalReason: withdrawal.reasonForWithdrawal,
+      withdrawalDiscoveryMethod: withdrawal.issueDiscovery
+    }
+  })
+
+  return updatedClaim
+}
+
+const requestClaimWithdrawal = async ({ db, claim, reference, withdrawal, user }) => {
   if (claim.status !== STATUS.IN_CHECK) {
     throw Boom.conflict('Claim must be in check to request a withdrawal')
   }
@@ -273,4 +335,18 @@ export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
   }
 
   return { ...claim, isWithdrawalRequested: true }
+}
+
+// AHWR-2298 behaviour (record a pending request only) is behind withdrawalRequestEnabled; when off
+// the claim is withdrawn immediately, exactly as before.
+export const withdrawClaim = async ({ db, reference, withdrawal, user }) => {
+  const claim = await getClaimByReference(db, reference)
+  if (!claim) {
+    throw Boom.notFound('Claim not found')
+  }
+
+  const withdraw = config.get('withdrawalRequestEnabled')
+    ? requestClaimWithdrawal
+    : withdrawClaimImmediately
+  return withdraw({ db, claim, reference, withdrawal, user })
 }

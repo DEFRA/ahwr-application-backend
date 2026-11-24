@@ -2,6 +2,7 @@ import Hapi from '@hapi/hapi'
 import { claimHistoryHandlers } from './claim-history.js'
 import { getClaimByReference } from '../../repositories/claim-repository.js'
 import { getApplicationWithFullFlags } from '../../repositories/application-repository.js'
+import { config } from '../../config/config.js'
 import { getWithdrawalRequestByClaimReference } from '../../repositories/withdrawal-request-repository.js'
 
 jest.mock('../../repositories/application-repository')
@@ -40,6 +41,11 @@ describe('Claim history test', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
+    config.set('withdrawalRequestEnabled', true)
+  })
+
+  afterEach(() => {
+    config.set('withdrawalRequestEnabled', false)
   })
 
   const statusHistory = [
@@ -303,6 +309,32 @@ describe('Claim history test', () => {
   test('does not look up a withdrawal request when the claim flag is not set', async () => {
     getClaimByReference.mockResolvedValueOnce({
       applicationReference: 'IAHW-1234-APP1',
+      statusHistory: [
+        {
+          note: 'in check',
+          status: 'IN_CHECK',
+          createdBy: 'Daniel Jones',
+          createdAt: new Date('2023-03-23T10:00:12.000Z')
+        }
+      ],
+      updateHistory: []
+    })
+    getApplicationWithFullFlags.mockResolvedValueOnce({ flags: [] })
+
+    const res = await server.inject({
+      method: 'GET',
+      url: '/api/claims/REBC-VA4R-TRL7/history'
+    })
+
+    expect(getWithdrawalRequestByClaimReference).not.toHaveBeenCalled()
+    expect(JSON.parse(res.payload).historyRecords).toHaveLength(1)
+  })
+
+  test('adds no withdrawal request record when withdrawalRequestEnabled is off, even if the claim flag is set', async () => {
+    config.set('withdrawalRequestEnabled', false)
+    getClaimByReference.mockResolvedValueOnce({
+      applicationReference: 'IAHW-1234-APP1',
+      isWithdrawalRequested: true,
       statusHistory: [
         {
           note: 'in check',

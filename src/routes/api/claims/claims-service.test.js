@@ -24,6 +24,7 @@ import {
 } from '../../../processing/claim/poultry/processor.js'
 import { trackError } from '../../../logging/logger.js'
 import { raiseClaimWithdrawnEvent } from '../../../event-publisher/index.js'
+import { config } from '../../../config/config.js'
 
 jest.mock('../../../repositories/application-repository.js')
 jest.mock('../../../repositories/claim-repository.js')
@@ -508,6 +509,27 @@ describe('getClaim', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    config.set('withdrawalRequestEnabled', true)
+  })
+
+  afterEach(() => {
+    config.set('withdrawalRequestEnabled', false)
+  })
+
+  describe('when withdrawalRequestEnabled is off', () => {
+    it('does not return isWithdrawalRequested, even when the claim has it set', async () => {
+      config.set('withdrawalRequestEnabled', false)
+      getClaimByReference.mockResolvedValue({
+        reference: 'REF',
+        applicationReference: 'APP',
+        status: 'IN_CHECK',
+        isWithdrawalRequested: true
+      })
+
+      const result = await getClaim({ db, reference: 'REF' })
+
+      expect(result).not.toHaveProperty('isWithdrawalRequested')
+    })
   })
 
   it('returns claim when claim exists for reference', async () => {
@@ -637,6 +659,11 @@ describe('withdrawClaim', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     setWithdrawalRequested.mockResolvedValue(true)
+    config.set('withdrawalRequestEnabled', true)
+  })
+
+  afterEach(() => {
+    config.set('withdrawalRequestEnabled', false)
   })
 
   it('throws not found when the claim does not exist', async () => {
@@ -728,5 +755,96 @@ describe('withdrawClaim', () => {
         isWithdrawalRequested: false
       })
     })
+  })
+})
+
+describe('withdrawClaim when withdrawalRequestEnabled is off (pre AHWR-2298 behaviour)', () => {
+  const db = {}
+  const reference = 'REBC-VA4R-TRL7'
+  const withdrawal = {
+    reasonForWithdrawal: 'unintentionalTypingError',
+    issueDiscovery: 'customerContactedRPA',
+    withdrawalDetails: 'The date of visit was a typo'
+  }
+  const updatedClaim = {
+    reference,
+    applicationReference: 'IAHW-1234-APP1',
+    status: 'WITHDRAWN',
+    updatedBy: 'admin',
+    updatedAt: new Date('2026-01-01T09:00:00.000Z')
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    config.set('withdrawalRequestEnabled', false)
+    createWithdrawalRequest.mockReset() // an earlier test leaves it rejecting
+    getClaimByReference.mockResolvedValue({
+      reference,
+      status: 'IN_CHECK',
+      applicationReference: 'IAHW-1234-APP1'
+    })
+    getApplication.mockResolvedValue({
+      reference: 'IAHW-1234-APP1',
+      organisation: { sbi: '123456789' },
+      flags: []
+    })
+    updateClaimStatus.mockResolvedValue(updatedClaim)
+  })
+
+  it('defaults to off', () => {
+    expect(config.default('withdrawalRequestEnabled')).toBe(false)
+  })
+
+  it('throws not found when the claim does not exist', async () => {
+    getClaimByReference.mockResolvedValue(null)
+
+    await expect(withdrawClaim({ db, reference, withdrawal, user: 'admin' })).rejects.toThrow(
+      'Claim not found'
+    )
+    expect(updateClaimStatus).not.toHaveBeenCalled()
+  })
+
+  it('throws and changes nothing when the claim is not in check', async () => {
+    getClaimByReference.mockResolvedValue({ reference, status: 'READY_TO_PAY' })
+
+    await expect(withdrawClaim({ db, reference, withdrawal, user: 'admin' })).rejects.toThrow(
+      'Claim must be in check to be withdrawn'
+    )
+    expect(createWithdrawalRequest).not.toHaveBeenCalled()
+    expect(updateClaimStatus).not.toHaveBeenCalled()
+    expect(setWithdrawalRequested).not.toHaveBeenCalled()
+  })
+
+  it('stores the request, withdraws the claim immediately and raises the withdrawn event', async () => {
+    const result = await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
+
+    expect(setWithdrawalRequested).not.toHaveBeenCalled()
+    expect(createWithdrawalRequest).toHaveBeenCalledWith({
+      db,
+      withdrawalRequest: expect.objectContaining({ claimReference: reference, createdBy: 'admin' })
+    })
+    expect(updateClaimStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ reference, status: 'WITHDRAWN', user: 'admin' })
+    )
+    expect(raiseClaimWithdrawnEvent).toHaveBeenCalledTimes(1)
+    expect(result).toBe(updatedClaim)
+  })
+
+  it('flags the agreement when it is not flagged yet', async () => {
+    await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
+
+    expect(createFlag).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not flag the agreement again when it is already flagged', async () => {
+    getApplication.mockResolvedValue({
+      reference: 'IAHW-1234-APP1',
+      organisation: { sbi: '123456789' },
+      flags: [{ appliesToMh: true }]
+    })
+
+    await withdrawClaim({ db, reference, withdrawal, user: 'admin' })
+
+    expect(createFlag).not.toHaveBeenCalled()
   })
 })
