@@ -156,6 +156,12 @@ git config --global core.autocrlf false
 | `POST: /api/applications/{ref}/flag`                   | Create a new flag against the given application reference                           |
 | `DELETE: /api/cleanup`                                 | Cleanup (delete) data for a given SBI, as used by performance tests etc             |
 
+## Feature flags
+
+| Variable                     | Default | Effect                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WITHDRAWAL_REQUEST_ENABLED` | `false` | AHWR-2298. On: `POST /api/claims/withdraw` records a pending withdrawal request and the claim stays in check; claim and history responses include the pending request. Off: the claim is withdrawn immediately, as before. Enable before the same flag in ahwr-backoffice-ui; disable after it. |
+
 ## Development helpers
 
 ### MongoDB Locks

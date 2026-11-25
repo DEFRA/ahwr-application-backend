@@ -9,6 +9,7 @@ import {
 import { getApplicationWithFullFlags } from '../../repositories/application-repository.js'
 import { getWithdrawalRequestByClaimReference } from '../../repositories/withdrawal-request-repository.js'
 import { STATUS } from 'ffc-ahwr-common-library'
+import { config } from '../../config/config.js'
 
 const withWithdrawalDetails = async (db, claimReference, statusHistory) => {
   if (!statusHistory.some((record) => record.newValue === STATUS.WITHDRAWN)) {
@@ -29,7 +30,7 @@ const withWithdrawalDetails = async (db, claimReference, statusHistory) => {
 }
 
 const buildWithdrawalRequestEvents = async (db, claimReference, claim) => {
-  if (claim.isWithdrawalRequested !== true) {
+  if (!config.get('withdrawalRequestEnabled') || claim.isWithdrawalRequested !== true) {
     return []
   }
 

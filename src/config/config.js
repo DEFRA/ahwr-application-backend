@@ -297,6 +297,12 @@ const config = convict({
       env: 'FEATURE_ASSURANCE_START'
     }
   },
+  withdrawalRequestEnabled: {
+    doc: 'AHWR-2298: withdrawing a claim only records a pending withdrawal request (claim stays in check). When false, withdrawing a claim withdraws it immediately, as before AHWR-2298. Enable together with WITHDRAWAL_REQUEST_ENABLED in the backoffice UI (backend first).',
+    format: Boolean,
+    default: false,
+    env: 'WITHDRAWAL_REQUEST_ENABLED'
+  },
   reminderEmailMaxBatchSize: {
     doc: 'Reminder email, maximum number of agreements processed in single run.',
     format: Number,
