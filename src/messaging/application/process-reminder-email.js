@@ -8,6 +8,11 @@ import { SEND_SESSION_EVENT } from '../../event-publisher/index.js'
 
 const serviceName = config.get('serviceName')
 
+/**
+ * @param {{ requestedDate: string, maxBatchSize: number }} message
+ * @param {object} db
+ * @param {{ child: (bindings: { requestedDate: string }) => { info: (message: string) => void, error: (error: unknown, message: string) => void } }} logger
+ */
 export const processReminderEmailRequest = async (message, db, logger) => {
   const { requestedDate, maxBatchSize } = message
 
@@ -28,20 +33,28 @@ export const processReminderEmailRequest = async (message, db, logger) => {
     return
   }
 
-  for (const application of applicationsDueReminder) {
-    const payload = constructMessage(application)
-    try {
-      await sendToMessageGenerator(payload)
-      await sendApplicationSessionEvent(application)
-      await saveLastReminderSent(application, db, reminderLogger)
-    } catch (error) {
-      reminderLogger.error(error, 'Failed to processed reminders request')
-      throw error
-    }
-  }
+  await Promise.allSettled(
+    applicationsDueReminder.map(async (application) => {
+      const payload = constructMessage(application)
+      try {
+        await sendToMessageGenerator(payload)
+        await sendApplicationSessionEvent(application)
+        await saveLastReminderSent(application, db, reminderLogger)
+      } catch (error) {
+        reminderLogger.error(error, 'Failed to processed reminders request')
+        throw error
+      }
+    })
+  )
   reminderLogger.info('Successfully processed reminders request')
 }
 
+/**
+ * @param {string} requestedDate
+ * @param {number} maxBatchSize
+ * @param {object} db
+ * @param {object} logger
+ */
 const getApplicationsDueReminderEmail = async (requestedDate, maxBatchSize, db, logger) => {
   const notClaimedNineMonths = await getApplicationsWithoutClaimAfterNineMonths(
     requestedDate,
@@ -74,6 +87,12 @@ const getApplicationsDueReminderEmail = async (requestedDate, maxBatchSize, db, 
   return [...remindersNotClaimed]
 }
 
+/**
+ * @param {string} requestedDate
+ * @param {number} maxBatchSize
+ * @param {object} db
+ * @param {object} logger
+ */
 const getApplicationsWithoutClaimAfterNineMonths = async (
   requestedDate,
   maxBatchSize,
@@ -97,6 +116,12 @@ const getApplicationsWithoutClaimAfterNineMonths = async (
   )
 }
 
+/**
+ * @param {string} requestedDate
+ * @param {number} maxBatchSize
+ * @param {object} db
+ * @param {object} logger
+ */
 const getApplicationsWithoutClaimAfterSixMonths = async (
   requestedDate,
   maxBatchSize,
@@ -123,6 +148,12 @@ const getApplicationsWithoutClaimAfterSixMonths = async (
   )
 }
 
+/**
+ * @param {string} requestedDate
+ * @param {number} maxBatchSize
+ * @param {object} db
+ * @param {object} logger
+ */
 const getApplicationsWithoutClaimAfterThreeMonths = async (
   requestedDate,
   maxBatchSize,
@@ -149,7 +180,15 @@ const getApplicationsWithoutClaimAfterThreeMonths = async (
   )
 }
 
+/**
+ * @typedef {{ reference: string, reminderType: string, crn?: string, sbi?: string, email?: string, orgEmail?: string, reminders?: any, createdAt?: string | Date }} Reminder
+ */
+
 // prevents send two email to same address
+/**
+ * @param {Reminder} reminder
+ * @returns {Reminder}
+ */
 const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
   if (reminder.email === reminder.orgEmail) {
     delete reminder.orgEmail
@@ -158,6 +197,10 @@ const removeOrgEmailIfSameAddressAsEmail = (reminder) => {
 }
 
 // prevents contacting users too often
+/**
+ * @param {Reminder} reminder
+ * @returns {Reminder}
+ */
 const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
   // We should check the application history to know what we should do
   if (!reminder.reminders) {
@@ -178,6 +221,15 @@ const promoteToNextReminderIfNoRemindersAndWithinOneMonth = (reminder) => {
   return reminder
 }
 
+/**
+ * @param {Object} params
+ * @param {string} params.reminderType
+ * @param {string} params.reference
+ * @param {string} [params.crn]
+ * @param {string} [params.sbi]
+ * @param {string} [params.email]
+ * @param {string} [params.orgEmail]
+ */
 const constructMessage = ({ reminderType, reference, crn, sbi, email, orgEmail }) => {
   return {
     reminderType,
@@ -188,12 +240,19 @@ const constructMessage = ({ reminderType, reference, crn, sbi, email, orgEmail }
   }
 }
 
+/** @param {ReturnType<typeof constructMessage>} _reminder */
 const sendToMessageGenerator = async (_reminder) => {
   // await sendMessageToSNS(reminderRequestedTopicArn, reminder, {
   //   messageType: messageGeneratorMsgTypeReminder
   // })
 }
 
+/**
+ * @param {Object} params
+ * @param {string} [params.sbi]
+ * @param {string} params.reference
+ * @param {string} params.reminderType
+ */
 const sendApplicationSessionEvent = async ({ sbi, reference, reminderType }) => {
   const data = { applicationReference: reference, reminderType }
 
@@ -218,6 +277,11 @@ const sendApplicationSessionEvent = async ({ sbi, reference, reminderType }) => 
   await getFcpEventPublisher().publishEvent(event)
 }
 
+/**
+ * @param {{ reference: string, reminderType: string, reminders?: any }} params
+ * @param {any} db
+ * @param {any} logger
+ */
 const saveLastReminderSent = async ({ reference, reminderType, reminders }, db, logger) => {
   await updateReminders(reference, reminderType, reminders, db, logger)
 }

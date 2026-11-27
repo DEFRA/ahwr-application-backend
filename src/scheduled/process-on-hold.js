@@ -14,12 +14,15 @@ import {
 } from '../lib/context-helper.js'
 import { raiseClaimEvents } from '../event-publisher/index.js'
 
+/** @param {import('mongodb').Db} db */
 export const processOnHoldClaims = async (db) => {
   const now = new Date()
   const date24HrsAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
   const onHoldClaims = await findOnHoldClaims({ db, beforeDate: date24HrsAgo })
-  const onHoldClaimReferences = onHoldClaims.map((claim) => claim.reference)
+  const onHoldClaimReferences = onHoldClaims.map(
+    (/** @type {{ reference: string }} */ claim) => claim.reference
+  )
 
   const updatedAt = new Date()
   if (onHoldClaimReferences.length) {
@@ -31,36 +34,44 @@ export const processOnHoldClaims = async (db) => {
       updatedAt
     })
 
-    for (const claim of onHoldClaims) {
-      const application = await getApplication({
-        db,
-        reference: claim.applicationReference
-      })
-
-      const { crn, frn, sbi } = application.organisation || {}
-
-      await raiseClaimEvents(
-        {
-          message: 'Claim has been updated',
-          claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
-          note: 'Automatic update',
-          raisedBy: 'admin',
-          raisedOn: updatedAt
-        },
-        sbi
+    const applications = await Promise.all(
+      onHoldClaims.map((/** @type {{ applicationReference: string }} */ claim) =>
+        getApplication({
+          db,
+          reference: claim.applicationReference
+        })
       )
+    )
 
-      const { statusChangeMessageBody, paymentEventMessageBody } = getSchemeSpecificMessageBodies(
-        crn,
-        sbi,
-        frn,
-        claim,
-        updatedAt
+    await Promise.allSettled(
+      onHoldClaims.map(
+        async (
+          /** @type {{ applicationReference: string, reference: string, _id: import('mongodb').ObjectId }} */ claim,
+          /** @type {number} */ index
+        ) => {
+          const application = applications[index]
+
+          const { crn, frn, sbi } = application.organisation || {}
+
+          await raiseClaimEvents(
+            {
+              message: 'Claim has been updated',
+              claim: { ...claim, status: 'READY_TO_PAY', id: claim._id.toString() },
+              note: 'Automatic update',
+              raisedBy: 'admin',
+              raisedOn: updatedAt
+            },
+            sbi
+          )
+
+          const { statusChangeMessageBody, paymentEventMessageBody } =
+            getSchemeSpecificMessageBodies(crn, sbi, frn, claim, updatedAt)
+
+          await publishStatusChangeEvent(getLogger(), statusChangeMessageBody)
+          await publishRequestForPaymentEvent(getLogger(), paymentEventMessageBody)
+        }
       )
-
-      await publishStatusChangeEvent(getLogger(), statusChangeMessageBody)
-      await publishRequestForPaymentEvent(getLogger(), paymentEventMessageBody)
-    }
+    )
     getLogger().info(
       `Of ${onHoldClaimReferences.length} claims on hold, ${updatedRecordCount} updated to ready to pay.`
     )
@@ -69,6 +80,13 @@ export const processOnHoldClaims = async (db) => {
   }
 }
 
+/**
+ * @param {string | undefined} crn
+ * @param {string | undefined} sbi
+ * @param {string | undefined} frn
+ * @param {Record<string, any>} claim
+ * @param {Date} updatedAt
+ */
 const getSchemeSpecificMessageBodies = (crn, sbi, frn, claim, updatedAt) => {
   if (getScheme(claim.applicationReference) === POULTRY_SCHEME) {
     const statusChangeMessageBody = {
